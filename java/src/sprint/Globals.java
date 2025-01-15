@@ -25,6 +25,10 @@ public class Globals {
     static MapLocation[] enemyTowerLocations = new MapLocation[25];
     static FastSet ruinLocations;
 
+    final static int enemyLocMinDist = 4;
+    static MapLocation[] latestEnemyLocations = new MapLocation[25];
+    static int latestEnemyLocationIndex = 0;
+
     public static Direction[] allDirections = Direction.values();
     public static Direction[] adjacentDirections = {
             Direction.NORTH,

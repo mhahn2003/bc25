@@ -10,6 +10,7 @@ public class Unit extends Globals {
     public void act() throws GameActionException {
         if (!init) init();
         Comms.readMessages();
+        Comms.senseInfo();
 
         sendComms();
     }
