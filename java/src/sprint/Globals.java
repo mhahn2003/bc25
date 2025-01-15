@@ -25,6 +25,7 @@ public class Globals {
     static MapLocation[] enemyTowerLocations = new MapLocation[25];
     static FastSet ruinLocations;
 
+    // TODO: make enemy locations expire after a while
     final static int enemyLocMinDist = 4;
     static MapLocation[] latestEnemyLocations = new MapLocation[25];
     static int latestEnemyLocationIndex = 0;

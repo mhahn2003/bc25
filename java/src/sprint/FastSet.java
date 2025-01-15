@@ -30,4 +30,22 @@ public class FastSet {
     private char encodeLocation(MapLocation location) {
         return (char) ((location.x << 6) | location.y);
     }
+
+    public char[] getValues() {
+        return values.toString().toCharArray();
+    }
+
+    // Method to get all MapLocations
+    public MapLocation[] getLocations() {
+        char[] chars = getValues();
+        MapLocation[] locations = new MapLocation[chars.length];
+        for (int i = 0; i < chars.length; i++) {
+            locations[i] = decodeLocation(chars[i]);
+        }
+        return locations;
+    }
+
+    private MapLocation decodeLocation(char encoded) {
+        return new MapLocation(encoded >> 6, encoded & 0x3F);
+    }
 }
