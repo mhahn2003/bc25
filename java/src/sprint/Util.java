@@ -14,30 +14,8 @@ public class Util extends Globals {
     public static boolean useSecondary(MapLocation location) {
         int x = location.x % 4;
         int y = location.y % 4;
-        switch (x) {
-            case 0:
-                switch (y) {
-                    case 0, 1, 3:
-                        return true;
-                    case 2:
-                        return false;
-                }
-            case 1, 3:
-                switch (y) {
-                    case 0:
-                        return true;
-                    case 1, 2, 3:
-                        return false;
-                }
-            case 2:
-                switch (y) {
-                    case 2:
-                        return true;
-                    case 0, 1, 3:
-                        return false;
-                }
-        }
-        return false;
+        int absSum =  Math.abs(x) + Math.abs(y);
+        return absSum == 0 || absSum >= 3;
     }
 
     public static boolean useSecondaryForTower(MapLocation location, MapLocation ruin, UnitType type) {
