@@ -42,10 +42,6 @@ public class Navigator extends Globals {
             Direction bellmanFordDirection = BellmanFordNavigator.getBestDirection(target);
             if (bellmanFordDirection != null) {
                 if (rc.canMove(bellmanFordDirection)) {
-                    MapLocation loc = myLocation.add(bellmanFordDirection);
-                    if (rc.getType() == UnitType.SOLDIER) {
-                        Util.paint(loc);
-                    }
                     rc.move(bellmanFordDirection);
                 }
 

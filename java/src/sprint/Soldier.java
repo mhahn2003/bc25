@@ -2,8 +2,6 @@ package sprint;
 
 import battlecode.common.*;
 
-import java.util.Map;
-
 public class Soldier extends Unit {
 
     // TODO: make an evade function that avoids tower range, especially defense towers
@@ -13,33 +11,67 @@ public class Soldier extends Unit {
     public static boolean aggressiveMode = false;
     public static boolean builder = false;
 
-    public static final int attackDistanceThreshold = 5;
-
     public void act() throws GameActionException {
         super.act();
         attack();
         rush();
         build();
-        paintSRP();
+        paint();
         move();
+        paintLeftover();
     }
 
     public void attack() throws GameActionException {
         RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, opponentTeam);
+        MapLocation closestNonDefenseTower = null;
+        int minDist = 999999;
+        MapLocation closestDefenseTower = null;
+        int minDistDefense = 999999;
         for (RobotInfo robot : enemyRobots) {
             if (robot.getType().isTowerType()) {
                 MapLocation robotLoc = robot.location;
-                if (rc.canAttack(robotLoc)) {
-                    rc.attack(robotLoc);
-                    aggressiveMode = true;
-                    if (rc.getLocation().distanceSquaredTo(robotLoc) > attackDistanceThreshold) {
-                        Navigator.moveTo(robotLoc);
+                int dist = rc.getLocation().distanceSquaredTo(robotLoc);
+                if (robot.getType().getBaseType() == UnitType.LEVEL_ONE_DEFENSE_TOWER) {
+                    if (dist < minDistDefense) {
+                        minDistDefense = dist;
+                        closestDefenseTower = robotLoc;
                     }
-                    return;
+                } else {
+                    if (dist < minDist) {
+                        minDist = dist;
+                        closestNonDefenseTower = robotLoc;
+                    }
                 }
             }
         }
-        aggressiveMode = false;
+
+        if (closestNonDefenseTower != null) {
+            if (rc.getLocation().distanceSquaredTo(closestNonDefenseTower) <= 9) {
+                if (rc.canAttack(closestNonDefenseTower)) {
+                    rc.attack(closestNonDefenseTower);
+                }
+                MapLocation opposite = new MapLocation(2 * closestNonDefenseTower.x - rc.getLocation().x, 2 * closestNonDefenseTower.y - rc.getLocation().y);
+                Navigator.moveTo(opposite);
+            } else {
+                for (Direction dir : Globals.adjacentDirections) {
+                    MapLocation loc = rc.getLocation().add(dir);
+                    if (rc.canMove(dir) && loc.distanceSquaredTo(closestNonDefenseTower) <= 9) {
+                        rc.move(dir);
+                        break;
+                    }
+                }
+                if (rc.isMovementReady()) {
+                    Navigator.moveTo(closestNonDefenseTower);
+                }
+                if (rc.canAttack(closestNonDefenseTower)) {
+                    rc.attack(closestNonDefenseTower);
+                }
+            }
+        } else if (closestDefenseTower != null) {
+            // TODO: implement
+        } else {
+            aggressiveMode = false;
+        }
     }
 
     public void rush() throws GameActionException {
@@ -127,6 +159,8 @@ public class Soldier extends Unit {
             } else {
                 if (rc.getPaint() < UnitType.SOLDIER.attackCost) {
                     builder = false;
+                } else {
+                    Navigator.moveTo(bestPaintLocation);
                 }
             }
         }
@@ -136,12 +170,102 @@ public class Soldier extends Unit {
                 builder = false;
             }
         } else {
-            Navigator.moveTo(closestRuin);
+            MapLocation opposite = new MapLocation(2 * closestRuin.x - rc.getLocation().x, 2 * closestRuin.y - rc.getLocation().y);
+            Navigator.moveTo(opposite);
         }
     }
 
-    public void paintSRP() throws GameActionException {
+    public void paint() throws GameActionException {
+        if (aggressiveMode) {
+            return;
+        }
+        if (builder) {
+            return;
+        }
+        if (rushSoldier) {
+            return;
+        }
+        MapLocation loc = rc.getLocation();
+        int x = (loc.x + 2) % 4;
+        int y = (loc.y + 2) % 4;
+        MapLocation[] possibleSRPLocations = new MapLocation[5];
+        MapLocation[] ruinLocs = ruinLocations.getLocations();
+        if (x == 0 && y == 0 && !impossibleSRPLocations.contains(loc) && !rc.senseMapInfo(loc).isResourcePatternCenter()) {
+            possibleSRPLocations[4] = loc;
+        }
+        MapLocation loc1 = new MapLocation(loc.x - x, loc.y - y);
+        if (rc.canSenseLocation(loc1) && !impossibleSRPLocations.contains(loc1) && !rc.senseMapInfo(loc1).isResourcePatternCenter()) {
+            possibleSRPLocations[0] = loc1;
+        }
+        MapLocation loc2 = new MapLocation(loc.x - x, loc.y + 4 - y);
+        if (rc.canSenseLocation(loc2) && !impossibleSRPLocations.contains(loc2) && !rc.senseMapInfo(loc2).isResourcePatternCenter()) {
+            possibleSRPLocations[1] = loc2;
+        }
+        MapLocation loc3 = new MapLocation(loc.x + 4 - x, loc.y - y);
+        if (rc.canSenseLocation(loc3) && !impossibleSRPLocations.contains(loc3) && !rc.senseMapInfo(loc3).isResourcePatternCenter()) {
+            possibleSRPLocations[2] = loc3;
+        }
+        MapLocation loc4 = new MapLocation(loc.x + 4 - x, loc.y + 4 - y);
+        if (rc.canSenseLocation(loc4) && !impossibleSRPLocations.contains(loc4) && !rc.senseMapInfo(loc4).isResourcePatternCenter()) {
+            possibleSRPLocations[3] = loc4;
+        }
 
+        for (MapLocation ruin : ruinLocs) {
+            for (int i = 0; i < 5; i++) {
+                if (possibleSRPLocations[i] != null && Math.abs(ruin.x - possibleSRPLocations[i].x) <= 5 && Math.abs(ruin.y - possibleSRPLocations[i].y) <= 5) {
+                    impossibleSRPLocations.add(possibleSRPLocations[i]);
+                    possibleSRPLocations[i] = null;
+                }
+            }
+        }
+
+        MapLocation closestSRPLocation = null;
+        int minDist = 999999;
+        for (MapLocation possibleSRPLocation : possibleSRPLocations) {
+            if (possibleSRPLocation != null) {
+                int dist = loc.distanceSquaredTo(possibleSRPLocation);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closestSRPLocation = possibleSRPLocation;
+                }
+            }
+        }
+        if (closestSRPLocation != null) {
+            if (rc.getLocation().distanceSquaredTo(closestSRPLocation) <= 2) {
+                if (!rc.canMarkResourcePattern(closestSRPLocation)) {
+                    impossibleSRPLocations.add(closestSRPLocation);
+                }
+            } else {
+                Navigator.moveTo(closestSRPLocation);
+            }
+
+            if (!impossibleSRPLocations.contains(closestSRPLocation)) {
+                MapInfo[] nearbyPaintLocations = rc.senseNearbyMapInfos(closestSRPLocation, 8);
+                MapLocation bestPaintLocation = null;
+                int closestDist = UnitType.SOLDIER.actionRadiusSquared;
+                for (MapInfo info : nearbyPaintLocations) {
+                    if (!(info.getPaint().isAlly() && info.getPaint().isSecondary() == Util.useSecondary(info.getMapLocation()))) {
+                        if (rc.getLocation().distanceSquaredTo(info.getMapLocation()) <= closestDist) {
+                            closestDist = rc.getLocation().distanceSquaredTo(info.getMapLocation());
+                            bestPaintLocation = info.getMapLocation();
+                        }
+                    }
+                }
+                if (bestPaintLocation != null) {
+                    if (rc.canPaint(bestPaintLocation)) {
+                        rc.attack(bestPaintLocation, Util.useSecondary(bestPaintLocation));
+                    } else {
+                        Navigator.moveTo(bestPaintLocation);
+                    }
+                } else {
+                    if (rc.canCompleteResourcePattern(closestSRPLocation)) {
+                        rc.completeResourcePattern(closestSRPLocation);
+                    } else if (rc.getLocation().distanceSquaredTo(closestSRPLocation) > 2) {
+                        Navigator.moveTo(closestSRPLocation);
+                    }
+                }
+            }
+        }
     }
 
     public void move() throws GameActionException {
@@ -151,9 +275,15 @@ public class Soldier extends Unit {
         if (builder) {
             return;
         }
-        if (rc.getRoundNum() < 200) {
+        if (rushSoldier) {
+            return;
+        }
 
-        } else if (rc.getRoundNum() < 500 && !explored) {
+        if (!rc.isMovementReady()) {
+            return;
+        }
+
+        if (rc.getRoundNum() < 500 && !explored) {
             if (wandering) {
                 if (wanderingCounter >= maxWanderingCounter) {
                     wandering = false;
@@ -181,9 +311,27 @@ public class Soldier extends Unit {
         }
     }
 
+    public static void paintLeftover() throws GameActionException {
+        if (aggressiveMode) {
+            return;
+        }
+        if (builder) {
+            return;
+        }
+        if (rushSoldier) {
+            return;
+        }
+        if (!rc.isActionReady()) {
+            return;
+        }
+    }
+
     public static UnitType towerType(MapLocation loc, MapLocation ruin) {
         double rand = randomFunction(loc.x, loc.y);
-        if (rc.getRoundNum() < 200) {
+        if (rc.getRoundNum() < 150) {
+            return UnitType.LEVEL_ONE_MONEY_TOWER;
+        }
+        if (rc.getRoundNum() < 400) {
             if (rand < 0.3) {
                 return UnitType.LEVEL_ONE_PAINT_TOWER;
             } else {

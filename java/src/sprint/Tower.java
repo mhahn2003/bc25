@@ -100,11 +100,6 @@ public class Tower extends Unit {
         for (MapLocation ruin : ruins) {
             Comms.addToMessageQueue(Comms.InfoCategory.RUIN, ruin, true);
         }
-        for (MapLocation enemyLoc : latestEnemyLocations) {
-            if (enemyLoc != null) {
-                Comms.addToMessageQueue(Comms.InfoCategory.ENEMY_UNIT, enemyLoc, true);
-            }
-        }
         for (MapLocation enemyTowerLoc : enemyTowerLocations) {
             if (enemyTowerLoc != null) {
                 Comms.addToMessageQueue(Comms.InfoCategory.ENEMY_TOWER, enemyTowerLoc, true);

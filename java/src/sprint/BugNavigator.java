@@ -3,7 +3,6 @@ package sprint;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
-import battlecode.common.UnitType;
 
 public class BugNavigator extends Globals {
     private static MapLocation currentTarget;
@@ -51,7 +50,7 @@ public class BugNavigator extends Globals {
         if (currentObstacle == null) {
             Direction forward = myLocation.directionTo(target);
             if (canMove(forward)) {
-                moveWithPaint(forward);
+                move(forward);
                 return;
             }
 
@@ -120,7 +119,7 @@ public class BugNavigator extends Globals {
         for (int i = 8; --i >= 0; ) {
             direction = obstacleOnRight ? direction.rotateLeft() : direction.rotateRight();
             if (canMove(direction)) {
-                moveWithPaint(direction);
+                move(direction);
                 return;
             }
 
@@ -153,12 +152,7 @@ public class BugNavigator extends Globals {
         return rc.canMove(direction);
     }
 
-    private static void moveWithPaint(Direction direction) throws GameActionException {
-        MapLocation fillLocation = rc.adjacentLocation(direction);
-        if (rc.getType() == UnitType.SOLDIER) {
-            Util.paint(fillLocation);
-        }
-
+    private static void move(Direction direction) throws GameActionException {
         if (rc.canMove(direction)) {
             rc.move(direction);
         }

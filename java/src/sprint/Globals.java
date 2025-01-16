@@ -23,7 +23,7 @@ public class Globals {
     static MapLocation[] friendlyNonPaintTowerLocations = new MapLocation[25];
     static MapLocation[] friendlyPaintTowerLocations = new MapLocation[25];
     static MapLocation[] enemyTowerLocations = new MapLocation[25];
-    static FastSet ruinLocations;
+    static FastSet ruinLocations = new FastSet();
 
     // TODO: make enemy locations expire after a while
     final static int enemyLocMinDist = 16;
@@ -42,6 +42,7 @@ public class Globals {
     static MapLocation[] symmetryLocations = new MapLocation[3];
     static boolean[] symmetryLocationsVisited = new boolean[3];
 
+    static FastSet impossibleSRPLocations = new FastSet();
 
     public static Direction[] allDirections = Direction.values();
     public static Direction[] adjacentDirections = {
