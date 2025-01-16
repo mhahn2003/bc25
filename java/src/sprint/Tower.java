@@ -100,9 +100,14 @@ public class Tower extends Unit {
         for (MapLocation ruin : ruins) {
             Comms.addToMessageQueue(Comms.InfoCategory.RUIN, ruin, true);
         }
-        for (MapLocation enemyTowerLoc : enemyTowerLocations) {
-            if (enemyTowerLoc != null) {
-                Comms.addToMessageQueue(Comms.InfoCategory.ENEMY_TOWER, enemyTowerLoc, true);
+        for (MapLocation enemyNonDefenseTowerLoc : enemyNonDefenseTowerLocations) {
+            if (enemyNonDefenseTowerLoc != null) {
+                Comms.addToMessageQueue(Comms.InfoCategory.ENEMY_NON_DEFENSE_TOWER, enemyNonDefenseTowerLoc, true);
+            }
+        }
+        for (MapLocation enemyDefenseTowerLoc : enemyDefenseTowerLocations) {
+            if (enemyDefenseTowerLoc != null) {
+                Comms.addToMessageQueue(Comms.InfoCategory.ENEMY_DEFENSE_TOWER, enemyDefenseTowerLoc, true);
             }
         }
         for (MapLocation friendlyPaintTowerLoc : friendlyPaintTowerLocations) {

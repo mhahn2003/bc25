@@ -62,31 +62,16 @@ public class Soldier extends Unit {
                 }
             }
         } else if (closestDefenseTower != null) {
-            RobotInfo[] nearbyFriendlyRobots = rc.senseNearbyRobots(closestDefenseTower, 36, myTeam);
-            if (nearbyFriendlyRobots.length >= 4) {
-                aggressiveMode = true;
-                if (rc.getLocation().distanceSquaredTo(closestDefenseTower) > 9) {
-                    for (Direction dir : Globals.adjacentDirections) {
-                        MapLocation loc = rc.getLocation().add(dir);
-                        if (rc.canMove(dir) && loc.distanceSquaredTo(closestDefenseTower) <= 9) {
-                            rc.move(dir);
-                            break;
-                        }
-                    }
-                    if (rc.isMovementReady()) {
-                        Navigator.moveTo(closestDefenseTower);
-                    }
-                }
-                if (rc.canAttack(closestDefenseTower)) {
-                    rc.attack(closestDefenseTower);
-                }
-            } else {
-                aggressiveHold = true;
+            if (!aggressiveHold) {
+                aggressiveMode = false;
                 MapLocation opposite = new MapLocation(2 * closestDefenseTower.x - rc.getLocation().x, 2 * closestDefenseTower.y - rc.getLocation().y);
                 Navigator.moveTo(opposite);
+            } else {
+                Movement.attackDefenseTower();
             }
         } else {
             aggressiveMode = false;
+            aggressiveHold = false;
         }
     }
 
@@ -130,6 +115,10 @@ public class Soldier extends Unit {
     }
 
     public void build() throws GameActionException {
+        if (aggressiveMode || aggressiveHold || rushSoldier) {
+            return;
+        }
+
         MapLocation[] ruins = rc.senseNearbyRuins(-1);
 
         if (ruins.length == 0) {
@@ -193,15 +182,10 @@ public class Soldier extends Unit {
     }
 
     public void paint() throws GameActionException {
-        if (aggressiveMode) {
+        if (aggressiveMode || aggressiveHold || rushSoldier || builder) {
             return;
         }
-        if (builder) {
-            return;
-        }
-        if (rushSoldier) {
-            return;
-        }
+
         MapLocation loc = rc.getLocation();
         int x = (loc.x + 2) % 4;
         int y = (loc.y + 2) % 4;
@@ -286,17 +270,7 @@ public class Soldier extends Unit {
     }
 
     public void move() throws GameActionException {
-        if (aggressiveMode) {
-            return;
-        }
-        if (builder) {
-            return;
-        }
-        if (rushSoldier) {
-            return;
-        }
-
-        if (!rc.isMovementReady()) {
+        if (aggressiveMode || aggressiveHold || rushSoldier || builder || !rc.isMovementReady()) {
             return;
         }
 
@@ -311,17 +285,36 @@ public class Soldier extends Unit {
     }
 
     public void paintLeftover() throws GameActionException {
-        if (aggressiveMode) {
+        if (aggressiveMode || rushSoldier || builder || !rc.isActionReady()) {
             return;
         }
-        if (builder) {
+        if (aggressiveHold && rc.getPaint() < UnitType.SOLDIER.paintCapacity * 0.75) {
             return;
         }
-        if (rushSoldier) {
-            return;
-        }
-        if (!rc.isActionReady()) {
-            return;
+        MapInfo locInfo = rc.senseMapInfo(rc.getLocation());
+        if (!locInfo.getPaint().isAlly()) {
+            MapLocation[] nearbyRuins = rc.senseNearbyRuins(8);
+            if (nearbyRuins.length == 0) {
+                rc.attack(rc.getLocation(), Util.useSecondary(rc.getLocation()));
+            } else {
+                MapLocation closestRuin = nearbyRuins[0];
+                rc.attack(rc.getLocation(), Util.useSecondaryForTower(rc.getLocation(), closestRuin, towerType(rc.getLocation(), closestRuin)));
+            }
+        } else {
+            MapInfo[] nearbyPaintLocations = rc.senseNearbyMapInfos();
+            MapLocation[] nearbyRuins = rc.senseNearbyRuins(-1);
+            for (MapInfo info : nearbyPaintLocations) {
+                if (!info.getPaint().isAlly()) {
+                    for (MapLocation ruin : nearbyRuins) {
+                        if (info.getMapLocation().distanceSquaredTo(ruin) <= 8) {
+                            rc.attack(info.getMapLocation(), Util.useSecondaryForTower(info.getMapLocation(), ruin, towerType(info.getMapLocation(), ruin)));
+                            return;
+                        }
+                    }
+                    rc.attack(info.getMapLocation(), Util.useSecondary(info.getMapLocation()));
+                    return;
+                }
+            }
         }
     }
 

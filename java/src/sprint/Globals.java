@@ -59,6 +59,8 @@ public class Globals {
             Direction.NORTHWEST
     };
 
+
+
     public static void init(RobotController robotController) {
         rc = robotController;
 

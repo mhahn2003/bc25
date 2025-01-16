@@ -388,6 +388,9 @@ public class Comms extends Globals {
                         break;
                     }
                 }
+                if (targetEnemyTowerLocation != null && targetEnemyTowerLocation.equals(loc)) {
+                    targetEnemyTowerLocation = null;
+                }
             }
             if (!explored) {
                 for (int i = 0; i < exploreLocations.length; i++) {

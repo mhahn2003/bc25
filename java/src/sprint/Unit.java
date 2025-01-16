@@ -9,11 +9,5 @@ public class Unit extends Globals {
     public void act() throws GameActionException {
         Comms.readMessages();
         Comms.senseInfo();
-
-        sendComms();
-    }
-
-    public void sendComms() throws GameActionException {
-
     }
 }
