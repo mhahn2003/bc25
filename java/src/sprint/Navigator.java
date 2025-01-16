@@ -1,9 +1,6 @@
 package sprint;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.UnitType;
+import battlecode.common.*;
 
 public class Navigator extends Globals {
     private static MapLocation currentTarget;
@@ -39,7 +36,10 @@ public class Navigator extends Globals {
         }
 
         if (roundsSinceMovingCloserToTarget < 3) {
+            int startBytecodes = Clock.getBytecodeNum();
             Direction bellmanFordDirection = BellmanFordNavigator.getBestDirection(target);
+            int endBytecodes = Clock.getBytecodeNum();
+            System.out.println("BellmanFordNavigator: " + (endBytecodes - startBytecodes) + " bytecodes");
             if (bellmanFordDirection != null) {
                 if (rc.canMove(bellmanFordDirection)) {
                     rc.move(bellmanFordDirection);

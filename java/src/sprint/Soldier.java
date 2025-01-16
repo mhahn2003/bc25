@@ -5,16 +5,24 @@ import battlecode.common.*;
 public class Soldier extends Unit {
 
     public void act() throws GameActionException {
+        System.out.println("beginning: " + Clock.getBytecodeNum());
         super.act();
         if (rc.getRoundNum() > 10) {
             rc.disintegrate();
         }
+        System.out.println("init: " + Clock.getBytecodeNum());
         attack();
+        System.out.println("attack: " + Clock.getBytecodeNum());
         rush();
+        System.out.println("rush: " + Clock.getBytecodeNum());
         build();
+        System.out.println("build: " + Clock.getBytecodeNum());
         paint();
+        System.out.println("paint: " + Clock.getBytecodeNum());
         move();
+        System.out.println("move: " + Clock.getBytecodeNum());
         paintLeftover();
+        System.out.println("paintLeftover: " + Clock.getBytecodeNum());
         Comms.sendMessagesToTower();
     }
 

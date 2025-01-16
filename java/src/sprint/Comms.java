@@ -368,84 +368,82 @@ public class Comms extends Globals {
             }
         }
 
-        MapInfo[] mapInfos = rc.senseNearbyMapInfos();
-        for (MapInfo mapInfo : mapInfos) {
-            if (mapInfo.hasRuin()) {
-                MapLocation loc = mapInfo.getMapLocation();
-                if (!ruinLocations.contains(loc)) {
-                    ruinLocations.add(loc);
-                    addToMessageQueue(InfoCategory.RUIN, loc, false);
-                }
+        MapLocation[] ruins = rc.senseNearbyRuins(-1);
+        for (MapLocation loc : ruins) {
+            if (!ruinLocations.contains(loc)) {
+                ruinLocations.add(loc);
+                addToMessageQueue(InfoCategory.RUIN, loc, false);
+            }
 
-                for (int i = 0; i < friendlyNonPaintTowerLocations.length; i++) {
-                    if (friendlyNonPaintTowerLocations[i] == null) {
-                        break;
-                    } else if (friendlyNonPaintTowerLocations[i].equals(loc)) {
-                        friendlyNonPaintTowerLocations[i] = new MapLocation(-1, -1);
-                        addToMessageQueue(InfoCategory.RUIN, loc, false);
-                        break;
-                    }
-                }
-                for (int i = 0; i < friendlyPaintTowerLocations.length; i++) {
-                    if (friendlyPaintTowerLocations[i] == null) {
-                        break;
-                    } else if (friendlyPaintTowerLocations[i].equals(loc)) {
-                        friendlyPaintTowerLocations[i] = new MapLocation(-1, -1);
-                        addToMessageQueue(InfoCategory.RUIN, loc, false);
-                        break;
-                    }
-                }
-                for (int i = 0; i < enemyNonDefenseTowerLocations.length; i++) {
-                    if (enemyNonDefenseTowerLocations[i] == null) {
-                        break;
-                    } else if (enemyNonDefenseTowerLocations[i].equals(loc)) {
-                        enemyNonDefenseTowerLocations[i] = new MapLocation(-1, -1);
-                        addToMessageQueue(InfoCategory.RUIN, loc, false);
-                        break;
-                    }
-                }
-                for (int i = 0; i < enemyDefenseTowerLocations.length; i++) {
-                    if (enemyDefenseTowerLocations[i] == null) {
-                        break;
-                    } else if (enemyDefenseTowerLocations[i].equals(loc)) {
-                        enemyDefenseTowerLocations[i] = new MapLocation(-1, -1);
-                        addToMessageQueue(InfoCategory.RUIN, loc, false);
-                        break;
-                    }
-                }
-                if (targetEnemyTowerLocation != null && targetEnemyTowerLocation.equals(loc)) {
-                    targetEnemyTowerLocation = null;
+            for (int i = 0; i < friendlyNonPaintTowerLocations.length; i++) {
+                if (friendlyNonPaintTowerLocations[i] == null) {
+                    break;
+                } else if (friendlyNonPaintTowerLocations[i].equals(loc)) {
+                    friendlyNonPaintTowerLocations[i] = new MapLocation(-1, -1);
+                    addToMessageQueue(InfoCategory.RUIN, loc, false);
+                    break;
                 }
             }
-            if (!explored) {
-                for (int i = 0; i < exploreLocations.length; i++) {
-                    if (exploreLocations[i].equals(mapInfo.getMapLocation()) && !exploreLocationsVisited[i]) {
-                        exploreLocationsVisited[i] = true;
-                        wandering = false;
-                        wanderingCounter = 0;
-                        addToMessageQueue(InfoCategory.EXPLORE_LOC_VISITED, mapInfo.getMapLocation(), false);
-                        boolean allVisited = true;
-                        for (int j = 0; j < exploreLocations.length; j++) {
-                            if (!exploreLocationsVisited[j]) {
-                                allVisited = false;
-                                break;
-                            }
-                        }
-                        if (allVisited) {
-                            explored = true;
-                        }
-                        break;
-                    }
+            for (int i = 0; i < friendlyPaintTowerLocations.length; i++) {
+                if (friendlyPaintTowerLocations[i] == null) {
+                    break;
+                } else if (friendlyPaintTowerLocations[i].equals(loc)) {
+                    friendlyPaintTowerLocations[i] = new MapLocation(-1, -1);
+                    addToMessageQueue(InfoCategory.RUIN, loc, false);
+                    break;
                 }
             }
-            if (rushSoldier) {
-                for (int i = 0; i < symmetryLocations.length; i++) {
-                    if (symmetryLocationsVisited[i]) {
-                        continue;
+            for (int i = 0; i < enemyNonDefenseTowerLocations.length; i++) {
+                if (enemyNonDefenseTowerLocations[i] == null) {
+                    break;
+                } else if (enemyNonDefenseTowerLocations[i].equals(loc)) {
+                    enemyNonDefenseTowerLocations[i] = new MapLocation(-1, -1);
+                    addToMessageQueue(InfoCategory.RUIN, loc, false);
+                    break;
+                }
+            }
+            for (int i = 0; i < enemyDefenseTowerLocations.length; i++) {
+                if (enemyDefenseTowerLocations[i] == null) {
+                    break;
+                } else if (enemyDefenseTowerLocations[i].equals(loc)) {
+                    enemyDefenseTowerLocations[i] = new MapLocation(-1, -1);
+                    addToMessageQueue(InfoCategory.RUIN, loc, false);
+                    break;
+                }
+            }
+            if (targetEnemyTowerLocation != null && targetEnemyTowerLocation.equals(loc)) {
+                targetEnemyTowerLocation = null;
+            }
+        }
+
+        if (!explored) {
+            for (int i = 0; i < exploreLocations.length; i++) {
+                if (!exploreLocationsVisited[i] && rc.canSenseLocation(exploreLocations[i])) {
+                    exploreLocationsVisited[i] = true;
+                    wandering = false;
+                    wanderingCounter = 0;
+                    addToMessageQueue(InfoCategory.EXPLORE_LOC_VISITED, exploreLocations[i], false);
+                    boolean allVisited = true;
+                    for (int j = 0; j < exploreLocations.length; j++) {
+                        if (!exploreLocationsVisited[j]) {
+                            allVisited = false;
+                            break;
+                        }
                     }
-                    if (mapInfo.getMapLocation().equals(symmetryLocations[i])) {
-                        symmetryLocationsVisited[i] = true;
+                    if (allVisited) {
+                        explored = true;
                     }
+                    break;
+                }
+            }
+        }
+        if (rushSoldier) {
+            for (int i = 0; i < symmetryLocations.length; i++) {
+                if (symmetryLocationsVisited[i]) {
+                    continue;
+                }
+                if (rc.canSenseLocation(symmetryLocations[i])) {
+                    symmetryLocationsVisited[i] = true;
                 }
             }
         }
