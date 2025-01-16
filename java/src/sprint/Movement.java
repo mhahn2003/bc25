@@ -150,13 +150,32 @@ public class Movement extends Globals {
     }
 
     public static int heuristic(PaintType paintType) {
-        if (paintType.isAlly()) {
-            return -3;
-        } else if (paintType.isEnemy()) {
-            return 10;
-        } else {
-            return 3;
+        if (rc.getType() == UnitType.SOLDIER) {
+            if (paintType.isAlly()) {
+                return -3;
+            } else if (paintType.isEnemy()) {
+                return 1;
+            } else {
+                return 10;
+            }
+        } else if (rc.getType() == UnitType.MOPPER) {
+            if (paintType.isAlly()) {
+                return -3;
+            } else if (paintType.isEnemy()) {
+                return 10;
+            } else {
+                return -3;
+            }
+        } else if (rc.getType() == UnitType.SPLASHER) {
+            if (paintType.isAlly()) {
+                return -3;
+            } else if (paintType.isEnemy()) {
+                return 20;
+            } else {
+                return 5;
+            }
         }
+        return 0;
     }
 
     public static void attackDefenseTower() throws GameActionException {

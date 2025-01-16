@@ -40,14 +40,13 @@ public class Globals {
     static MapLocation[] symmetryLocations = new MapLocation[3];
     static boolean[] symmetryLocationsVisited = new boolean[3];
 
-
-
     static MapLocation targetEnemyTowerLocation = null;
     static boolean aggressiveMode = false;
     static boolean aggressiveHold = false;
 
     static boolean buildTower = false;
     static boolean buildSRP = false;
+    static UnitType buildTowerType = null;
     static int noPaintCounter = 0;
     static int noPaintTowerThreshold = 5;
     static int noPaintSRPThreshold = 3;

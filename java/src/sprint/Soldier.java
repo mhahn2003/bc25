@@ -2,6 +2,8 @@ package sprint;
 
 import battlecode.common.*;
 
+import static java.util.Objects.hash;
+
 public class Soldier extends Unit {
 
     public void act() throws GameActionException {
@@ -162,9 +164,46 @@ public class Soldier extends Unit {
             if (closestRuin == null) {
                 return;
             }
+            MapLocation markLoc = closestRuin.add(Direction.EAST);
+            UnitType towerType = towerType(closestRuin);
+            if (rc.canSenseLocation(markLoc)) {
+                if (rc.senseMapInfo(markLoc).getMark() == PaintType.EMPTY) {
+                    if (towerType != UnitType.LEVEL_ONE_DEFENSE_TOWER) {
+                        if (rc.getLocation().distanceSquaredTo(markLoc) <= 2) {
+                            if (rc.canMark(markLoc)) {
+                                // false = money, true = paint
+                                rc.mark(markLoc, towerType == UnitType.LEVEL_ONE_PAINT_TOWER);
+                            }
+                        } else {
+                            Navigator.moveTo(markLoc);
+                            return;
+                        }
+                    }
+                } else {
+                    if (rc.senseMapInfo(markLoc).getMark().isSecondary()) {
+                        towerType = UnitType.LEVEL_ONE_PAINT_TOWER;
+                    } else {
+                        towerType = UnitType.LEVEL_ONE_MONEY_TOWER;
+                    }
+                }
+            } else {
+                Navigator.moveTo(markLoc);
+                return;
+            }
+
             buildTower = true;
+            buildTowerType = towerType;
             buildRuinLocation = closestRuin;
             noPaintCounter = 0;
+        }
+
+        if (rc.canSenseRobotAtLocation(buildRuinLocation)) {
+            RobotInfo robot = rc.senseRobotAtLocation(buildRuinLocation);
+            if (robot != null) {
+                buildTower = false;
+                impossibleRuins.add(buildRuinLocation);
+                return;
+            }
         }
 
         UnitType type = towerType(buildRuinLocation);
@@ -186,8 +225,6 @@ public class Soldier extends Unit {
 
         if (bestPaintLocation != null) {
             noPaintCounter = 0;
-            rc.setIndicatorDot(bestPaintLocation, 255, 0, 0);
-            System.out.println("bestPaintLoc: " + bestPaintLocation.toString());
             if (rc.isActionReady() && rc.canAttack(bestPaintLocation)) {
                 rc.attack(bestPaintLocation, Util.useSecondaryForTower(bestPaintLocation, buildRuinLocation, type));
                 if (numLocsPaintable == 1) {
@@ -248,10 +285,25 @@ public class Soldier extends Unit {
             }
 
             for (MapLocation ruin : ruinLocs) {
-                for (int i = 0; i < 5; i++) {
-                    if (possibleSRPLocations[i] != null && Math.abs(ruin.x - possibleSRPLocations[i].x) <= 5 && Math.abs(ruin.y - possibleSRPLocations[i].y) <= 5) {
-                        impossibleSRPLocations.add(possibleSRPLocations[i]);
-                        possibleSRPLocations[i] = null;
+                boolean rawRuin = true;
+                for (MapLocation friendlyPaintTowerLocation : friendlyPaintTowerLocations) {
+                    if (friendlyPaintTowerLocation == null || ruin.equals(friendlyPaintTowerLocation)) {
+                        rawRuin = false;
+                        break;
+                    }
+                }
+                for (MapLocation friendlyNonPaintTowerLocation : friendlyNonPaintTowerLocations) {
+                    if (friendlyNonPaintTowerLocation == null || ruin.equals(friendlyNonPaintTowerLocation)) {
+                        rawRuin = false;
+                        break;
+                    }
+                }
+                if (rawRuin) {
+                    for (int i = 0; i < 5; i++) {
+                        if (possibleSRPLocations[i] != null && Math.abs(ruin.x - possibleSRPLocations[i].x) <= 5 && Math.abs(ruin.y - possibleSRPLocations[i].y) <= 5) {
+                            impossibleSRPLocations.add(possibleSRPLocations[i]);
+                            possibleSRPLocations[i] = null;
+                        }
                     }
                 }
             }
@@ -273,6 +325,14 @@ public class Soldier extends Unit {
                 buildSRPLocation = closestSRPLocation;
                 noPaintCounter = 0;
             } else {
+                return;
+            }
+        }
+
+        if (rc.canSenseLocation(buildSRPLocation)) {
+            if (rc.senseMapInfo(buildSRPLocation).isResourcePatternCenter()) {
+                impossibleSRPLocations.add(buildSRPLocation);
+                buildSRP = false;
                 return;
             }
         }
@@ -330,7 +390,7 @@ public class Soldier extends Unit {
         RobotInfo[] adjacentAllies = rc.senseNearbyRobots(2, myTeam);
         if (adjacentAllies.length >= 3) {
             Movement.scatter();
-        } else if (rc.getRoundNum() < 500 && !explored) {
+        } else if (!explored) {
             Movement.wander();
         } else {
             Movement.venture();
@@ -358,50 +418,67 @@ public class Soldier extends Unit {
                 }
             }
         } else {
-            MapInfo[] nearbyPaintLocations = rc.senseNearbyMapInfos();
+            MapInfo[] nearbyPaintLocations = rc.senseNearbyMapInfos(9);
             MapLocation[] nearbyRuins = rc.senseNearbyRuins(-1);
             for (MapInfo info : nearbyPaintLocations) {
-                if (!info.getPaint().isAlly()) {
+                if (info.getPaint() == PaintType.EMPTY) {
+                    boolean nearRuin = false;
                     for (MapLocation ruin : nearbyRuins) {
                         if (info.getMapLocation().distanceSquaredTo(ruin) <= 8) {
-                            if (rc.canPaint(info.getMapLocation())) {
-                                rc.attack(info.getMapLocation(), Util.useSecondaryForTower(info.getMapLocation(), ruin, towerType(ruin)));
-                            }
+                            nearRuin = true;
+                            break;
+                        }
+                    }
+                    if (!nearRuin) {
+                        if (rc.canAttack(info.getMapLocation())) {
+                            rc.attack(info.getMapLocation(), Util.useSecondary(info.getMapLocation()));
                             return;
                         }
                     }
-                    if (rc.canPaint(info.getMapLocation())) {
-                        rc.attack(info.getMapLocation(), Util.useSecondary(info.getMapLocation()));
-                    }
-                    return;
                 }
             }
+            for (MapInfo info : nearbyPaintLocations) {
+                if (info.getPaint() == PaintType.EMPTY) {
+                    for (MapLocation ruin : nearbyRuins) {
+                        if (info.getMapLocation().distanceSquaredTo(ruin) <= 8) {
+                            MapLocation markLoc = ruin.add(Direction.EAST);
+                            if (rc.canSenseLocation(markLoc)) {
+                                if (rc.senseMapInfo(markLoc).getMark() == PaintType.EMPTY) {
+                                    if (rc.canAttack(info.getMapLocation())) {
+                                        rc.attack(info.getMapLocation(), Util.useSecondaryForTower(info.getMapLocation(), ruin, towerType(ruin)));
+                                        return;
+                                    }
+                                } else {
+                                    UnitType type = rc.senseMapInfo(markLoc).getMark().isSecondary() ? UnitType.LEVEL_ONE_PAINT_TOWER : UnitType.LEVEL_ONE_MONEY_TOWER;
+                                    if (rc.canAttack(info.getMapLocation())) {
+                                        rc.attack(info.getMapLocation(), Util.useSecondaryForTower(info.getMapLocation(), ruin, type));
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
         }
     }
 
     public static UnitType towerType(MapLocation ruin) {
-        double rand = randomFunction(ruin.x, ruin.y);
-        if (rc.getRoundNum() < 150) {
-            return UnitType.LEVEL_ONE_MONEY_TOWER;
-        }
-        if (rc.getRoundNum() < 400) {
-            if (rand < 0.3) {
+        int rand = hash(ruin.x, ruin.y) % 100;
+        if (rc.getRoundNum() < 300) {
+            int numTowers = rc.getNumberTowers();
+            if (numTowers < 4) {
+                return UnitType.LEVEL_ONE_MONEY_TOWER;
+            } else if (numTowers % 2 == 0) {
                 return UnitType.LEVEL_ONE_PAINT_TOWER;
             } else {
                 return UnitType.LEVEL_ONE_MONEY_TOWER;
-            }
-        } else if (rc.getRoundNum() < 1000) {
-            if (rand < 0.5) {
-                return UnitType.LEVEL_ONE_PAINT_TOWER;
-            } else if (rand < 1) {
-                return UnitType.LEVEL_ONE_MONEY_TOWER;
-            } else {
-                return UnitType.LEVEL_ONE_DEFENSE_TOWER;
             }
         } else {
-            if (rand < 0.5) {
+            if (rand < 70) {
                 return UnitType.LEVEL_ONE_PAINT_TOWER;
-            } else if (rand < 1) {
+            } else if (rand < 100) {
                 return UnitType.LEVEL_ONE_MONEY_TOWER;
             } else {
                 return UnitType.LEVEL_ONE_DEFENSE_TOWER;
