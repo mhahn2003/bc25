@@ -1,9 +1,6 @@
 package sprint;
 
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
-import battlecode.common.Team;
-import battlecode.common.Direction;
+import battlecode.common.*;
 
 /*
 Adapted from camel_case's 2024 submission:
@@ -22,7 +19,8 @@ public class Globals {
 
     static MapLocation[] friendlyNonPaintTowerLocations = new MapLocation[25];
     static MapLocation[] friendlyPaintTowerLocations = new MapLocation[25];
-    static MapLocation[] enemyTowerLocations = new MapLocation[25];
+    static MapLocation[] enemyNonDefenseTowerLocations = new MapLocation[25];
+    static MapLocation[] enemyDefenseTowerLocations = new MapLocation[25];
     static FastSet ruinLocations = new FastSet();
 
     // TODO: make enemy locations expire after a while
@@ -43,6 +41,11 @@ public class Globals {
     static boolean[] symmetryLocationsVisited = new boolean[3];
 
     static FastSet impossibleSRPLocations = new FastSet();
+
+    static MapLocation targetEnemyTowerLocation = null;
+    public static boolean aggressiveMode = false;
+    public static boolean aggressiveHold = false;
+    public static boolean builder = false;
 
     public static Direction[] allDirections = Direction.values();
     public static Direction[] adjacentDirections = {

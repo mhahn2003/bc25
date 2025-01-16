@@ -4,13 +4,6 @@ import battlecode.common.*;
 
 public class Soldier extends Unit {
 
-    // TODO: make an evade function that avoids tower range, especially defense towers
-    // If we simply just move back, might get stuck in an infinite loop
-
-    // Currently this might be false but unit still might be within tower range, i.e. low paint
-    public static boolean aggressiveMode = false;
-    public static boolean builder = false;
-
     public void act() throws GameActionException {
         super.act();
         attack();
@@ -46,6 +39,7 @@ public class Soldier extends Unit {
         }
 
         if (closestNonDefenseTower != null) {
+            aggressiveMode = true;
             if (rc.getLocation().distanceSquaredTo(closestNonDefenseTower) <= 9) {
                 if (rc.canAttack(closestNonDefenseTower)) {
                     rc.attack(closestNonDefenseTower);
@@ -68,7 +62,29 @@ public class Soldier extends Unit {
                 }
             }
         } else if (closestDefenseTower != null) {
-            // TODO: implement
+            RobotInfo[] nearbyFriendlyRobots = rc.senseNearbyRobots(closestDefenseTower, 36, myTeam);
+            if (nearbyFriendlyRobots.length >= 4) {
+                aggressiveMode = true;
+                if (rc.getLocation().distanceSquaredTo(closestDefenseTower) > 9) {
+                    for (Direction dir : Globals.adjacentDirections) {
+                        MapLocation loc = rc.getLocation().add(dir);
+                        if (rc.canMove(dir) && loc.distanceSquaredTo(closestDefenseTower) <= 9) {
+                            rc.move(dir);
+                            break;
+                        }
+                    }
+                    if (rc.isMovementReady()) {
+                        Navigator.moveTo(closestDefenseTower);
+                    }
+                }
+                if (rc.canAttack(closestDefenseTower)) {
+                    rc.attack(closestDefenseTower);
+                }
+            } else {
+                aggressiveHold = true;
+                MapLocation opposite = new MapLocation(2 * closestDefenseTower.x - rc.getLocation().x, 2 * closestDefenseTower.y - rc.getLocation().y);
+                Navigator.moveTo(opposite);
+            }
         } else {
             aggressiveMode = false;
         }
@@ -86,7 +102,8 @@ public class Soldier extends Unit {
                 symmetryLocations[1] = new MapLocation(base.x, mapHeight - base.y - 1);
                 symmetryLocations[2] = new MapLocation(mapWidth - base.x - 1, mapHeight - base.y - 1);
             }
-        } else if (rushSoldier) {
+        }
+        if (rushSoldier) {
             if (aggressiveMode) {
                 rushSoldier = false;
                 return;
@@ -283,35 +300,17 @@ public class Soldier extends Unit {
             return;
         }
 
-        if (rc.getRoundNum() < 500 && !explored) {
-            if (wandering) {
-                if (wanderingCounter >= maxWanderingCounter) {
-                    wandering = false;
-                    wanderingCounter = 0;
-                    exploreLocationsVisited[wanderIndex] = true;
-                } else {
-                    Navigator.moveTo(exploreLocations[wanderIndex]);
-                    wanderingCounter++;
-                }
-            }
-            wandering = true;
-            // wander around
-            int wanderIndex = rc.getID() % 9;
-            for (int i = 0; i < 9; i++) {
-                if (exploreLocationsVisited[(wanderIndex + i) % 9]) {
-                    continue;
-                }
-                MapLocation loc = Globals.exploreLocations[(wanderIndex + i) % 9];
-                Globals.wanderIndex = i;
-                Navigator.moveTo(loc);
-                break;
-            }
+        RobotInfo[] adjacentAllies = rc.senseNearbyRobots(2, myTeam);
+        if (adjacentAllies.length >= 3) {
+            Movement.scatter();
+        } else if (rc.getRoundNum() < 500 && !explored) {
+            Movement.wander();
         } else {
-            // spread out to enemy territory
+            Movement.venture();
         }
     }
 
-    public static void paintLeftover() throws GameActionException {
+    public void paintLeftover() throws GameActionException {
         if (aggressiveMode) {
             return;
         }

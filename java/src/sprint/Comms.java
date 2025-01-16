@@ -14,7 +14,8 @@ public class Comms extends Globals {
         EMPTY,
         FRIEND_NON_PAINT_TOWER,
         FRIEND_PAINT_TOWER,
-        ENEMY_TOWER,
+        ENEMY_NON_DEFENSE_TOWER,
+        ENEMY_DEFENSE_TOWER,
         RUIN,
         ENEMY_UNIT,
         REQUEST_INITIALIZE,
@@ -166,12 +167,23 @@ public class Comms extends Globals {
                 }
                 ruinLocations.add(loc);
             }
-            case ENEMY_TOWER -> {
-                for (int i = 0; i < enemyTowerLocations.length; i++) {
-                    if (enemyTowerLocations[i] == null || enemyTowerLocations[i].equals(new MapLocation(-1, -1))) {
-                        enemyTowerLocations[i] = loc;
+            case ENEMY_NON_DEFENSE_TOWER -> {
+                for (int i = 0; i < enemyNonDefenseTowerLocations.length; i++) {
+                    if (enemyNonDefenseTowerLocations[i] == null || enemyNonDefenseTowerLocations[i].equals(new MapLocation(-1, -1))) {
+                        enemyNonDefenseTowerLocations[i] = loc;
                         break;
-                    } else if (enemyTowerLocations[i].equals(loc)) {
+                    } else if (enemyNonDefenseTowerLocations[i].equals(loc)) {
+                        break;
+                    }
+                }
+                ruinLocations.add(loc);
+            }
+            case ENEMY_DEFENSE_TOWER -> {
+                for (int i = 0; i < enemyDefenseTowerLocations.length; i++) {
+                    if (enemyDefenseTowerLocations[i] == null || enemyDefenseTowerLocations[i].equals(new MapLocation(-1, -1))) {
+                        enemyDefenseTowerLocations[i] = loc;
+                        break;
+                    } else if (enemyDefenseTowerLocations[i].equals(loc)) {
                         break;
                     }
                 }
@@ -195,11 +207,19 @@ public class Comms extends Globals {
                         break;
                     }
                 }
-                for (int i = 0; i < enemyTowerLocations.length; i++) {
-                    if (enemyTowerLocations[i] == null) {
+                for (int i = 0; i < enemyNonDefenseTowerLocations.length; i++) {
+                    if (enemyNonDefenseTowerLocations[i] == null) {
                         break;
-                    } else if (enemyTowerLocations[i].equals(loc)) {
-                        enemyTowerLocations[i] = new MapLocation(-1, -1);
+                    } else if (enemyNonDefenseTowerLocations[i].equals(loc)) {
+                        enemyNonDefenseTowerLocations[i] = new MapLocation(-1, -1);
+                        break;
+                    }
+                }
+                for (int i = 0; i < enemyDefenseTowerLocations.length; i++) {
+                    if (enemyDefenseTowerLocations[i] == null) {
+                        break;
+                    } else if (enemyDefenseTowerLocations[i].equals(loc)) {
+                        enemyDefenseTowerLocations[i] = new MapLocation(-1, -1);
                         break;
                     }
                 }
@@ -277,13 +297,25 @@ public class Comms extends Globals {
                 }
             } else {
                 if (robot.getType().isTowerType()) {
-                    for (int i = 0; i < enemyTowerLocations.length; i++) {
-                        if (enemyTowerLocations[i] == null || enemyTowerLocations[i].equals(new MapLocation(-1, -1))) {
-                            enemyTowerLocations[i] = robot.getLocation();
-                            addToMessageQueue(InfoCategory.ENEMY_TOWER, robot.getLocation(), false);
-                            break;
-                        } else if (enemyTowerLocations[i].equals(robot.getLocation())) {
-                            break;
+                    if (robot.getType().getBaseType() == UnitType.LEVEL_ONE_DEFENSE_TOWER) {
+                        for (int i = 0; i < enemyDefenseTowerLocations.length; i++) {
+                            if (enemyDefenseTowerLocations[i] == null || enemyDefenseTowerLocations[i].equals(new MapLocation(-1, -1))) {
+                                enemyDefenseTowerLocations[i] = robot.getLocation();
+                                addToMessageQueue(InfoCategory.ENEMY_DEFENSE_TOWER, robot.getLocation(), false);
+                                break;
+                            } else if (enemyDefenseTowerLocations[i].equals(robot.getLocation())) {
+                                break;
+                            }
+                        }
+                    } else {
+                        for (int i = 0; i < enemyNonDefenseTowerLocations.length; i++) {
+                            if (enemyNonDefenseTowerLocations[i] == null || enemyNonDefenseTowerLocations[i].equals(new MapLocation(-1, -1))) {
+                                enemyNonDefenseTowerLocations[i] = robot.getLocation();
+                                addToMessageQueue(InfoCategory.ENEMY_NON_DEFENSE_TOWER, robot.getLocation(), false);
+                                break;
+                            } else if (enemyNonDefenseTowerLocations[i].equals(robot.getLocation())) {
+                                break;
+                            }
                         }
                     }
                 }
@@ -325,6 +357,7 @@ public class Comms extends Globals {
                         break;
                     } else if (friendlyNonPaintTowerLocations[i].equals(loc)) {
                         friendlyNonPaintTowerLocations[i] = new MapLocation(-1, -1);
+                        addToMessageQueue(InfoCategory.RUIN, loc, false);
                         break;
                     }
                 }
@@ -333,14 +366,25 @@ public class Comms extends Globals {
                         break;
                     } else if (friendlyPaintTowerLocations[i].equals(loc)) {
                         friendlyPaintTowerLocations[i] = new MapLocation(-1, -1);
+                        addToMessageQueue(InfoCategory.RUIN, loc, false);
                         break;
                     }
                 }
-                for (int i = 0; i < enemyTowerLocations.length; i++) {
-                    if (enemyTowerLocations[i] == null) {
+                for (int i = 0; i < enemyNonDefenseTowerLocations.length; i++) {
+                    if (enemyNonDefenseTowerLocations[i] == null) {
                         break;
-                    } else if (enemyTowerLocations[i].equals(loc)) {
-                        enemyTowerLocations[i] = new MapLocation(-1, -1);
+                    } else if (enemyNonDefenseTowerLocations[i].equals(loc)) {
+                        enemyNonDefenseTowerLocations[i] = new MapLocation(-1, -1);
+                        addToMessageQueue(InfoCategory.RUIN, loc, false);
+                        break;
+                    }
+                }
+                for (int i = 0; i < enemyDefenseTowerLocations.length; i++) {
+                    if (enemyDefenseTowerLocations[i] == null) {
+                        break;
+                    } else if (enemyDefenseTowerLocations[i].equals(loc)) {
+                        enemyDefenseTowerLocations[i] = new MapLocation(-1, -1);
+                        addToMessageQueue(InfoCategory.RUIN, loc, false);
                         break;
                     }
                 }
