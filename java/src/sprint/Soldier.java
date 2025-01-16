@@ -6,6 +6,9 @@ public class Soldier extends Unit {
 
     public void act() throws GameActionException {
         super.act();
+        if (rc.getRoundNum() > 10) {
+            rc.disintegrate();
+        }
         attack();
         rush();
         build();
@@ -94,23 +97,21 @@ public class Soldier extends Unit {
                 rushSoldier = false;
                 return;
             }
-            if (rc.getPaint() >= UnitType.SOLDIER.paintCapacity * 0.25) {
-                MapLocation closestPossibleEnemyBase = null;
-                int minDist = 999999;
-                for (int i = 0; i < 3; i++) {
-                    if (symmetryLocationsVisited[i]) {
-                        continue;
-                    }
-                    if (rc.getLocation().distanceSquaredTo(symmetryLocations[i]) < minDist) {
-                        minDist = rc.getLocation().distanceSquaredTo(symmetryLocations[i]);
-                        closestPossibleEnemyBase = symmetryLocations[i];
-                    }
+            MapLocation closestPossibleEnemyBase = null;
+            int minDist = 999999;
+            for (int i = 0; i < 3; i++) {
+                if (symmetryLocationsVisited[i]) {
+                    continue;
                 }
-                if (closestPossibleEnemyBase != null) {
-                    Navigator.moveTo(closestPossibleEnemyBase);
-                } else {
-                    rushSoldier = false;
+                if (rc.getLocation().distanceSquaredTo(symmetryLocations[i]) < minDist) {
+                    minDist = rc.getLocation().distanceSquaredTo(symmetryLocations[i]);
+                    closestPossibleEnemyBase = symmetryLocations[i];
                 }
+            }
+            if (closestPossibleEnemyBase != null) {
+                Navigator.moveTo(closestPossibleEnemyBase);
+            } else {
+                rushSoldier = false;
             }
         }
     }

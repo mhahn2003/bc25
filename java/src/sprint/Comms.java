@@ -24,7 +24,19 @@ public class Comms extends Globals {
     }
 
     public static int encodeMessage(InfoCategory info, MapLocation loc) {
-        return (info.ordinal() << 12) + encodeLoc(loc);
+        int infoNum = 0;
+        switch (info) {
+            case EMPTY -> infoNum = 0;
+            case FRIEND_NON_PAINT_TOWER -> infoNum = 1;
+            case FRIEND_PAINT_TOWER -> infoNum = 2;
+            case ENEMY_NON_DEFENSE_TOWER -> infoNum = 3;
+            case ENEMY_DEFENSE_TOWER -> infoNum = 4;
+            case RUIN -> infoNum = 5;
+            case ENEMY_UNIT -> infoNum = 6;
+            case REQUEST_INITIALIZE -> infoNum = 7;
+            case EXPLORE_LOC_VISITED -> infoNum = 8;
+        }
+        return (infoNum * 4096) + encodeLoc(loc);
     }
 
     public static void addToMessageQueue(InfoCategory info, MapLocation loc, boolean initialize) {
@@ -135,9 +147,15 @@ public class Comms extends Globals {
     }
 
     public static void splitMessage(Message m) throws GameActionException {
-        int messageBytes = m.getBytes();
-        decipherMessage(messageBytes / 65536);
-        decipherMessage(messageBytes % 65536);
+        long messageBytes = m.getBytes();
+        if (messageBytes < 0) {
+            messageBytes += 4294967296L;
+        }
+        Logger.log("Message: " + messageBytes);
+        int message1 = (int) (messageBytes / 65536);
+        int message2 = (int) (messageBytes % 65536);
+        decipherMessage(message1);
+        decipherMessage(message2);
     }
 
     public static void readMessages() throws GameActionException {
@@ -148,7 +166,7 @@ public class Comms extends Globals {
     }
 
     public static void decipherMessage(int m) {
-        int infoNum = m >> 12;
+        int infoNum = m / 4096;
         InfoCategory info = InfoCategory.values()[infoNum];
         MapLocation loc = decodeLoc(m % 4096);
         switch (info) {
