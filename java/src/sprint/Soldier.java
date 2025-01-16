@@ -2,6 +2,8 @@ package sprint;
 
 import battlecode.common.*;
 
+import java.util.Map;
+
 public class Soldier extends Unit {
 
     // TODO: make an evade function that avoids tower range, especially defense towers
@@ -11,9 +13,12 @@ public class Soldier extends Unit {
     public static boolean aggressiveMode = false;
     public static boolean builder = false;
 
+    public static final int attackDistanceThreshold = 5;
+
     public void act() throws GameActionException {
         super.act();
         attack();
+        rush();
         build();
         paintSRP();
         move();
@@ -23,14 +28,56 @@ public class Soldier extends Unit {
         RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, opponentTeam);
         for (RobotInfo robot : enemyRobots) {
             if (robot.getType().isTowerType()) {
-                if (rc.canAttack(robot.location)) {
-                    rc.attack(robot.location);
+                MapLocation robotLoc = robot.location;
+                if (rc.canAttack(robotLoc)) {
+                    rc.attack(robotLoc);
                     aggressiveMode = true;
+                    if (rc.getLocation().distanceSquaredTo(robotLoc) > attackDistanceThreshold) {
+                        Navigator.moveTo(robotLoc);
+                    }
                     return;
                 }
             }
         }
         aggressiveMode = false;
+    }
+
+    public void rush() throws GameActionException {
+        if (rc.getRoundNum() <= 3 && !rushSoldier) {
+            rushSoldier = true;
+            MapLocation[] ruins = rc.senseNearbyRuins(4);
+            if (ruins.length == 0) {
+                rushSoldier = false;
+            } else {
+                MapLocation base = ruins[0];
+                symmetryLocations[0] = new MapLocation(mapWidth - base.x - 1, base.y);
+                symmetryLocations[1] = new MapLocation(base.x, mapHeight - base.y - 1);
+                symmetryLocations[2] = new MapLocation(mapWidth - base.x - 1, mapHeight - base.y - 1);
+            }
+        } else if (rushSoldier) {
+            if (aggressiveMode) {
+                rushSoldier = false;
+                return;
+            }
+            if (rc.getPaint() >= UnitType.SOLDIER.paintCapacity * 0.25) {
+                MapLocation closestPossibleEnemyBase = null;
+                int minDist = 999999;
+                for (int i = 0; i < 3; i++) {
+                    if (symmetryLocationsVisited[i]) {
+                        continue;
+                    }
+                    if (rc.getLocation().distanceSquaredTo(symmetryLocations[i]) < minDist) {
+                        minDist = rc.getLocation().distanceSquaredTo(symmetryLocations[i]);
+                        closestPossibleEnemyBase = symmetryLocations[i];
+                    }
+                }
+                if (closestPossibleEnemyBase != null) {
+                    Navigator.moveTo(closestPossibleEnemyBase);
+                } else {
+                    rushSoldier = false;
+                }
+            }
+        }
     }
 
     public void build() throws GameActionException {
@@ -94,11 +141,44 @@ public class Soldier extends Unit {
     }
 
     public void paintSRP() throws GameActionException {
-        
+
     }
 
     public void move() throws GameActionException {
+        if (aggressiveMode) {
+            return;
+        }
+        if (builder) {
+            return;
+        }
+        if (rc.getRoundNum() < 200) {
 
+        } else if (rc.getRoundNum() < 500 && !explored) {
+            if (wandering) {
+                if (wanderingCounter >= maxWanderingCounter) {
+                    wandering = false;
+                    wanderingCounter = 0;
+                    exploreLocationsVisited[wanderIndex] = true;
+                } else {
+                    Navigator.moveTo(exploreLocations[wanderIndex]);
+                    wanderingCounter++;
+                }
+            }
+            wandering = true;
+            // wander around
+            int wanderIndex = rc.getID() % 9;
+            for (int i = 0; i < 9; i++) {
+                if (exploreLocationsVisited[(wanderIndex + i) % 9]) {
+                    continue;
+                }
+                MapLocation loc = Globals.exploreLocations[(wanderIndex + i) % 9];
+                Globals.wanderIndex = i;
+                Navigator.moveTo(loc);
+                break;
+            }
+        } else {
+            // spread out to enemy territory
+        }
     }
 
     public static UnitType towerType(MapLocation loc, MapLocation ruin) {

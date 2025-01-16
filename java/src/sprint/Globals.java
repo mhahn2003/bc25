@@ -26,9 +26,22 @@ public class Globals {
     static FastSet ruinLocations;
 
     // TODO: make enemy locations expire after a while
-    final static int enemyLocMinDist = 4;
+    final static int enemyLocMinDist = 16;
     static MapLocation[] latestEnemyLocations = new MapLocation[25];
     static int latestEnemyLocationIndex = 0;
+
+    static MapLocation[] exploreLocations = new MapLocation[9];
+    static boolean[] exploreLocationsVisited = new boolean[9];
+    static boolean explored = false;
+    static boolean wandering = false;
+    static int wanderIndex = 0;
+    static int wanderingCounter = 0;
+    final static int maxWanderingCounter = 50;
+
+    static boolean rushSoldier = false;
+    static MapLocation[] symmetryLocations = new MapLocation[3];
+    static boolean[] symmetryLocationsVisited = new boolean[3];
+
 
     public static Direction[] allDirections = Direction.values();
     public static Direction[] adjacentDirections = {
@@ -51,6 +64,22 @@ public class Globals {
         myId = rc.getID();
         myTeam = rc.getTeam();
         opponentTeam = myTeam.opponent();
+
+        int minX = 0;
+        int midX = mapWidth / 2;
+        int maxX = mapWidth - 1;
+        int minY = 0;
+        int midY = mapHeight / 2;
+        int maxY = mapHeight - 1;
+        exploreLocations[0] = new MapLocation(minX, minY);
+        exploreLocations[1] = new MapLocation(midX, minY);
+        exploreLocations[2] = new MapLocation(maxX, minY);
+        exploreLocations[3] = new MapLocation(minX, midY);
+        exploreLocations[4] = new MapLocation(midX, midY);
+        exploreLocations[5] = new MapLocation(maxX, midY);
+        exploreLocations[6] = new MapLocation(minX, maxY);
+        exploreLocations[7] = new MapLocation(midX, maxY);
+        exploreLocations[8] = new MapLocation(maxX, maxY);
 
         switch (rc.getType()) {
             case SOLDIER: r = new Soldier(); break;

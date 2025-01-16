@@ -28,6 +28,5 @@ public class Util extends Globals {
             case LEVEL_ONE_DEFENSE_TOWER -> Math.abs(x) + Math.abs(y) <= 2;
             default -> false;
         };
-
     }
 }

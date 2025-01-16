@@ -16,9 +16,9 @@ public class Comms extends Globals {
         FRIEND_PAINT_TOWER,
         ENEMY_TOWER,
         RUIN,
-        ATTACK,
         ENEMY_UNIT,
         REQUEST_INITIALIZE,
+        EXPLORE_LOC_VISITED,
     }
 
     public static int encodeMessage(InfoCategory info, MapLocation loc) {
@@ -204,6 +204,38 @@ public class Comms extends Globals {
                     }
                 }
             }
+            case ENEMY_UNIT -> {
+                int emptyIndex = -1;
+                boolean locationTooClose = false;
+                for (int i = 0; i < latestEnemyLocations.length; i++) {
+                    if (emptyIndex == -1 && (latestEnemyLocations[i] == null || latestEnemyLocations[i].equals(new MapLocation(-1, -1)))) {
+                        emptyIndex = i;
+                    }
+                    if (latestEnemyLocations[i] != null && latestEnemyLocations[i].distanceSquaredTo(loc) < enemyLocMinDist) {
+                        locationTooClose = true;
+                        break;
+                    }
+                }
+                if (!locationTooClose) {
+                    if (emptyIndex != -1) {
+                        latestEnemyLocations[emptyIndex] = loc;
+                    } else {
+                        latestEnemyLocations[latestEnemyLocationIndex] = loc;
+                        latestEnemyLocationIndex = (latestEnemyLocationIndex + 1) % latestEnemyLocations.length;
+                    }
+                }
+            }
+            case REQUEST_INITIALIZE -> {
+
+            }
+            case EXPLORE_LOC_VISITED -> {
+                for (int i = 0; i < exploreLocations.length; i++) {
+                    if (exploreLocations[i].equals(loc)) {
+                        exploreLocationsVisited[i] = true;
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -256,21 +288,25 @@ public class Comms extends Globals {
                     }
                 }
                 int emptyIndex = -1;
+                boolean locationTooClose = false;
                 for (int i = 0; i < latestEnemyLocations.length; i++) {
                     if (emptyIndex == -1 && (latestEnemyLocations[i] == null || latestEnemyLocations[i].equals(new MapLocation(-1, -1)))) {
                         emptyIndex = i;
                     }
                     if (latestEnemyLocations[i] != null && latestEnemyLocations[i].distanceSquaredTo(robot.getLocation()) < enemyLocMinDist) {
+                        locationTooClose = true;
                         break;
                     }
                 }
-                if (emptyIndex != -1) {
-                    latestEnemyLocations[emptyIndex] = robot.getLocation();
-                    addToMessageQueue(InfoCategory.ENEMY_UNIT, robot.getLocation(), false);
-                } else {
-                    latestEnemyLocations[latestEnemyLocationIndex] = robot.getLocation();
-                    addToMessageQueue(InfoCategory.ENEMY_UNIT, robot.getLocation(), false);
-                    latestEnemyLocationIndex = (latestEnemyLocationIndex + 1) % latestEnemyLocations.length;
+                if (!locationTooClose) {
+                    if (emptyIndex != -1) {
+                        latestEnemyLocations[emptyIndex] = robot.getLocation();
+                        addToMessageQueue(InfoCategory.ENEMY_UNIT, robot.getLocation(), false);
+                    } else {
+                        latestEnemyLocations[latestEnemyLocationIndex] = robot.getLocation();
+                        addToMessageQueue(InfoCategory.ENEMY_UNIT, robot.getLocation(), false);
+                        latestEnemyLocationIndex = (latestEnemyLocationIndex + 1) % latestEnemyLocations.length;
+                    }
                 }
             }
         }
@@ -306,6 +342,37 @@ public class Comms extends Globals {
                     } else if (enemyTowerLocations[i].equals(loc)) {
                         enemyTowerLocations[i] = new MapLocation(-1, -1);
                         break;
+                    }
+                }
+            }
+            if (!explored) {
+                for (int i = 0; i < exploreLocations.length; i++) {
+                    if (exploreLocations[i].equals(mapInfo.getMapLocation()) && !exploreLocationsVisited[i]) {
+                        exploreLocationsVisited[i] = true;
+                        wandering = false;
+                        wanderingCounter = 0;
+                        addToMessageQueue(InfoCategory.EXPLORE_LOC_VISITED, mapInfo.getMapLocation(), false);
+                        boolean allVisited = true;
+                        for (int j = 0; j < exploreLocations.length; j++) {
+                            if (!exploreLocationsVisited[j]) {
+                                allVisited = false;
+                                break;
+                            }
+                        }
+                        if (allVisited) {
+                            explored = true;
+                        }
+                        break;
+                    }
+                }
+            }
+            if (rushSoldier) {
+                for (int i = 0; i < symmetryLocations.length; i++) {
+                    if (symmetryLocationsVisited[i]) {
+                        continue;
+                    }
+                    if (mapInfo.getMapLocation().equals(symmetryLocations[i])) {
+                        symmetryLocationsVisited[i] = true;
                     }
                 }
             }

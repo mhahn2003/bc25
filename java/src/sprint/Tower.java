@@ -45,7 +45,8 @@ public class Tower extends Unit {
     public void spawn() throws GameActionException {
         if (startingTower && rc.getRoundNum() <= 3) {
             MapLocation loc = rc.getLocation();
-            for (Direction dir : Globals.adjacentDirections) {
+            Direction dir = loc.directionTo(exploreLocations[4]);
+            for (int i = 0; i < 8; i++) {
                 MapLocation newLoc = loc.add(dir).add(dir);
                 if (rc.canBuildRobot(UnitType.SOLDIER, newLoc)) {
                     rc.buildRobot(UnitType.SOLDIER, newLoc);
@@ -53,11 +54,20 @@ public class Tower extends Unit {
                     initializeRobot(robot);
                     break;
                 }
+                MapLocation newLoc2 = loc.add(dir);
+                if (rc.canBuildRobot(UnitType.SOLDIER, newLoc2)) {
+                    rc.buildRobot(UnitType.SOLDIER, newLoc2);
+                    RobotInfo robot = rc.senseRobotAtLocation(newLoc2);
+                    initializeRobot(robot);
+                    break;
+                }
+                dir = dir.rotateRight();
             }
         } else {
             if (rc.getChips() >= UnitType.SOLDIER.moneyCost + 200 && rc.getPaint() >= UnitType.SOLDIER.paintCost) {
                 MapLocation loc = rc.getLocation();
-                for (Direction dir : Globals.adjacentDirections) {
+                Direction dir = loc.directionTo(exploreLocations[4]);
+                for (int i = 0; i < 8; i++) {
                     MapLocation newLoc = loc.add(dir).add(dir);
                     if (rc.canBuildRobot(UnitType.SOLDIER, newLoc)) {
                         rc.buildRobot(UnitType.SOLDIER, newLoc);
@@ -65,15 +75,14 @@ public class Tower extends Unit {
                         initializeRobot(robot);
                         break;
                     }
-                }
-                for (Direction dir : Globals.adjacentDirections) {
-                    MapLocation newLoc = loc.add(dir);
-                    if (rc.canBuildRobot(UnitType.SOLDIER, newLoc)) {
-                        rc.buildRobot(UnitType.SOLDIER, newLoc);
-                        RobotInfo robot = rc.senseRobotAtLocation(newLoc);
+                    MapLocation newLoc2 = loc.add(dir);
+                    if (rc.canBuildRobot(UnitType.SOLDIER, newLoc2)) {
+                        rc.buildRobot(UnitType.SOLDIER, newLoc2);
+                        RobotInfo robot = rc.senseRobotAtLocation(newLoc2);
                         initializeRobot(robot);
                         break;
                     }
+                    dir = dir.rotateRight();
                 }
             }
         }
