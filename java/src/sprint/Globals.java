@@ -40,12 +40,22 @@ public class Globals {
     static MapLocation[] symmetryLocations = new MapLocation[3];
     static boolean[] symmetryLocationsVisited = new boolean[3];
 
-    static FastSet impossibleSRPLocations = new FastSet();
+
 
     static MapLocation targetEnemyTowerLocation = null;
-    public static boolean aggressiveMode = false;
-    public static boolean aggressiveHold = false;
-    public static boolean builder = false;
+    static boolean aggressiveMode = false;
+    static boolean aggressiveHold = false;
+
+    static boolean buildTower = false;
+    static boolean buildSRP = false;
+    static int noPaintCounter = 0;
+    static int noPaintTowerThreshold = 5;
+    static int noPaintSRPThreshold = 3;
+
+    static FastSet impossibleRuins = new FastSet();
+    static FastSet impossibleSRPLocations = new FastSet();
+    static MapLocation buildRuinLocation;
+    static MapLocation buildSRPLocation;
 
     public static Direction[] allDirections = Direction.values();
     public static Direction[] adjacentDirections = {

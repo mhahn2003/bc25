@@ -12,9 +12,9 @@ public class Util extends Globals {
         }
     }
     public static boolean useSecondary(MapLocation location) {
-        int x = (location.x+2) % 4;
-        int y = (location.y+2) % 4;
-        int absSum =  Math.abs(x) + Math.abs(y);
+        int x = (location.x % 4) - 2;
+        int y = (location.y % 4) - 2;
+        int absSum = Math.abs(x) + Math.abs(y);
         return absSum == 0 || absSum >= 3;
     }
 

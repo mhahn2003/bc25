@@ -8,9 +8,9 @@ import battlecode.common.Message;
 public class Unit extends Globals {
 
     public void act() throws GameActionException {
-        if (rc.getRoundNum() > 50) {
-            rc.disintegrate();
-        }
+//        if (rc.getRoundNum() > 50) {
+//            rc.disintegrate();
+//        }
         Comms.senseInfo();
 //        if (rc.getType().isRobotType()) System.out.println("senseInfo: " + Clock.getBytecodeNum());
         Comms.readMessages();
