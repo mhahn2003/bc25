@@ -2,6 +2,7 @@ package sprint;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
+import battlecode.common.UnitType;
 
 public class Util extends Globals {
 
@@ -39,9 +40,16 @@ public class Util extends Globals {
         return false;
     }
 
-    public static boolean useSecondaryForTower(MapLocation location, MapLocation ruin) {
+    public static boolean useSecondaryForTower(MapLocation location, MapLocation ruin, UnitType type) {
         int x = location.x - ruin.x;
         int y = location.y - ruin.y;
-        return Math.abs(x) == Math.abs(y);
+
+        return switch (type) {
+            case LEVEL_ONE_PAINT_TOWER -> Math.abs(x) == Math.abs(y);
+            case LEVEL_ONE_MONEY_TOWER -> Math.abs(x) + Math.abs(y) == 1 || Math.abs(x) + Math.abs(y) == 4;
+            case LEVEL_ONE_DEFENSE_TOWER -> Math.abs(x) + Math.abs(y) <= 2;
+            default -> false;
+        };
+
     }
 }
