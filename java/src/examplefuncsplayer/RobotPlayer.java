@@ -160,8 +160,8 @@ public class RobotPlayer {
                     System.out.println("Trying to build a money tower at " + targetLoc);
                 }
                 else {
-                    rc.markTowerPattern(UnitType.LEVEL_ONE_DEFENSE_TOWER, targetLoc);
-                    System.out.println("Trying to build a defense tower at " + targetLoc);
+                    rc.markTowerPattern(UnitType.LEVEL_ONE_MONEY_TOWER, targetLoc);
+                    System.out.println("Trying to build a money tower at " + targetLoc);
                 }
             }
             // Fill in any spots in the pattern with the appropriate paint.

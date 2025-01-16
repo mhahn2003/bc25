@@ -24,7 +24,7 @@ public class Util extends Globals {
 
         return switch (type) {
             case LEVEL_ONE_PAINT_TOWER -> Math.abs(x) == Math.abs(y);
-            case LEVEL_ONE_MONEY_TOWER -> Math.abs(x) + Math.abs(y) == 1 || Math.abs(x) + Math.abs(y) == 4;
+            case LEVEL_ONE_MONEY_TOWER -> Math.abs(x) + Math.abs(y) == 2 || Math.abs(x) + Math.abs(y) == 3;
             case LEVEL_ONE_DEFENSE_TOWER -> Math.abs(x) + Math.abs(y) <= 2;
             default -> false;
         };

@@ -5,21 +5,21 @@ import battlecode.common.*;
 public class Soldier extends Unit {
 
     public void act() throws GameActionException {
-        System.out.println("beginning: " + Clock.getBytecodeNum());
+//        System.out.println("beginning: " + Clock.getBytecodeNum());
         super.act();
-        System.out.println("init: " + Clock.getBytecodeNum());
+//        System.out.println("init: " + Clock.getBytecodeNum());
         attack();
-        System.out.println("attack: " + Clock.getBytecodeNum());
+//        System.out.println("attack: " + Clock.getBytecodeNum());
         rush();
-        System.out.println("rush: " + Clock.getBytecodeNum());
+//        System.out.println("rush: " + Clock.getBytecodeNum());
         build();
-        System.out.println("build: " + Clock.getBytecodeNum());
+//        System.out.println("build: " + Clock.getBytecodeNum());
         paint();
-        System.out.println("paint: " + Clock.getBytecodeNum());
+//        System.out.println("paint: " + Clock.getBytecodeNum());
         move();
-        System.out.println("move: " + Clock.getBytecodeNum());
+//        System.out.println("move: " + Clock.getBytecodeNum());
         paintLeftover();
-        System.out.println("paintLeftover: " + Clock.getBytecodeNum());
+//        System.out.println("paintLeftover: " + Clock.getBytecodeNum());
         Comms.sendMessagesToTower();
     }
 
@@ -53,8 +53,18 @@ public class Soldier extends Unit {
                 if (rc.canAttack(closestNonDefenseTower)) {
                     rc.attack(closestNonDefenseTower);
                 }
-                MapLocation opposite = new MapLocation(2 * closestNonDefenseTower.x - rc.getLocation().x, 2 * closestNonDefenseTower.y - rc.getLocation().y);
-                Navigator.moveTo(opposite);
+                Direction dir = rc.getLocation().directionTo(closestNonDefenseTower).opposite();
+                if (rc.canMove(dir)) {
+                    rc.move(dir);
+                }
+                Direction left = dir.rotateLeft();
+                if (rc.canMove(left)) {
+                    rc.move(left);
+                }
+                Direction right = dir.rotateRight();
+                if (rc.canMove(right)) {
+                    rc.move(right);
+                }
             } else {
                 for (Direction dir : Globals.adjacentDirections) {
                     MapLocation loc = rc.getLocation().add(dir);
@@ -151,14 +161,14 @@ public class Soldier extends Unit {
         }
 
         builder = true;
-        UnitType type = towerType(rc.getLocation(), closestRuin);
+        UnitType type = towerType(closestRuin);
         MapInfo[] nearbyLocations = rc.senseNearbyMapInfos(closestRuin, 8);
 
         MapLocation bestPaintLocation = null;
-        int closestDist = UnitType.SOLDIER.actionRadiusSquared;
+        int closestDist = 9;
 
         for (MapInfo info : nearbyLocations) {
-            if (!(info.getPaint().isAlly() && info.getPaint().isSecondary() == Util.useSecondaryForTower(info.getMapLocation(), closestRuin, type))) {
+            if (!info.getMapLocation().equals(closestRuin) && !(info.getPaint().isAlly() && info.getPaint().isSecondary() == Util.useSecondaryForTower(info.getMapLocation(), closestRuin, type))) {
                 if (rc.getLocation().distanceSquaredTo(info.getMapLocation()) <= closestDist) {
                     closestDist = rc.getLocation().distanceSquaredTo(info.getMapLocation());
                     bestPaintLocation = info.getMapLocation();
@@ -167,18 +177,14 @@ public class Soldier extends Unit {
         }
 
         if (bestPaintLocation != null) {
-            if (rc.canPaint(bestPaintLocation)) {
+            if (rc.isActionReady() && rc.canPaint(bestPaintLocation)) {
                 rc.attack(bestPaintLocation, Util.useSecondaryForTower(bestPaintLocation, closestRuin, type));
             } else {
-                if (rc.getPaint() < UnitType.SOLDIER.attackCost) {
-                    builder = false;
-                } else {
-                    Navigator.moveTo(bestPaintLocation);
-                }
+                Navigator.moveTo(bestPaintLocation);
             }
         }
-        if (rc.getLocation().distanceSquaredTo(closestRuin) <= GameConstants.BUILD_TOWER_RADIUS_SQUARED) {
-            if (rc.canCompleteTowerPattern(type, closestRuin)) {
+        if (rc.getLocation().distanceSquaredTo(closestRuin) <= 2) {
+            if (rc.isActionReady() && rc.canCompleteTowerPattern(type, closestRuin)) {
                 rc.completeTowerPattern(type, closestRuin);
                 builder = false;
             }
@@ -260,13 +266,13 @@ public class Soldier extends Unit {
                     }
                 }
                 if (bestPaintLocation != null) {
-                    if (rc.canPaint(bestPaintLocation)) {
+                    if (rc.isActionReady() && rc.canPaint(bestPaintLocation)) {
                         rc.attack(bestPaintLocation, Util.useSecondary(bestPaintLocation));
                     } else {
                         Navigator.moveTo(bestPaintLocation);
                     }
                 } else {
-                    if (rc.canCompleteResourcePattern(closestSRPLocation)) {
+                    if (rc.isActionReady() && rc.canCompleteResourcePattern(closestSRPLocation)) {
                         rc.completeResourcePattern(closestSRPLocation);
                     } else if (rc.getLocation().distanceSquaredTo(closestSRPLocation) > 2) {
                         Navigator.moveTo(closestSRPLocation);
@@ -302,10 +308,14 @@ public class Soldier extends Unit {
         if (!locInfo.getPaint().isAlly()) {
             MapLocation[] nearbyRuins = rc.senseNearbyRuins(8);
             if (nearbyRuins.length == 0) {
-                rc.attack(rc.getLocation(), Util.useSecondary(rc.getLocation()));
+                if (rc.canPaint(rc.getLocation())) {
+                    rc.attack(rc.getLocation(), Util.useSecondary(rc.getLocation()));
+                }
             } else {
                 MapLocation closestRuin = nearbyRuins[0];
-                rc.attack(rc.getLocation(), Util.useSecondaryForTower(rc.getLocation(), closestRuin, towerType(rc.getLocation(), closestRuin)));
+                if (rc.canPaint(rc.getLocation())) {
+                    rc.attack(rc.getLocation(), Util.useSecondaryForTower(rc.getLocation(), closestRuin, towerType(closestRuin)));
+                }
             }
         } else {
             MapInfo[] nearbyPaintLocations = rc.senseNearbyMapInfos();
@@ -314,19 +324,23 @@ public class Soldier extends Unit {
                 if (!info.getPaint().isAlly()) {
                     for (MapLocation ruin : nearbyRuins) {
                         if (info.getMapLocation().distanceSquaredTo(ruin) <= 8) {
-                            rc.attack(info.getMapLocation(), Util.useSecondaryForTower(info.getMapLocation(), ruin, towerType(info.getMapLocation(), ruin)));
+                            if (rc.canPaint(info.getMapLocation())) {
+                                rc.attack(info.getMapLocation(), Util.useSecondaryForTower(info.getMapLocation(), ruin, towerType(ruin)));
+                            }
                             return;
                         }
                     }
-                    rc.attack(info.getMapLocation(), Util.useSecondary(info.getMapLocation()));
+                    if (rc.canPaint(info.getMapLocation())) {
+                        rc.attack(info.getMapLocation(), Util.useSecondary(info.getMapLocation()));
+                    }
                     return;
                 }
             }
         }
     }
 
-    public static UnitType towerType(MapLocation loc, MapLocation ruin) {
-        double rand = randomFunction(loc.x, loc.y);
+    public static UnitType towerType(MapLocation ruin) {
+        double rand = randomFunction(ruin.x, ruin.y);
         if (rc.getRoundNum() < 150) {
             return UnitType.LEVEL_ONE_MONEY_TOWER;
         }
