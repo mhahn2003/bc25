@@ -49,17 +49,11 @@ public class Tower extends Unit {
             Direction dir = loc.directionTo(exploreLocations[4]);
             for (int i = 0; i < 8; i++) {
                 MapLocation newLoc = loc.add(dir).add(dir);
-                if (rc.canBuildRobot(UnitType.SOLDIER, newLoc)) {
-                    rc.buildRobot(UnitType.SOLDIER, newLoc);
-                    RobotInfo robot = rc.senseRobotAtLocation(newLoc);
-                    initializeRobot(robot);
+                if (buildRobot(UnitType.SOLDIER, newLoc)) {
                     break;
                 }
                 MapLocation newLoc2 = loc.add(dir);
-                if (rc.canBuildRobot(UnitType.SOLDIER, newLoc2)) {
-                    rc.buildRobot(UnitType.SOLDIER, newLoc2);
-                    RobotInfo robot = rc.senseRobotAtLocation(newLoc2);
-                    initializeRobot(robot);
+                if (buildRobot(UnitType.SOLDIER, newLoc2)) {
                     break;
                 }
                 dir = dir.rotateRight();
@@ -70,17 +64,11 @@ public class Tower extends Unit {
                 Direction dir = loc.directionTo(exploreLocations[4]);
                 for (int i = 0; i < 8; i++) {
                     MapLocation newLoc = loc.add(dir).add(dir);
-                    if (rc.canBuildRobot(UnitType.SOLDIER, newLoc)) {
-                        rc.buildRobot(UnitType.SOLDIER, newLoc);
-                        RobotInfo robot = rc.senseRobotAtLocation(newLoc);
-                        initializeRobot(robot);
+                    if (buildRobot(UnitType.SOLDIER, newLoc)) {
                         break;
                     }
                     MapLocation newLoc2 = loc.add(dir);
-                    if (rc.canBuildRobot(UnitType.SOLDIER, newLoc2)) {
-                        rc.buildRobot(UnitType.SOLDIER, newLoc2);
-                        RobotInfo robot = rc.senseRobotAtLocation(newLoc2);
-                        initializeRobot(robot);
+                    if (buildRobot(UnitType.SOLDIER, newLoc2)) {
                         break;
                     }
                     dir = dir.rotateRight();
