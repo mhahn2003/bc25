@@ -7,9 +7,6 @@ public class Soldier extends Unit {
     public void act() throws GameActionException {
         System.out.println("beginning: " + Clock.getBytecodeNum());
         super.act();
-        if (rc.getRoundNum() > 10) {
-            rc.disintegrate();
-        }
         System.out.println("init: " + Clock.getBytecodeNum());
         attack();
         System.out.println("attack: " + Clock.getBytecodeNum());
