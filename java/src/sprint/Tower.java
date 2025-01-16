@@ -21,6 +21,7 @@ public class Tower extends Unit {
         super.act();
         attackEnemyUnits();
         spawn();
+        sendComms();
     }
 
     public void attackEnemyUnits() throws GameActionException {
@@ -110,26 +111,33 @@ public class Tower extends Unit {
                 Comms.addToMessageQueue(Comms.InfoCategory.ENEMY_DEFENSE_TOWER, enemyDefenseTowerLoc, true);
             }
         }
-        for (MapLocation friendlyPaintTowerLoc : friendlyPaintTowerLocations) {
-            if (friendlyPaintTowerLoc != null) {
-                Comms.addToMessageQueue(Comms.InfoCategory.FRIEND_PAINT_TOWER, friendlyPaintTowerLoc, true);
-            }
-        }
-        for (MapLocation friendlyNonPaintTowerLoc : friendlyNonPaintTowerLocations) {
-            if (friendlyNonPaintTowerLoc != null) {
-                Comms.addToMessageQueue(Comms.InfoCategory.FRIEND_NON_PAINT_TOWER, friendlyNonPaintTowerLoc, true);
+        for (int i = 0; i < exploreLocations.length; i++) {
+            if (exploreLocationsVisited[i]) {
+                Comms.addToMessageQueue(Comms.InfoCategory.EXPLORE_LOC_VISITED, exploreLocations[i], true);
             }
         }
     }
 
-    @Override
-    public void sendComms() throws GameActionException {
-        Comms.initialize();
-        while (true) {
-            if (!Comms.sendMessages(new MapLocation(-1, -1), true)) {
-                break;
-            }
+    public boolean buildRobot(UnitType unitType, MapLocation loc) throws GameActionException {
+        if (rc.canBuildRobot(unitType, loc)) {
+            rc.buildRobot(unitType, loc);
+            RobotInfo robot = rc.senseRobotAtLocation(loc);
+            initializeRobot(robot);
+            return true;
         }
 
+        return false;
+    }
+
+    public void sendComms() throws GameActionException {
+        Comms.pushInitializeQueue();
+        // broadcast every 20 rounds
+        if (rc.getID() % 20 == rc.getRoundNum()) {
+            while (true) {
+                if (!Comms.sendMessages(new MapLocation(-1, -1), true)) {
+                    break;
+                }
+            }
+        }
     }
 }

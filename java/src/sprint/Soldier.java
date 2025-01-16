@@ -12,6 +12,7 @@ public class Soldier extends Unit {
         paint();
         move();
         paintLeftover();
+        Comms.sendMessagesToTower();
     }
 
     public void attack() throws GameActionException {

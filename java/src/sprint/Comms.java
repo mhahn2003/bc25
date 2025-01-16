@@ -7,6 +7,7 @@ public class Comms extends Globals {
 
     static int[] messageQueue = new int[40];
     static int[] initializeMessageQueue = new int[40];
+
     static boolean initializing = false;
     static int initializingUnitId = -1;
 
@@ -45,7 +46,10 @@ public class Comms extends Globals {
         }
     }
 
-    public static void initialize() throws GameActionException {
+    public static void pushInitializeQueue() throws GameActionException {
+        if (!initializing || initializingUnitId == -1) {
+            return;
+        }
         MapLocation sendTo;
         if (rc.canSenseRobot(initializingUnitId)) {
             RobotInfo robot = rc.senseRobot(initializingUnitId);
@@ -85,6 +89,9 @@ public class Comms extends Globals {
     }
 
     public static boolean sendMessages(MapLocation sendTo, boolean broadcast) throws GameActionException {
+        if (!broadcast && !rc.canSendMessage(sendTo)) {
+            return false;
+        }
         int message1 = 0;
         int message2 = 0;
         for (int i = messageQueue.length - 1; i >= 0; i--) {
@@ -421,6 +428,18 @@ public class Comms extends Globals {
                     if (mapInfo.getMapLocation().equals(symmetryLocations[i])) {
                         symmetryLocationsVisited[i] = true;
                     }
+                }
+            }
+        }
+    }
+
+    public static void sendMessagesToTower() throws GameActionException {
+        MapLocation[] ruins = rc.senseNearbyRuins(-1);
+        for (MapLocation ruin : ruins) {
+            if (rc.canSenseRobotAtLocation(ruin)) {
+                RobotInfo robot = rc.senseRobotAtLocation(ruin);
+                if (robot.getTeam() == myTeam && sendMessages(robot.getLocation(), false)) {
+                    break;
                 }
             }
         }
