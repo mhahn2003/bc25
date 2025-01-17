@@ -114,7 +114,7 @@ public class Soldier extends Unit {
     }
 
     public void refill() throws GameActionException {
-        if (rc.getPaint() < 5 && state != SoldierState.REFILL) {
+        if (state != SoldierState.REFILL && ((state == SoldierState.DEFAULT && rc.getPaint() < 25) || rc.getPaint() < 5)) {
             Logger.log("need refill");
             MapLocation closestFriendPaintTower = null;
             int minDist = 999999;
@@ -126,7 +126,6 @@ public class Soldier extends Unit {
                 if (loc.equals(new MapLocation(-1, -1))) {
                     continue;
                 }
-                Logger.log("paint tower: " + loc);
                 int dist = rc.getLocation().distanceSquaredTo(loc);
                 if (dist < minDist) {
                     minDist = dist;
@@ -134,6 +133,7 @@ public class Soldier extends Unit {
                 }
             }
             if (closestFriendPaintTower != null) {
+                Logger.log("paint tower: " + closestFriendPaintTower);
                 state = SoldierState.REFILL;
                 refillPaintTowerLocation = closestFriendPaintTower;
             }
@@ -147,27 +147,28 @@ public class Soldier extends Unit {
             RobotInfo tower = null;
             if (rc.canSenseRobotAtLocation(refillPaintTowerLocation)) {
                 tower = rc.senseRobotAtLocation(refillPaintTowerLocation);
-            }
-
-            if (tower == null || tower.getTeam() == opponentTeam) {
-                state = SoldierState.DEFAULT;
-                refill();
-                return;
+                if (tower == null || tower.getTeam() == opponentTeam) {
+                    state = SoldierState.DEFAULT;
+                    return;
+                }
             }
 
             if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) <= 2) {
                 if (rc.getPaint() == 0 || tower.getPaintAmount() >= 50) {
+                    Logger.log("close");
                     int transferAmount = Math.min(UnitType.SOLDIER.paintCapacity - rc.getPaint(), tower.getPaintAmount());
-                    if (rc.canTransferPaint(refillPaintTowerLocation, transferAmount)) {
-                        rc.transferPaint(refillPaintTowerLocation, transferAmount);
+                    if (rc.canTransferPaint(refillPaintTowerLocation, -transferAmount)) {
+                        rc.transferPaint(refillPaintTowerLocation, -transferAmount);
                         MapLocation opposite = new MapLocation(2 * refillPaintTowerLocation.x - rc.getLocation().x, 2 * refillPaintTowerLocation.y - rc.getLocation().y);
                         Navigator.moveTo(opposite);
                     }
                 }
             } else if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) <= 8) {
                 if (rc.getPaint() == 0 || tower.getPaintAmount() >= 50) {
+                    Logger.log("a bit far");
                     Navigator.moveTo(refillPaintTowerLocation);
                 } else {
+                    Logger.log("scatter");
                     Movement.scatter();
                 }
             } else {

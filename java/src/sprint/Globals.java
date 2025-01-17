@@ -17,11 +17,11 @@ public class Globals {
     public static Team opponentTeam;
     public static Unit r;
 
-    static FastSet friendlyNonPaintTowerLocations = new FastSet();
-    static FastSet friendlyPaintTowerLocations = new FastSet();
-    static FastSet enemyNonDefenseTowerLocations = new FastSet();
-    static FastSet enemyDefenseTowerLocations = new FastSet();
-    static FastSet ruinLocations = new FastSet();
+    static FastSet friendlyNonPaintTowerLocations;
+    static FastSet friendlyPaintTowerLocations;
+    static FastSet enemyNonDefenseTowerLocations;
+    static FastSet enemyDefenseTowerLocations;
+    static FastSet ruinLocations;
 
     // TODO: make enemy locations expire after a while
     final static int enemyLocMinDist = 16;
@@ -94,6 +94,12 @@ public class Globals {
         exploreLocations[6] = new MapLocation(minX, maxY);
         exploreLocations[7] = new MapLocation(midX, maxY);
         exploreLocations[8] = new MapLocation(maxX, maxY);
+
+        friendlyPaintTowerLocations = new FastSet();
+        friendlyNonPaintTowerLocations = new FastSet();
+        enemyDefenseTowerLocations = new FastSet();
+        enemyNonDefenseTowerLocations = new FastSet();
+        ruinLocations = new FastSet();
 
         switch (rc.getType()) {
             case SOLDIER: r = new Soldier(); break;

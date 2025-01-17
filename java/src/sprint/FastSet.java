@@ -3,7 +3,11 @@ package sprint;
 import battlecode.common.MapLocation;
 
 public class FastSet {
-    public StringBuilder values = new StringBuilder();
+    private StringBuilder values;
+
+    public FastSet() {
+        values = new StringBuilder();
+    }
 
     public boolean add(char value) {
         String str = String.valueOf(value);

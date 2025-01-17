@@ -125,19 +125,19 @@ public class RobotPlayer {
 //            System.out.println("Tower received message: '#" + m.getSenderID() + " " + m.getBytes());
         }
 
-        test = new FastSet();
-        test.add(new MapLocation(1, 1));
-        System.out.println(test.contains(new MapLocation(1, 1)));
-        System.out.println(test.contains(new MapLocation(1, 2)));
-        test.add(new MapLocation(1, 2));
-        System.out.println(test.contains(new MapLocation(1, 1)));
-        System.out.println(test.contains(new MapLocation(1, 2)));
-        test.remove(new MapLocation(1, 1));
-        System.out.println(test.contains(new MapLocation(1, 1)));
-        System.out.println(test.contains(new MapLocation(1, 2)));
-        test.remove(new MapLocation(1, 2));
-        System.out.println(test.contains(new MapLocation(1, 1)));
-        System.out.println(test.contains(new MapLocation(1, 2)));
+//        test = new FastSet();
+//        test.add(new MapLocation(1, 1));
+//        System.out.println(test.contains(new MapLocation(1, 1)));
+//        System.out.println(test.contains(new MapLocation(1, 2)));
+//        test.add(new MapLocation(1, 2));
+//        System.out.println(test.contains(new MapLocation(1, 1)));
+//        System.out.println(test.contains(new MapLocation(1, 2)));
+//        test.remove(new MapLocation(1, 1));
+//        System.out.println(test.contains(new MapLocation(1, 1)));
+//        System.out.println(test.contains(new MapLocation(1, 2)));
+//        test.remove(new MapLocation(1, 2));
+//        System.out.println(test.contains(new MapLocation(1, 1)));
+//        System.out.println(test.contains(new MapLocation(1, 2)));
 
 
         // TODO: can we attack other bots?

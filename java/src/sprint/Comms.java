@@ -230,7 +230,9 @@ public class Comms extends Globals {
                     MapLocation loc = robot.getLocation();
                     if (robot.getType().getBaseType() == UnitType.LEVEL_ONE_PAINT_TOWER) {
                         if (!friendlyPaintTowerLocations.contains(loc)) {
+                            Logger.log("Adding friendly paint tower location: " + loc);
                             friendlyPaintTowerLocations.add(loc);
+                            Logger.log("length: " + friendlyPaintTowerLocations.getLocations().length);
                             addToMessageQueue(InfoCategory.FRIEND_PAINT_TOWER, loc, false);
                         }
                         if (!ruinLocations.contains(loc)) {
@@ -300,21 +302,22 @@ public class Comms extends Globals {
                 ruinLocations.add(loc);
                 addToMessageQueue(InfoCategory.RUIN, loc, false);
             }
-
-            if (friendlyNonPaintTowerLocations.contains(loc)) {
-                friendlyNonPaintTowerLocations.remove(loc);
-            }
-            if (friendlyPaintTowerLocations.contains(loc)) {
-                friendlyPaintTowerLocations.remove(loc);
-            }
-            if (enemyNonDefenseTowerLocations.contains(loc)) {
-                enemyNonDefenseTowerLocations.remove(loc);
-            }
-            if (enemyDefenseTowerLocations.contains(loc)) {
-                enemyDefenseTowerLocations.remove(loc);
-            }
-            if (targetEnemyTowerLocation != null && targetEnemyTowerLocation.equals(loc)) {
-                targetEnemyTowerLocation = null;
+            if (rc.canSenseRobotAtLocation(loc) && rc.senseRobotAtLocation(loc) == null) {
+                if (friendlyNonPaintTowerLocations.contains(loc)) {
+                    friendlyNonPaintTowerLocations.remove(loc);
+                }
+                if (friendlyPaintTowerLocations.contains(loc)) {
+                    friendlyPaintTowerLocations.remove(loc);
+                }
+                if (enemyNonDefenseTowerLocations.contains(loc)) {
+                    enemyNonDefenseTowerLocations.remove(loc);
+                }
+                if (enemyDefenseTowerLocations.contains(loc)) {
+                    enemyDefenseTowerLocations.remove(loc);
+                }
+                if (targetEnemyTowerLocation != null && targetEnemyTowerLocation.equals(loc)) {
+                    targetEnemyTowerLocation = null;
+                }
             }
         }
 
