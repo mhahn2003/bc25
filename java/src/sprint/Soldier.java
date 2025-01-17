@@ -154,8 +154,7 @@ public class Soldier extends Unit {
             }
 
             if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) <= 2) {
-                if (rc.getPaint() == 0 || tower.getPaintAmount() >= 50) {
-                    Logger.log("close");
+                if (rc.getPaint() <= 5 || tower.getPaintAmount() >= 50) {
                     int transferAmount = Math.min(UnitType.SOLDIER.paintCapacity - rc.getPaint(), tower.getPaintAmount());
                     if (rc.canTransferPaint(refillPaintTowerLocation, -transferAmount)) {
                         rc.transferPaint(refillPaintTowerLocation, -transferAmount);
@@ -164,15 +163,28 @@ public class Soldier extends Unit {
                     }
                 }
             } else if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) <= 8) {
-                if (rc.getPaint() == 0 || tower.getPaintAmount() >= 50) {
-                    Logger.log("a bit far");
+                if ((rc.getPaint() <= 5 || tower.getPaintAmount() >= 50) && rc.isActionReady()) {
                     Navigator.moveTo(refillPaintTowerLocation);
+                    if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) <= 2) {
+                        int transferAmount = Math.min(UnitType.SOLDIER.paintCapacity - rc.getPaint(), tower.getPaintAmount());
+                        if (rc.canTransferPaint(refillPaintTowerLocation, -transferAmount)) {
+                            rc.transferPaint(refillPaintTowerLocation, -transferAmount);
+                        }
+                    }
                 } else {
-                    Logger.log("scatter");
-                    Movement.scatter();
+                    RobotInfo[] alliedNeighbors = rc.senseNearbyRobots(2, myTeam);
+                    if (alliedNeighbors.length > 0) {
+                        Movement.scatter();
+                    }
                 }
             } else {
                 Navigator.moveTo(refillPaintTowerLocation);
+            }
+
+            if (rc.isActionReady() && rc.senseMapInfo(rc.getLocation()).getPaint() == PaintType.EMPTY) {
+                if (rc.canAttack(rc.getLocation()) && rc.getPaint() >= 10) {
+                    rc.attack(rc.getLocation(), Util.useSecondary(rc.getLocation()));
+                }
             }
         }
     }
