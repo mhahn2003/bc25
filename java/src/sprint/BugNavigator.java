@@ -157,6 +157,6 @@ public class BugNavigator extends Globals {
             rc.move(direction);
         }
 
-        Logger.log("bug " + direction);
+//        Logger.log("bug " + direction);
     }
 }

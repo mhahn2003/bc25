@@ -171,84 +171,22 @@ public class Comms extends Globals {
         MapLocation loc = decodeLoc(m % 4096);
         switch (info) {
             case FRIEND_NON_PAINT_TOWER -> {
-                for (int i = 0; i < friendlyNonPaintTowerLocations.length; i++) {
-                    if (friendlyNonPaintTowerLocations[i] == null || friendlyNonPaintTowerLocations[i].equals(new MapLocation(-1, -1))) {
-                        friendlyNonPaintTowerLocations[i] = loc;
-                        break;
-                    } else if (friendlyNonPaintTowerLocations[i].equals(loc)) {
-                        break;
-                    }
-                }
+                friendlyNonPaintTowerLocations.add(loc);
                 ruinLocations.add(loc);
             }
             case FRIEND_PAINT_TOWER -> {
-                for (int i = 0; i < friendlyPaintTowerLocations.length; i++) {
-                    if (friendlyPaintTowerLocations[i] == null || friendlyPaintTowerLocations[i].equals(new MapLocation(-1, -1))) {
-                        friendlyPaintTowerLocations[i] = loc;
-                        break;
-                    } else if (friendlyPaintTowerLocations[i].equals(loc)) {
-                        break;
-                    }
-                }
+                friendlyPaintTowerLocations.add(loc);
                 ruinLocations.add(loc);
             }
             case ENEMY_NON_DEFENSE_TOWER -> {
-                for (int i = 0; i < enemyNonDefenseTowerLocations.length; i++) {
-                    if (enemyNonDefenseTowerLocations[i] == null || enemyNonDefenseTowerLocations[i].equals(new MapLocation(-1, -1))) {
-                        enemyNonDefenseTowerLocations[i] = loc;
-                        break;
-                    } else if (enemyNonDefenseTowerLocations[i].equals(loc)) {
-                        break;
-                    }
-                }
+                enemyNonDefenseTowerLocations.add(loc);
                 ruinLocations.add(loc);
             }
             case ENEMY_DEFENSE_TOWER -> {
-                for (int i = 0; i < enemyDefenseTowerLocations.length; i++) {
-                    if (enemyDefenseTowerLocations[i] == null || enemyDefenseTowerLocations[i].equals(new MapLocation(-1, -1))) {
-                        enemyDefenseTowerLocations[i] = loc;
-                        break;
-                    } else if (enemyDefenseTowerLocations[i].equals(loc)) {
-                        break;
-                    }
-                }
+                enemyDefenseTowerLocations.add(loc);
                 ruinLocations.add(loc);
             }
-            case RUIN -> {
-                ruinLocations.add(loc);
-                for (int i = 0; i < friendlyNonPaintTowerLocations.length; i++) {
-                    if (friendlyNonPaintTowerLocations[i] == null) {
-                        break;
-                    } else if (friendlyNonPaintTowerLocations[i].equals(loc)) {
-                        friendlyNonPaintTowerLocations[i] = new MapLocation(-1, -1);
-                        break;
-                    }
-                }
-                for (int i = 0; i < friendlyPaintTowerLocations.length; i++) {
-                    if (friendlyPaintTowerLocations[i] == null) {
-                        break;
-                    } else if (friendlyPaintTowerLocations[i].equals(loc)) {
-                        friendlyPaintTowerLocations[i] = new MapLocation(-1, -1);
-                        break;
-                    }
-                }
-                for (int i = 0; i < enemyNonDefenseTowerLocations.length; i++) {
-                    if (enemyNonDefenseTowerLocations[i] == null) {
-                        break;
-                    } else if (enemyNonDefenseTowerLocations[i].equals(loc)) {
-                        enemyNonDefenseTowerLocations[i] = new MapLocation(-1, -1);
-                        break;
-                    }
-                }
-                for (int i = 0; i < enemyDefenseTowerLocations.length; i++) {
-                    if (enemyDefenseTowerLocations[i] == null) {
-                        break;
-                    } else if (enemyDefenseTowerLocations[i].equals(loc)) {
-                        enemyDefenseTowerLocations[i] = new MapLocation(-1, -1);
-                        break;
-                    }
-                }
-            }
+            case RUIN -> ruinLocations.add(loc);
             case ENEMY_UNIT -> {
                 int emptyIndex = -1;
                 boolean locationTooClose = false;
@@ -291,56 +229,44 @@ public class Comms extends Globals {
                 if (robot.getType().isTowerType()) {
                     MapLocation loc = robot.getLocation();
                     if (robot.getType().getBaseType() == UnitType.LEVEL_ONE_PAINT_TOWER) {
-                        for (int i = 0; i < friendlyPaintTowerLocations.length; i++) {
-                            if (friendlyPaintTowerLocations[i] == null || friendlyPaintTowerLocations[i].equals(new MapLocation(-1, -1))) {
-                                friendlyPaintTowerLocations[i] = robot.getLocation();
-                                addToMessageQueue(InfoCategory.FRIEND_PAINT_TOWER, robot.getLocation(), false);
-                                if (!ruinLocations.contains(loc)) {
-                                    ruinLocations.add(loc);
-                                    addToMessageQueue(InfoCategory.RUIN, loc, false);
-                                }
-                                break;
-                            } else if (friendlyPaintTowerLocations[i].equals(robot.getLocation())) {
-                                break;
-                            }
+                        if (!friendlyPaintTowerLocations.contains(loc)) {
+                            friendlyPaintTowerLocations.add(loc);
+                            addToMessageQueue(InfoCategory.FRIEND_PAINT_TOWER, loc, false);
+                        }
+                        if (!ruinLocations.contains(loc)) {
+                            ruinLocations.add(loc);
+                            addToMessageQueue(InfoCategory.RUIN, loc, false);
                         }
                     } else {
-                        for (int i = 0; i < friendlyNonPaintTowerLocations.length; i++) {
-                            if (friendlyNonPaintTowerLocations[i] == null || friendlyNonPaintTowerLocations[i].equals(new MapLocation(-1, -1))) {
-                                friendlyNonPaintTowerLocations[i] = robot.getLocation();
-                                addToMessageQueue(InfoCategory.FRIEND_NON_PAINT_TOWER, robot.getLocation(), false);
-                                if (!ruinLocations.contains(loc)) {
-                                    ruinLocations.add(loc);
-                                    addToMessageQueue(InfoCategory.RUIN, loc, false);
-                                }
-                                break;
-                            } else if (friendlyNonPaintTowerLocations[i].equals(robot.getLocation())) {
-                                break;
-                            }
+                        if (!friendlyNonPaintTowerLocations.contains(loc)) {
+                            friendlyNonPaintTowerLocations.add(loc);
+                            addToMessageQueue(InfoCategory.FRIEND_NON_PAINT_TOWER, loc, false);
+                        }
+                        if (!ruinLocations.contains(loc)) {
+                            ruinLocations.add(loc);
+                            addToMessageQueue(InfoCategory.RUIN, loc, false);
                         }
                     }
                 }
             } else {
                 if (robot.getType().isTowerType()) {
                     if (robot.getType().getBaseType() == UnitType.LEVEL_ONE_DEFENSE_TOWER) {
-                        for (int i = 0; i < enemyDefenseTowerLocations.length; i++) {
-                            if (enemyDefenseTowerLocations[i] == null || enemyDefenseTowerLocations[i].equals(new MapLocation(-1, -1))) {
-                                enemyDefenseTowerLocations[i] = robot.getLocation();
-                                addToMessageQueue(InfoCategory.ENEMY_DEFENSE_TOWER, robot.getLocation(), false);
-                                break;
-                            } else if (enemyDefenseTowerLocations[i].equals(robot.getLocation())) {
-                                break;
-                            }
+                        if (!enemyDefenseTowerLocations.contains(robot.getLocation())) {
+                            enemyDefenseTowerLocations.add(robot.getLocation());
+                            addToMessageQueue(InfoCategory.ENEMY_DEFENSE_TOWER, robot.getLocation(), false);
+                        }
+                        if (!ruinLocations.contains(robot.getLocation())) {
+                            ruinLocations.add(robot.getLocation());
+                            addToMessageQueue(InfoCategory.RUIN, robot.getLocation(), false);
                         }
                     } else {
-                        for (int i = 0; i < enemyNonDefenseTowerLocations.length; i++) {
-                            if (enemyNonDefenseTowerLocations[i] == null || enemyNonDefenseTowerLocations[i].equals(new MapLocation(-1, -1))) {
-                                enemyNonDefenseTowerLocations[i] = robot.getLocation();
-                                addToMessageQueue(InfoCategory.ENEMY_NON_DEFENSE_TOWER, robot.getLocation(), false);
-                                break;
-                            } else if (enemyNonDefenseTowerLocations[i].equals(robot.getLocation())) {
-                                break;
-                            }
+                        if (!enemyNonDefenseTowerLocations.contains(robot.getLocation())) {
+                            enemyNonDefenseTowerLocations.add(robot.getLocation());
+                            addToMessageQueue(InfoCategory.ENEMY_NON_DEFENSE_TOWER, robot.getLocation(), false);
+                        }
+                        if (!ruinLocations.contains(robot.getLocation())) {
+                            ruinLocations.add(robot.getLocation());
+                            addToMessageQueue(InfoCategory.RUIN, robot.getLocation(), false);
                         }
                     }
                 }
@@ -375,41 +301,17 @@ public class Comms extends Globals {
                 addToMessageQueue(InfoCategory.RUIN, loc, false);
             }
 
-            for (int i = 0; i < friendlyNonPaintTowerLocations.length; i++) {
-                if (friendlyNonPaintTowerLocations[i] == null) {
-                    break;
-                } else if (friendlyNonPaintTowerLocations[i].equals(loc)) {
-                    friendlyNonPaintTowerLocations[i] = new MapLocation(-1, -1);
-                    addToMessageQueue(InfoCategory.RUIN, loc, false);
-                    break;
-                }
+            if (friendlyNonPaintTowerLocations.contains(loc)) {
+                friendlyNonPaintTowerLocations.remove(loc);
             }
-            for (int i = 0; i < friendlyPaintTowerLocations.length; i++) {
-                if (friendlyPaintTowerLocations[i] == null) {
-                    break;
-                } else if (friendlyPaintTowerLocations[i].equals(loc)) {
-                    friendlyPaintTowerLocations[i] = new MapLocation(-1, -1);
-                    addToMessageQueue(InfoCategory.RUIN, loc, false);
-                    break;
-                }
+            if (friendlyPaintTowerLocations.contains(loc)) {
+                friendlyPaintTowerLocations.remove(loc);
             }
-            for (int i = 0; i < enemyNonDefenseTowerLocations.length; i++) {
-                if (enemyNonDefenseTowerLocations[i] == null) {
-                    break;
-                } else if (enemyNonDefenseTowerLocations[i].equals(loc)) {
-                    enemyNonDefenseTowerLocations[i] = new MapLocation(-1, -1);
-                    addToMessageQueue(InfoCategory.RUIN, loc, false);
-                    break;
-                }
+            if (enemyNonDefenseTowerLocations.contains(loc)) {
+                enemyNonDefenseTowerLocations.remove(loc);
             }
-            for (int i = 0; i < enemyDefenseTowerLocations.length; i++) {
-                if (enemyDefenseTowerLocations[i] == null) {
-                    break;
-                } else if (enemyDefenseTowerLocations[i].equals(loc)) {
-                    enemyDefenseTowerLocations[i] = new MapLocation(-1, -1);
-                    addToMessageQueue(InfoCategory.RUIN, loc, false);
-                    break;
-                }
+            if (enemyDefenseTowerLocations.contains(loc)) {
+                enemyDefenseTowerLocations.remove(loc);
             }
             if (targetEnemyTowerLocation != null && targetEnemyTowerLocation.equals(loc)) {
                 targetEnemyTowerLocation = null;

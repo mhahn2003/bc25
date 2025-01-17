@@ -52,29 +52,21 @@ public class Movement extends Globals {
         if (targetEnemyTowerLocation == null) {
             MapLocation closesetEnemyTowerLocation = null;
             int minDist = 999999;
+            MapLocation[] enemyNonDefenseTowerLocations = Globals.enemyNonDefenseTowerLocations.getLocations();
             for (MapLocation loc : enemyNonDefenseTowerLocations) {
-                if (loc == null) {
-                    break;
+                int dist = rc.getLocation().distanceSquaredTo(loc);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closesetEnemyTowerLocation = loc;
                 }
-                if (!loc.equals(new MapLocation(-1, -1))) {
+            }
+            if (closesetEnemyTowerLocation == null) {
+                MapLocation[] enemyDefenseTowerLocations = Globals.enemyDefenseTowerLocations.getLocations();
+                for (MapLocation loc : enemyDefenseTowerLocations) {
                     int dist = rc.getLocation().distanceSquaredTo(loc);
                     if (dist < minDist) {
                         minDist = dist;
                         closesetEnemyTowerLocation = loc;
-                    }
-                }
-            }
-            if (closesetEnemyTowerLocation == null) {
-                for (MapLocation loc : enemyDefenseTowerLocations) {
-                    if (loc == null) {
-                        break;
-                    }
-                    if (!loc.equals(new MapLocation(-1, -1))) {
-                        int dist = rc.getLocation().distanceSquaredTo(loc);
-                        if (dist < minDist) {
-                            minDist = dist;
-                            closesetEnemyTowerLocation = loc;
-                        }
                     }
                 }
                 if (closesetEnemyTowerLocation == null) {

@@ -1,4 +1,4 @@
-package sprint;
+package examplefuncsplayer;
 
 import battlecode.common.MapLocation;
 

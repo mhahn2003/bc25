@@ -23,6 +23,8 @@ public class RobotPlayer {
      */
     static int turnCount = 0;
 
+    static FastSet test;
+
     /**
      * A random number generator.
      * We will use this RNG to make some random moves. The Random class is provided by the java.util.Random
@@ -120,8 +122,23 @@ public class RobotPlayer {
         // Read incoming messages
         Message[] messages = rc.readMessages(-1);
         for (Message m : messages) {
-            System.out.println("Tower received message: '#" + m.getSenderID() + " " + m.getBytes());
+//            System.out.println("Tower received message: '#" + m.getSenderID() + " " + m.getBytes());
         }
+
+        test = new FastSet();
+        test.add(new MapLocation(1, 1));
+        System.out.println(test.contains(new MapLocation(1, 1)));
+        System.out.println(test.contains(new MapLocation(1, 2)));
+        test.add(new MapLocation(1, 2));
+        System.out.println(test.contains(new MapLocation(1, 1)));
+        System.out.println(test.contains(new MapLocation(1, 2)));
+        test.remove(new MapLocation(1, 1));
+        System.out.println(test.contains(new MapLocation(1, 1)));
+        System.out.println(test.contains(new MapLocation(1, 2)));
+        test.remove(new MapLocation(1, 2));
+        System.out.println(test.contains(new MapLocation(1, 1)));
+        System.out.println(test.contains(new MapLocation(1, 2)));
+
 
         // TODO: can we attack other bots?
     }
@@ -152,16 +169,16 @@ public class RobotPlayer {
                 int rng = new Random().nextInt(3);
                 if (rng == 0) {
                     rc.markTowerPattern(UnitType.LEVEL_ONE_PAINT_TOWER, targetLoc);
-                    System.out.println("Trying to build a paint tower at " + targetLoc);
+//                    System.out.println("Trying to build a paint tower at " + targetLoc);
                 }
 
                 else if (rng == 1) {
                     rc.markTowerPattern(UnitType.LEVEL_ONE_MONEY_TOWER, targetLoc);
-                    System.out.println("Trying to build a money tower at " + targetLoc);
+//                    System.out.println("Trying to build a money tower at " + targetLoc);
                 }
                 else {
                     rc.markTowerPattern(UnitType.LEVEL_ONE_MONEY_TOWER, targetLoc);
-                    System.out.println("Trying to build a money tower at " + targetLoc);
+//                    System.out.println("Trying to build a money tower at " + targetLoc);
                 }
             }
             // Fill in any spots in the pattern with the appropriate paint.
@@ -175,8 +192,8 @@ public class RobotPlayer {
             // Complete the ruin if we can.
             if (rc.canCompleteTowerPattern(UnitType.LEVEL_ONE_PAINT_TOWER, targetLoc)){
                 rc.completeTowerPattern(UnitType.LEVEL_ONE_PAINT_TOWER, targetLoc);
-                rc.setTimelineMarker("Tower built", 0, 255, 0);
-                System.out.println("Built a tower at " + targetLoc + "!");
+//                rc.setTimelineMarker("Tower built", 0, 255, 0);
+//                System.out.println("Built a tower at " + targetLoc + "!");
             }
         }
 

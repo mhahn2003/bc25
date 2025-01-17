@@ -20,8 +20,7 @@ public class Navigator extends Globals {
 
         currentTarget = target;
 
-        MapLocation nextLocation = myLocation.add(myLocation.directionTo(target));
-        if (rc.canSenseLocation(nextLocation) && rc.senseMapInfo(nextLocation).isWall()) {
+        if (!rc.isMovementReady()) {
             return;
         }
 
@@ -40,17 +39,13 @@ public class Navigator extends Globals {
                     rc.move(bellmanFordDirection);
                 }
 
-                Logger.log("bf " + bellmanFordDirection);
+//                Logger.log("bf " + bellmanFordDirection);
                 return;
             } else {
-                Logger.log("bf null");
+//                Logger.log("bf null");
             }
         } else {
-            Logger.log("bf n/a");
-        }
-
-        if (!rc.isMovementReady()) {
-            return;
+//            Logger.log("bf n/a");
         }
 
         BugNavigator.moveTo(target);

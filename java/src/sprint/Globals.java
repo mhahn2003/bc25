@@ -17,10 +17,10 @@ public class Globals {
     public static Team opponentTeam;
     public static Unit r;
 
-    static MapLocation[] friendlyNonPaintTowerLocations = new MapLocation[25];
-    static MapLocation[] friendlyPaintTowerLocations = new MapLocation[25];
-    static MapLocation[] enemyNonDefenseTowerLocations = new MapLocation[25];
-    static MapLocation[] enemyDefenseTowerLocations = new MapLocation[25];
+    static FastSet friendlyNonPaintTowerLocations = new FastSet();
+    static FastSet friendlyPaintTowerLocations = new FastSet();
+    static FastSet enemyNonDefenseTowerLocations = new FastSet();
+    static FastSet enemyDefenseTowerLocations = new FastSet();
     static FastSet ruinLocations = new FastSet();
 
     // TODO: make enemy locations expire after a while
@@ -41,11 +41,8 @@ public class Globals {
     static boolean[] symmetryLocationsVisited = new boolean[3];
 
     static MapLocation targetEnemyTowerLocation = null;
-    static boolean aggressiveMode = false;
     static boolean aggressiveHold = false;
 
-    static boolean buildTower = false;
-    static boolean buildSRP = false;
     static UnitType buildTowerType = null;
     static int noPaintCounter = 0;
     static int noPaintTowerThreshold = 5;
@@ -55,6 +52,8 @@ public class Globals {
     static FastSet impossibleSRPLocations = new FastSet();
     static MapLocation buildRuinLocation;
     static MapLocation buildSRPLocation;
+
+    static MapLocation refillPaintTowerLocation = null;
 
     public static Direction[] allDirections = Direction.values();
     public static Direction[] adjacentDirections = {

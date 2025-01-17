@@ -13,9 +13,9 @@ public class Tower extends Unit {
                 startingTower = true;
             }
             if (rc.getType().getBaseType() == UnitType.LEVEL_ONE_PAINT_TOWER) {
-                friendlyPaintTowerLocations[0] = rc.getLocation();
+                friendlyPaintTowerLocations.add(rc.getLocation());
             } else {
-                friendlyNonPaintTowerLocations[0] = rc.getLocation();
+                friendlyNonPaintTowerLocations.add(rc.getLocation());
             }
         }
         super.act();
@@ -25,7 +25,7 @@ public class Tower extends Unit {
     }
 
     public void attackEnemyUnits() throws GameActionException {
-        RobotInfo[] enemyUnits = rc.senseNearbyRobots(-1, opponentTeam);
+        RobotInfo[] enemyUnits = rc.senseNearbyRobots(9, opponentTeam);
         if (enemyUnits.length == 0) {
             return;
         }
@@ -58,8 +58,24 @@ public class Tower extends Unit {
                 }
                 dir = dir.rotateRight();
             }
+        } else if (rc.getType().getBaseType() != UnitType.LEVEL_ONE_PAINT_TOWER) {
+            if (rc.getChips() >= UnitType.MOPPER.moneyCost + 1000 && rc.getPaint() == UnitType.MOPPER.paintCost) {
+                MapLocation loc = rc.getLocation();
+                Direction dir = loc.directionTo(exploreLocations[4]);
+                for (int i = 0; i < 8; i++) {
+                    MapLocation newLoc = loc.add(dir).add(dir);
+                    if (buildRobot(UnitType.MOPPER, newLoc)) {
+                        break;
+                    }
+                    MapLocation newLoc2 = loc.add(dir);
+                    if (buildRobot(UnitType.MOPPER, newLoc2)) {
+                        break;
+                    }
+                    dir = dir.rotateRight();
+                }
+            }
         } else {
-            if (rc.getChips() >= UnitType.SOLDIER.moneyCost + 200 && rc.getPaint() >= UnitType.SOLDIER.paintCost) {
+            if (rc.getChips() >= UnitType.SOLDIER.moneyCost + 1000 && rc.getPaint() >= UnitType.SOLDIER.paintCost + 100) {
                 MapLocation loc = rc.getLocation();
                 Direction dir = loc.directionTo(exploreLocations[4]);
                 for (int i = 0; i < 8; i++) {
@@ -89,15 +105,17 @@ public class Tower extends Unit {
         for (MapLocation ruin : ruins) {
             Comms.addToMessageQueue(Comms.InfoCategory.RUIN, ruin, true);
         }
-        for (MapLocation enemyNonDefenseTowerLoc : enemyNonDefenseTowerLocations) {
-            if (enemyNonDefenseTowerLoc != null) {
-                Comms.addToMessageQueue(Comms.InfoCategory.ENEMY_NON_DEFENSE_TOWER, enemyNonDefenseTowerLoc, true);
-            }
+        MapLocation[] friendlyPaintTowerLocations = Globals.friendlyPaintTowerLocations.getLocations();
+        for (MapLocation friendlyPaintTowerLoc : friendlyPaintTowerLocations) {
+            Comms.addToMessageQueue(Comms.InfoCategory.FRIEND_PAINT_TOWER, friendlyPaintTowerLoc, true);
         }
+        MapLocation[] enemyNonDefenseTowerLocations = Globals.enemyNonDefenseTowerLocations.getLocations();
+        for (MapLocation enemyNonDefenseTowerLoc : enemyNonDefenseTowerLocations) {
+            Comms.addToMessageQueue(Comms.InfoCategory.ENEMY_NON_DEFENSE_TOWER, enemyNonDefenseTowerLoc, true);
+        }
+        MapLocation[] enemyDefenseTowerLocations = Globals.enemyDefenseTowerLocations.getLocations();
         for (MapLocation enemyDefenseTowerLoc : enemyDefenseTowerLocations) {
-            if (enemyDefenseTowerLoc != null) {
-                Comms.addToMessageQueue(Comms.InfoCategory.ENEMY_DEFENSE_TOWER, enemyDefenseTowerLoc, true);
-            }
+            Comms.addToMessageQueue(Comms.InfoCategory.ENEMY_DEFENSE_TOWER, enemyDefenseTowerLoc, true);
         }
         for (int i = 0; i < exploreLocations.length; i++) {
             if (exploreLocationsVisited[i]) {
