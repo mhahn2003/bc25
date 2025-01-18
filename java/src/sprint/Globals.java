@@ -37,6 +37,7 @@ public class Globals {
     final static int maxWanderingCounter = 50;
 
     static boolean rushSoldier = false;
+    static FastSet taintedRuins;
     // diag, vert, horz
     static MapLocation[] symmetryLocations = new MapLocation[3];
     static boolean[] symmetryLocationsVisited = new boolean[3];
@@ -102,6 +103,7 @@ public class Globals {
         enemyDefenseTowerLocations = new FastSet();
         enemyNonDefenseTowerLocations = new FastSet();
         ruinLocations = new FastSet();
+        taintedRuins = new FastSet();
 
         switch (rc.getType()) {
             case SOLDIER: r = new Soldier(); break;

@@ -209,11 +209,11 @@ public class Util extends Globals {
                 symmetryLocationsVisited[symmetryIndex] = true;
                 return true;
             }
-            if (info1.getPaint().isAlly() != info2.getPaint().isEnemy()) {
+            if (info1.getPaint().isEnemy() && !info2.getPaint().isAlly()) {
                 symmetryBroken[symmetryIndex] = true;
                 return false;
             }
-            if (info1.getPaint().isEnemy() != info2.getPaint().isAlly()) {
+            if (!info1.getPaint().isAlly() && !info2.getPaint().isEnemy()) {
                 symmetryBroken[symmetryIndex] = true;
                 return false;
             }

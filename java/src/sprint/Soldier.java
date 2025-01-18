@@ -25,6 +25,8 @@ public class Soldier extends Unit {
 //        System.out.println("attack: " + Clock.getBytecodeNum());
         refill();
 //        System.out.println("refill: " + Clock.getBytecodeNum());
+        taint();
+//        System.out.println("taint: " + Clock.getBytecodeNum());
         rush();
 //        System.out.println("rush: " + Clock.getBytecodeNum());
         buildTower();
@@ -189,6 +191,45 @@ public class Soldier extends Unit {
         }
     }
 
+    public void taint() throws GameActionException {
+        if (!rc.isActionReady()) return;
+        if (state == SoldierState.DEFAULT || state == SoldierState.RUSH) {
+            MapLocation[] nearbyRuins = rc.senseNearbyRuins(-1);
+            for (MapLocation ruin : nearbyRuins) {
+                if (taintedRuins.contains(ruin)) {
+                    continue;
+                }
+                RobotInfo robot = rc.senseRobotAtLocation(ruin);
+                if (robot == null) {
+                    MapInfo[] taintableTiles = rc.senseNearbyMapInfos(ruin, 8);
+                    boolean tainted = false;
+                    MapLocation bestPaintLocation = null;
+                    int closestDist = 999999;
+                    for (MapInfo info : taintableTiles) {
+                        if (info.getPaint().isAlly()) {
+                            tainted = true;
+                        }
+                        if (info.getPaint() == PaintType.EMPTY) {
+                            if (rc.getLocation().distanceSquaredTo(info.getMapLocation()) <= closestDist) {
+                                closestDist = rc.getLocation().distanceSquaredTo(info.getMapLocation());
+                                bestPaintLocation = info.getMapLocation();
+                            }
+                        }
+                    }
+                    if (tainted) {
+                        taintedRuins.add(ruin);
+                    }
+                    if (!tainted && bestPaintLocation != null) {
+                        if (rc.canAttack(bestPaintLocation)) {
+                            rc.attack(bestPaintLocation, Util.useSecondaryForTower(bestPaintLocation, ruin, towerType(ruin)));
+                            taintedRuins.add(ruin);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public void rush() throws GameActionException {
         if (rc.getRoundNum() <= 3 && state != SoldierState.RUSH) {
             state = SoldierState.RUSH;
@@ -232,11 +273,29 @@ public class Soldier extends Unit {
                 Logger.log("rush to: " + closestPossibleEnemyBase);
                 Navigator.moveTo(closestPossibleEnemyBase);
             } else {
+                int bigness = Math.max(mapWidth, mapHeight);
                 if (symmetryBroken[0] && symmetryBroken[1] && symmetryBroken[2]) {
-                    rushSoldier = false;
-                    state = SoldierState.DEFAULT;
+                    if (bigness >= 35 && rc.getRoundNum() >= bigness * 1.5) {
+                        rushSoldier = false;
+                        state = SoldierState.DEFAULT;
+                    } else {
+                        if (symmetryLocationsVisited[0]) {
+                            if (symmetryLocationsVisited[1]) {
+                                Navigator.moveTo(symmetryLocations[2]);
+                            } else if (symmetryLocationsVisited[2]) {
+                                Navigator.moveTo(symmetryLocations[1]);
+                            } else {
+                                if (rc.getLocation().distanceSquaredTo(symmetryLocations[1]) <= rc.getLocation().distanceSquaredTo(symmetryLocations[2])) {
+                                    Navigator.moveTo(symmetryLocations[1]);
+                                } else {
+                                    Navigator.moveTo(symmetryLocations[2]);
+                                }
+                            }
+                        } else {
+                            Navigator.moveTo(symmetryLocations[0]);
+                        }
+                    }
                 } else {
-                    int bigness = Math.max(mapWidth, mapHeight);
                     if ((bigness >= 35 && rc.getRoundNum() >= bigness * 1.5) || bigness >= 55) {
                         MapLocation[] ruins = rc.senseNearbyRuins(-1);
 
@@ -286,9 +345,7 @@ public class Soldier extends Unit {
     }
 
     public void buildTower() throws GameActionException {
-        if (state != SoldierState.BUILD_TOWER && state != SoldierState.DEFAULT) {
-            return;
-        }
+        if (state != SoldierState.BUILD_TOWER && state != SoldierState.DEFAULT) return;
 
         if (state == SoldierState.DEFAULT) {
             MapLocation[] ruins = rc.senseNearbyRuins(-1);
@@ -357,6 +414,8 @@ public class Soldier extends Unit {
                 return;
             }
         }
+
+        Logger.log("buildTower: " + buildRuinLocation);
 
         UnitType type = towerType(buildRuinLocation);
         MapInfo[] nearbyLocations = rc.senseNearbyMapInfos(buildRuinLocation, 8);
@@ -428,9 +487,7 @@ public class Soldier extends Unit {
     }
 
     public void buildSRP() throws GameActionException {
-        if (state != SoldierState.BUILD_SRP && state != SoldierState.DEFAULT) {
-            return;
-        }
+        if (state != SoldierState.BUILD_SRP && state != SoldierState.DEFAULT) return;
 
         MapLocation[] ruinLocs = ruinLocations.getLocations();
         FastSet rawRuins = new FastSet();
@@ -588,9 +645,7 @@ public class Soldier extends Unit {
     }
 
     public void move() throws GameActionException {
-        if (state != SoldierState.DEFAULT || !rc.isMovementReady()) {
-            return;
-        }
+        if (state != SoldierState.DEFAULT || !rc.isMovementReady()) return;
 
         RobotInfo[] adjacentAllies = rc.senseNearbyRobots(2, myTeam);
         if (adjacentAllies.length >= 3) {
@@ -603,9 +658,8 @@ public class Soldier extends Unit {
     }
 
     public void paintLeftover() throws GameActionException {
-        if (state != SoldierState.DEFAULT || !rc.isActionReady()) {
-            return;
-        }
+        if (state != SoldierState.DEFAULT || !rc.isActionReady()) return;
+
         MapInfo locInfo = rc.senseMapInfo(rc.getLocation());
         if (locInfo.getPaint() == PaintType.EMPTY) {
             MapLocation[] nearbyRuins = rc.senseNearbyRuins(8);
