@@ -38,13 +38,13 @@ public class Navigator extends Globals {
                 if (rc.canMove(bellmanFordDirection)) {
                     rc.move(bellmanFordDirection);
                 }
-//                Logger.log("bf " + bellmanFordDirection);
+                Logger.log("bf " + bellmanFordDirection);
                 return;
             } else {
-//                Logger.log("bf null");
+                Logger.log("bf null");
             }
         } else {
-//            Logger.log("bf n/a");
+            Logger.log("bf n/a");
         }
 
         BugNavigator.moveTo(target);
