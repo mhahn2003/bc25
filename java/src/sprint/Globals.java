@@ -37,8 +37,10 @@ public class Globals {
     final static int maxWanderingCounter = 50;
 
     static boolean rushSoldier = false;
+    // diag, vert, horz
     static MapLocation[] symmetryLocations = new MapLocation[3];
     static boolean[] symmetryLocationsVisited = new boolean[3];
+    static boolean[] symmetryBroken = new boolean[3];
 
     static MapLocation targetEnemyTowerLocation = null;
     static boolean aggressiveHold = false;

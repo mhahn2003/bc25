@@ -198,27 +198,89 @@ public class Soldier extends Unit {
                 state = SoldierState.DEFAULT;
             } else {
                 MapLocation base = ruins[0];
-                symmetryLocations[0] = new MapLocation(mapWidth - base.x - 1, base.y);
-                symmetryLocations[1] = new MapLocation(base.x, mapHeight - base.y - 1);
-                symmetryLocations[2] = new MapLocation(mapWidth - base.x - 1, mapHeight - base.y - 1);
+                symmetryLocations[0] = new MapLocation(mapWidth - base.x - 1, mapHeight - base.y - 1);
+                symmetryLocations[1] = new MapLocation(mapWidth - base.x - 1, base.y);
+                symmetryLocations[2] = new MapLocation(base.x, mapHeight - base.y - 1);
+            }
+
+            for (int i = 0; i < symmetryLocations.length; i++) {
+                if (rc.canSenseLocation(symmetryLocations[i])) {
+                    symmetryLocationsVisited[i] = true;
+                    symmetryBroken[i] = true;
+                }
             }
         }
         if (state == SoldierState.RUSH) {
+            Logger.log("rush");
+
             MapLocation closestPossibleEnemyBase = null;
             int minDist = 999999;
             for (int i = 0; i < 3; i++) {
                 if (symmetryLocationsVisited[i]) {
                     continue;
                 }
-                if (rc.getLocation().distanceSquaredTo(symmetryLocations[i]) < minDist) {
+                if (rc.getLocation().distanceSquaredTo(symmetryLocations[i]) <= minDist) {
                     minDist = rc.getLocation().distanceSquaredTo(symmetryLocations[i]);
                     closestPossibleEnemyBase = symmetryLocations[i];
                 }
             }
-            if (closestPossibleEnemyBase != null) {
+            Util.checkSymmetry();
+            Logger.log("symmetry: " + symmetryBroken[0] + " " + symmetryBroken[1] + " " + symmetryBroken[2]);
+            System.out.println("symmetry: " + symmetryLocationsVisited[0] + " " + symmetryLocationsVisited[1] + " " + symmetryLocationsVisited[2]);
+            // check if need quit rush
+            if (closestPossibleEnemyBase != null && minDist <= 50) {
+                Logger.log("rush to: " + closestPossibleEnemyBase);
                 Navigator.moveTo(closestPossibleEnemyBase);
             } else {
-                state = SoldierState.DEFAULT;
+                if (symmetryBroken[0] && symmetryBroken[1] && symmetryBroken[2]) {
+                    rushSoldier = false;
+                    state = SoldierState.DEFAULT;
+                } else {
+                    int bigness = Math.max(mapWidth, mapHeight);
+                    if ((bigness >= 35 && rc.getRoundNum() >= bigness * 1.5) || bigness >= 55) {
+                        MapLocation[] ruins = rc.senseNearbyRuins(-1);
+
+                        if (ruins.length == 0) {
+                            return;
+                        }
+
+                        MapLocation closestRuin = null;
+                        minDist = 999999;
+                        for (MapLocation ruin : ruins) {
+                            if (impossibleRuins.contains(ruin)) {
+                                continue;
+                            }
+                            RobotInfo robot = rc.senseRobotAtLocation(ruin);
+                            if (robot == null) {
+                                int dist = rc.getLocation().distanceSquaredTo(ruin);
+                                if (dist <= minDist) {
+                                    minDist = dist;
+                                    closestRuin = ruin;
+                                }
+                            }
+                        }
+
+                        if (closestRuin != null) {
+                            rushSoldier = false;
+                            state = SoldierState.DEFAULT;
+                        }
+                    }
+                }
+                if (symmetryBroken[0]) {
+                    if (symmetryBroken[1]) {
+                        Navigator.moveTo(symmetryLocations[2]);
+                    } else if (symmetryBroken[2]) {
+                        Navigator.moveTo(symmetryLocations[1]);
+                    } else {
+                        if (rc.getLocation().distanceSquaredTo(symmetryLocations[1]) <= rc.getLocation().distanceSquaredTo(symmetryLocations[2])) {
+                            Navigator.moveTo(symmetryLocations[1]);
+                        } else {
+                            Navigator.moveTo(symmetryLocations[2]);
+                        }
+                    }
+                } else {
+                    Navigator.moveTo(symmetryLocations[0]);
+                }
             }
         }
     }
@@ -236,7 +298,7 @@ public class Soldier extends Unit {
             }
 
             MapLocation closestRuin = null;
-            int minDist = GameConstants.VISION_RADIUS_SQUARED;
+            int minDist = 999999;
             for (MapLocation ruin : ruins) {
                 if (impossibleRuins.contains(ruin)) {
                     continue;

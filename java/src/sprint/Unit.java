@@ -8,7 +8,7 @@ import battlecode.common.Message;
 public class Unit extends Globals {
 
     public void act() throws GameActionException {
-//        if (rc.getRoundNum() > 50) {
+//        if (rc.getRoundNum() > 40) {
 //            rc.disintegrate();
 //        }
         Comms.senseInfo();
