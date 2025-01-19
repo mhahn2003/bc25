@@ -317,25 +317,11 @@ public class Comms extends Globals {
             }
         }
 
-        if (!explored) {
-            for (int i = 0; i < exploreLocations.length; i++) {
-                if (!exploreLocationsVisited[i] && rc.canSenseLocation(exploreLocations[i])) {
-                    exploreLocationsVisited[i] = true;
-                    wandering = false;
-                    wanderingCounter = 0;
-                    addToMessageQueue(InfoCategory.EXPLORE_LOC_VISITED, exploreLocations[i], false);
-                    boolean allVisited = true;
-                    for (int j = 0; j < exploreLocations.length; j++) {
-                        if (!exploreLocationsVisited[j]) {
-                            allVisited = false;
-                            break;
-                        }
-                    }
-                    if (allVisited) {
-                        explored = true;
-                    }
-                    break;
-                }
+        for (int i = 0; i < exploreLocations.length; i++) {
+            if (!exploreLocationsVisited[i] && rc.canSenseLocation(exploreLocations[i])) {
+                exploreLocationsVisited[i] = true;
+                addToMessageQueue(InfoCategory.EXPLORE_LOC_VISITED, exploreLocations[i], false);
+                break;
             }
         }
         if (rushSoldier) {

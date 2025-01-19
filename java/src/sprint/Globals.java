@@ -30,11 +30,11 @@ public class Globals {
 
     static MapLocation[] exploreLocations = new MapLocation[9];
     static boolean[] exploreLocationsVisited = new boolean[9];
-    static boolean explored = false;
     static boolean wandering = false;
-    static int wanderIndex = 0;
-    static int wanderingCounter = 0;
-    final static int maxWanderingCounter = 50;
+    static int wanderIndex;
+    static int minDistToTarget = 999999;
+    static int wanderCount = 0;
+    static int maxWanderingCounter = 20;
 
     static boolean rushSoldier = false;
     static FastSet taintedRuins;
@@ -53,6 +53,9 @@ public class Globals {
     static int noPaintCounter = 0;
     static int noPaintTowerThreshold = 5;
     static int noPaintSRPThreshold = 5;
+    static int noMopCounter = 0;
+    static int noMopTowerThreshold = 5;
+    static int noMopSRPThreshold = 3;
 
     static FastSet impossibleRuinLocations = new FastSet();
     static FastSet impossibleSRPLocations = new FastSet();
@@ -73,6 +76,12 @@ public class Globals {
             Direction.SOUTHEAST,
             Direction.SOUTHWEST,
             Direction.NORTHWEST
+    };
+    public static Direction [] cardinalDirections = {
+            Direction.NORTH,
+            Direction.EAST,
+            Direction.SOUTH,
+            Direction.WEST
     };
 
 

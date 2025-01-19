@@ -46,6 +46,18 @@ public class Util extends Globals {
         };
     }
 
+    public static int paintPenalty(MapLocation loc, PaintType paint) throws GameActionException {
+        RobotInfo[] friendlyRobots = rc.senseNearbyRobots(loc, 8, myTeam);
+        int numAllies = friendlyRobots.length;
+        int paintPenalty = numAllies;
+        if (paint == PaintType.EMPTY) {
+            paintPenalty = 1 + numAllies;
+        } else if (paint.isEnemy()) {
+            paintPenalty = 2 + 2*numAllies;
+        }
+        return paintPenalty;
+    }
+
     public static void checkSymmetry() throws GameActionException {
         int midX1, midX2;
         if (mapWidth % 2 == 1) {
