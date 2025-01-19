@@ -42,6 +42,9 @@ public class Globals {
     static MapLocation[] symmetryLocations = new MapLocation[3];
     static boolean[] symmetryLocationsVisited = new boolean[3];
     static boolean[] symmetryBroken = new boolean[3];
+    static FastSet vertCheckedLocations;
+    static FastSet horzCheckedLocations;
+    static FastSet diagCheckedLocations;
 
     static MapLocation targetEnemyTowerLocation = null;
     static boolean aggressiveHold = false;
@@ -49,9 +52,9 @@ public class Globals {
     static UnitType buildTowerType = null;
     static int noPaintCounter = 0;
     static int noPaintTowerThreshold = 5;
-    static int noPaintSRPThreshold = 3;
+    static int noPaintSRPThreshold = 5;
 
-    static FastSet impossibleRuins = new FastSet();
+    static FastSet impossibleRuinLocations = new FastSet();
     static FastSet impossibleSRPLocations = new FastSet();
     static MapLocation buildRuinLocation;
     static MapLocation buildSRPLocation;
@@ -104,6 +107,9 @@ public class Globals {
         enemyNonDefenseTowerLocations = new FastSet();
         ruinLocations = new FastSet();
         taintedRuins = new FastSet();
+        vertCheckedLocations = new FastSet();
+        horzCheckedLocations = new FastSet();
+        diagCheckedLocations = new FastSet();
 
         switch (rc.getType()) {
             case SOLDIER: r = new Soldier(); break;
