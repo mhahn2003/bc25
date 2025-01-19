@@ -19,8 +19,8 @@ public class Comms extends Globals {
         ENEMY_DEFENSE_TOWER,
         RUIN,
         ENEMY_UNIT,
-        REQUEST_INITIALIZE,
         EXPLORE_LOC_VISITED,
+        UPGRADE,
     }
 
     public static int encodeMessage(InfoCategory info, MapLocation loc) {
@@ -33,8 +33,8 @@ public class Comms extends Globals {
             case ENEMY_DEFENSE_TOWER -> infoNum = 4;
             case RUIN -> infoNum = 5;
             case ENEMY_UNIT -> infoNum = 6;
-            case REQUEST_INITIALIZE -> infoNum = 7;
-            case EXPLORE_LOC_VISITED -> infoNum = 8;
+            case EXPLORE_LOC_VISITED -> infoNum = 7;
+            case UPGRADE -> infoNum = 8;
         }
         return (infoNum * 4096) + encodeLoc(loc);
     }
@@ -208,9 +208,6 @@ public class Comms extends Globals {
                     }
                 }
             }
-            case REQUEST_INITIALIZE -> {
-
-            }
             case EXPLORE_LOC_VISITED -> {
                 for (int i = 0; i < exploreLocations.length; i++) {
                     if (exploreLocations[i].equals(loc)) {
@@ -219,6 +216,7 @@ public class Comms extends Globals {
                     }
                 }
             }
+            case UPGRADE -> upgradeTowerLocation = loc;
         }
     }
 

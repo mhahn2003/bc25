@@ -61,6 +61,8 @@ public class Globals {
 
     static MapLocation refillPaintTowerLocation = null;
 
+    static MapLocation upgradeTowerLocation = null;
+
     public static Direction[] allDirections = Direction.values();
     public static Direction[] adjacentDirections = {
             Direction.NORTH,
