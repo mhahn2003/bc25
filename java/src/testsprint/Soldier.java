@@ -1,4 +1,4 @@
-package sprint;
+package testsprint;
 
 import battlecode.common.*;
 
@@ -28,7 +28,6 @@ public class Soldier extends Unit {
 //        System.out.println("refill: " + Clock.getBytecodeNum());
         taint();
 //        System.out.println("taint: " + Clock.getBytecodeNum());
-        rush();
 //        System.out.println("rush: " + Clock.getBytecodeNum());
         buildTower();
 //        System.out.println("build: " + Clock.getBytecodeNum());

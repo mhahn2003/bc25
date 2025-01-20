@@ -1,6 +1,7 @@
-package sprint;
+package testsprint;
 
 import battlecode.common.*;
+import sprint.Soldier;
 
 import java.util.function.Function;
 
