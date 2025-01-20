@@ -32,7 +32,7 @@ public class Navigator extends Globals {
             roundsSinceMovingCloserToTarget++;
         }
 
-        if (roundsSinceMovingCloserToTarget < 3) {
+        if (roundsSinceMovingCloserToTarget < 3 && Clock.getBytecodesLeft() > 6000) {
             Direction bellmanFordDirection = BellmanFordNavigator.getBestDirection(target);
             if (bellmanFordDirection != null) {
                 if (rc.canMove(bellmanFordDirection)) {

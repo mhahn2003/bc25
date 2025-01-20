@@ -60,9 +60,11 @@ public class Util extends Globals {
         if (nearbyAllies[x+3][y+3]) numAllies++;
         int paintPenalty = numAllies;
         if (paint == PaintType.EMPTY) {
-            paintPenalty = 1 + numAllies;
+            if (rc.getType() == UnitType.MOPPER) return 2 + numAllies;
+            else return 1 + numAllies;
         } else if (paint.isEnemy()) {
-            paintPenalty = 2 + 2*numAllies;
+            if (rc.getType() == UnitType.MOPPER) return 4 + 2 * numAllies;
+            else paintPenalty = 2 + 2 * numAllies;
         }
         return paintPenalty;
     }

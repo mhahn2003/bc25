@@ -136,7 +136,7 @@ public class Soldier extends Unit {
     }
 
     public void refill() throws GameActionException {
-        if (state != SoldierState.REFILL && ((state == SoldierState.DEFAULT && rc.getPaint() < 25) || rc.getPaint() <= 5)) {
+        if (state != SoldierState.REFILL && state != SoldierState.ATTACK && ((state == SoldierState.DEFAULT && rc.getPaint() <= 50) || rc.getPaint() <= 25)) {
             Logger.log("need refill");
             MapLocation closestFriendPaintTower = null;
             int minDist = Integer.MAX_VALUE;
@@ -185,22 +185,15 @@ public class Soldier extends Unit {
                 }
             }
 
-            if (tower == null) {
-                state = SoldierState.DEFAULT;
-                return;
-            }
-
             if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) <= 2) {
-                if (rc.getPaint() <= 5 || tower.getPaintAmount() >= 50) {
-                    int transferAmount = Math.min(UnitType.SOLDIER.paintCapacity - rc.getPaint(), tower.getPaintAmount());
-                    if (rc.canTransferPaint(refillPaintTowerLocation, -transferAmount)) {
-                        rc.transferPaint(refillPaintTowerLocation, -transferAmount);
-                        MapLocation opposite = new MapLocation(2 * refillPaintTowerLocation.x - rc.getLocation().x, 2 * refillPaintTowerLocation.y - rc.getLocation().y);
-                        Navigator.moveTo(opposite);
-                    }
+                int transferAmount = Math.min(UnitType.SOLDIER.paintCapacity - rc.getPaint(), tower.getPaintAmount());
+                if (rc.canTransferPaint(refillPaintTowerLocation, -transferAmount)) {
+                    rc.transferPaint(refillPaintTowerLocation, -transferAmount);
+                    MapLocation opposite = new MapLocation(2 * refillPaintTowerLocation.x - rc.getLocation().x, 2 * refillPaintTowerLocation.y - rc.getLocation().y);
+                    Navigator.moveTo(opposite);
                 }
             } else if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) <= 8) {
-                if ((rc.getPaint() <= 5 || tower.getPaintAmount() >= 50) && rc.isActionReady()) {
+                if (rc.isActionReady()) {
                     Navigator.moveTo(refillPaintTowerLocation);
                     if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) <= 2) {
                         int transferAmount = Math.min(UnitType.SOLDIER.paintCapacity - rc.getPaint(), tower.getPaintAmount());
@@ -208,20 +201,9 @@ public class Soldier extends Unit {
                             rc.transferPaint(refillPaintTowerLocation, -transferAmount);
                         }
                     }
-                } else {
-                    RobotInfo[] alliedNeighbors = rc.senseNearbyRobots(2, myTeam);
-                    if (alliedNeighbors.length > 0) {
-                        Movement.scatter();
-                    }
                 }
             } else {
                 Navigator.moveTo(refillPaintTowerLocation);
-            }
-
-            if (rc.isActionReady() && rc.senseMapInfo(rc.getLocation()).getPaint() == PaintType.EMPTY) {
-                if (rc.canAttack(rc.getLocation()) && rc.getPaint() >= 10) {
-                    rc.attack(rc.getLocation(), Util.useSecondary(rc.getLocation()));
-                }
             }
         }
     }
@@ -460,8 +442,6 @@ public class Soldier extends Unit {
             }
             if (ally.getType() == UnitType.MOPPER) {
                 numEnemyPaint -= 3;
-            } else if (ally.getType() == UnitType.SPLASHER) {
-                numEnemyPaint -= 7;
             }
         }
 
@@ -525,11 +505,8 @@ public class Soldier extends Unit {
             MapLocation loc = rc.getLocation();
             int x = (loc.x + 2) % 4;
             int y = (loc.y + 2) % 4;
-            MapLocation[] possibleSRPLocations = new MapLocation[5];
+            MapLocation[] possibleSRPLocations = new MapLocation[8];
 
-            if (x == 0 && y == 0 && !impossibleSRPLocations.contains(loc) && !rc.senseMapInfo(loc).isResourcePatternCenter()) {
-                possibleSRPLocations[4] = loc;
-            }
             MapLocation loc1 = new MapLocation(loc.x - x, loc.y - y);
             if (rc.canSenseLocation(loc1) && !impossibleSRPLocations.contains(loc1) && !rc.senseMapInfo(loc1).isResourcePatternCenter()) {
                 possibleSRPLocations[0] = loc1;
@@ -546,9 +523,25 @@ public class Soldier extends Unit {
             if (rc.canSenseLocation(loc4) && !impossibleSRPLocations.contains(loc4) && !rc.senseMapInfo(loc4).isResourcePatternCenter()) {
                 possibleSRPLocations[3] = loc4;
             }
+            MapLocation loc5 = new MapLocation(loc.x - 4 - x, loc.y - y);
+            if (rc.canSenseLocation(loc5) && !impossibleSRPLocations.contains(loc5) && !rc.senseMapInfo(loc5).isResourcePatternCenter()) {
+                possibleSRPLocations[4] = loc5;
+            }
+            MapLocation loc6 = new MapLocation(loc.x - x, loc.y - 4 - y);
+            if (rc.canSenseLocation(loc6) && !impossibleSRPLocations.contains(loc6) && !rc.senseMapInfo(loc6).isResourcePatternCenter()) {
+                possibleSRPLocations[5] = loc6;
+            }
+            MapLocation loc7 = new MapLocation(loc.x + 4 - x, loc.y - 4 - y);
+            if (rc.canSenseLocation(loc7) && !impossibleSRPLocations.contains(loc7) && !rc.senseMapInfo(loc7).isResourcePatternCenter()) {
+                possibleSRPLocations[6] = loc7;
+            }
+            MapLocation loc8 = new MapLocation(loc.x - 4 - x, loc.y + 4 - y);
+            if (rc.canSenseLocation(loc8) && !impossibleSRPLocations.contains(loc8) && !rc.senseMapInfo(loc8).isResourcePatternCenter()) {
+                possibleSRPLocations[7] = loc8;
+            }
 
             for (MapLocation ruin : rawRuinLocs) {
-                for (int i = 0; i < 5; i++) {
+                for (int i = 0; i < possibleSRPLocations.length; i++) {
                     if (possibleSRPLocations[i] != null && Math.abs(ruin.x - possibleSRPLocations[i].x) <= 5 && Math.abs(ruin.y - possibleSRPLocations[i].y) <= 5) {
                         impossibleSRPLocations.add(possibleSRPLocations[i]);
                         possibleSRPLocations[i] = null;
@@ -616,10 +609,8 @@ public class Soldier extends Unit {
             if (ally.getType() == UnitType.SOLDIER && ally.getLocation().distanceSquaredTo(buildSRPLocation) <= 1) {
                 numSoldiersBuilding += 1;
             }
-            if (ally.getType() == UnitType.MOPPER) {
+            if (ally.getType() == UnitType.MOPPER && rc.getRoundNum() >= 100) {
                 numEnemyPaint -= 3;
-            } else if (ally.getType() == UnitType.SPLASHER) {
-                numEnemyPaint -= 7;
             }
         }
 
@@ -650,8 +641,11 @@ public class Soldier extends Unit {
     public void move() throws GameActionException {
         if (state != SoldierState.DEFAULT || !rc.isMovementReady()) return;
         Direction bestDir = Movement.wanderDirection();
-        Logger.log("wander: " + exploreLocations[wanderIndex]);
-        if (bestDir != null && rc.canMove(bestDir)) {
+        Logger.log("wander: " + wanderLocation);
+        RobotInfo[] nearbyAllies = rc.senseNearbyRobots(8, myTeam);
+        if (nearbyAllies.length < 3) {
+            Navigator.moveTo(wanderLocation);
+        } else if (bestDir != null && rc.canMove(bestDir)) {
             rc.move(bestDir);
         }
     }

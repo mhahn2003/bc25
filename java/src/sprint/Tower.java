@@ -151,11 +151,6 @@ public class Tower extends Unit {
         for (MapLocation enemyDefenseTowerLoc : enemyDefenseTowerLocations) {
             Comms.addToMessageQueue(Comms.InfoCategory.ENEMY_DEFENSE_TOWER, enemyDefenseTowerLoc, true);
         }
-        for (int i = 0; i < exploreLocations.length; i++) {
-            if (exploreLocationsVisited[i]) {
-                Comms.addToMessageQueue(Comms.InfoCategory.EXPLORE_LOC_VISITED, exploreLocations[i], true);
-            }
-        }
     }
 
     public boolean buildRobot(UnitType unitType, MapLocation loc) throws GameActionException {

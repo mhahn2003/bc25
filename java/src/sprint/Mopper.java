@@ -10,6 +10,7 @@ public class Mopper extends Unit {
 
     public enum MopperState {
         DEFAULT,
+        EVADE,
         REFILL,
         ATTACK,
         REFILL_OTHERS,
@@ -93,18 +94,25 @@ public class Mopper extends Unit {
                 break;
             }
         }
-        if (enemyTower == null) return;
-        state = MopperState.DEFAULT;
+        if (enemyTower == null) {
+            state = MopperState.DEFAULT;
+            return;
+        }
+        state = MopperState.EVADE;
 
+        Logger.log("evade: " + enemyTower);
+        Movement.wanderDirection();
+        Logger.log("towards: " + wanderLocation);
         final MapLocation finalEnemyTower = enemyTower;
         computeBestAction(rc.getLocation(), newLoc -> {
             int distanceToTower = newLoc.distanceSquaredTo(finalEnemyTower);
-            return distanceToTower > 9 ? 0 : 30 * (9 - distanceToTower);
+            return (distanceToTower > 9 ? 0 : 50 * (11 - distanceToTower)) + newLoc.distanceSquaredTo(wanderLocation);
         });
+
     }
 
     public void refill() throws GameActionException {
-        if (state != MopperState.REFILL && ((state == MopperState.DEFAULT && rc.getPaint() <= 40) || rc.getPaint() <= 20)) {
+        if (state != MopperState.REFILL && ((state == MopperState.DEFAULT && rc.getPaint() <= 40) || rc.getPaint() <= 25)) {
             Logger.log("need refill");
             MapLocation closestFriendPaintTower = null;
             int minDist = Integer.MAX_VALUE;
@@ -126,7 +134,6 @@ public class Mopper extends Unit {
             }
         }
         if (state == MopperState.REFILL) {
-            Logger.log("refill state");
             if (rc.getPaint() >= 50) {
                 state = MopperState.DEFAULT;
                 return;
@@ -135,6 +142,7 @@ public class Mopper extends Unit {
             if (rc.canSenseRobotAtLocation(refillPaintTowerLocation)) {
                 tower = rc.senseRobotAtLocation(refillPaintTowerLocation);
                 if (tower == null || tower.getTeam() == opponentTeam || (tower.getType().getBaseType() != UnitType.LEVEL_ONE_PAINT_TOWER && tower.getPaintAmount() < 15)) {
+                    friendlyPaintTowerLocations.remove(refillPaintTowerLocation);
                     state = MopperState.DEFAULT;
                     return;
                 }
@@ -150,21 +158,15 @@ public class Mopper extends Unit {
                 }
             }
 
-            if (tower == null) {
-                state = MopperState.DEFAULT;
-                return;
-            }
-
             if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) <= 2) {
-                if (rc.getPaint() <= 5 || tower.getPaintAmount() >= 30) {
-                    int transferAmount = Math.min(UnitType.MOPPER.paintCapacity - rc.getPaint(), tower.getPaintAmount());
-                    if (rc.canTransferPaint(refillPaintTowerLocation, -transferAmount)) {
-                        rc.transferPaint(refillPaintTowerLocation, -transferAmount);
-                        computeBestAction(rc.getLocation(), newLoc -> 0);
-                    }
+                int transferAmount = Math.min(UnitType.MOPPER.paintCapacity - rc.getPaint(), tower.getPaintAmount());
+                if (rc.canTransferPaint(refillPaintTowerLocation, -transferAmount)) {
+                    rc.transferPaint(refillPaintTowerLocation, -transferAmount);
+                    MapLocation opposite = new MapLocation(2 * refillPaintTowerLocation.x - rc.getLocation().x, 2 * refillPaintTowerLocation.y - rc.getLocation().y);
+                    Navigator.moveTo(opposite);
                 }
             } else if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) <= 8) {
-                if ((rc.getPaint() <= 5 || tower.getPaintAmount() >= 30) && rc.isActionReady()) {
+                if (rc.isActionReady()) {
                     Navigator.moveTo(refillPaintTowerLocation);
                     if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) <= 2) {
                         int transferAmount = Math.min(UnitType.MOPPER.paintCapacity - rc.getPaint(), tower.getPaintAmount());
@@ -173,7 +175,6 @@ public class Mopper extends Unit {
                         }
                     }
                 }
-                computeBestAction(rc.getLocation(), newLoc -> 0);
             } else {
                 if (rc.canSenseLocation(refillPaintTowerLocation)) {
                     computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(refillPaintTowerLocation));
@@ -185,7 +186,7 @@ public class Mopper extends Unit {
     }
 
     public void attack() throws GameActionException {
-        if (state == MopperState.REFILL) return;
+        if (state == MopperState.REFILL || state == MopperState.EVADE) return;
         RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, opponentTeam);
         RobotInfo closestEnemy = null;
         int minDist = Integer.MAX_VALUE;
@@ -201,6 +202,8 @@ public class Mopper extends Unit {
 
         if (closestEnemy == null) return;
         state = MopperState.ATTACK;
+
+        Logger.log("attack");
 
         final MapLocation finalClosestEnemy = closestEnemy.getLocation();
         computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(finalClosestEnemy));
@@ -228,6 +231,8 @@ public class Mopper extends Unit {
         if (closestRobot == null) return;
         state = MopperState.REFILL_OTHERS;
 
+        Logger.log("refillOthers: " + closestRobot + " " + transferAmount);
+
         if (rc.getLocation().distanceSquaredTo(closestRobot.getLocation()) <= 2) {
             if (rc.canTransferPaint(closestRobot.getLocation(), transferAmount)) {
                 rc.transferPaint(closestRobot.getLocation(), transferAmount);
@@ -245,7 +250,7 @@ public class Mopper extends Unit {
                     }
                 }
                 final MapLocation finalClosestRobot = closestRobot.getLocation();
-                computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(finalClosestRobot));
+                computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(finalClosestRobot)/3);
             }
         }
     }
@@ -312,7 +317,7 @@ public class Mopper extends Unit {
             final MapLocation paintLocation = bestEnemyPaintLocation;
             final MapLocation ruinLocation = buildRuinLocation;
             noMopCounter = 0;
-            computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(paintLocation) + newLoc.distanceSquaredTo(ruinLocation));
+            computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(paintLocation) <= 5 ? 0 : newLoc.distanceSquaredTo(paintLocation) + newLoc.distanceSquaredTo(ruinLocation)/3);
         } else {
             if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 4) {
                 impossibleRuinLocations.add(buildRuinLocation);
@@ -325,13 +330,13 @@ public class Mopper extends Unit {
                 state = MopperState.DEFAULT;
             } else {
                 final MapLocation opposite = buildRuinLocation.add(rc.getLocation().directionTo(buildRuinLocation));
-                computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(opposite));
+                computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(opposite)/3);
             }
         }
     }
 
     public void buildSRP() throws GameActionException {
-        if (state != MopperState.BUILD_SRP && state != MopperState.DEFAULT) return;
+        if (state != MopperState.BUILD_SRP && state != MopperState.DEFAULT || rc.getRoundNum() < 100) return;
 
         MapLocation[] ruinLocs = ruinLocations.getLocations();
         FastSet rawRuins = new FastSet();
@@ -357,11 +362,8 @@ public class Mopper extends Unit {
             MapLocation loc = rc.getLocation();
             int x = (loc.x + 2) % 4;
             int y = (loc.y + 2) % 4;
-            MapLocation[] possibleSRPLocations = new MapLocation[5];
+            MapLocation[] possibleSRPLocations = new MapLocation[8];
 
-            if (x == 0 && y == 0 && !impossibleSRPLocations.contains(loc) && !rc.senseMapInfo(loc).isResourcePatternCenter()) {
-                possibleSRPLocations[4] = loc;
-            }
             MapLocation loc1 = new MapLocation(loc.x - x, loc.y - y);
             if (rc.canSenseLocation(loc1) && !impossibleSRPLocations.contains(loc1) && !rc.senseMapInfo(loc1).isResourcePatternCenter()) {
                 possibleSRPLocations[0] = loc1;
@@ -378,9 +380,25 @@ public class Mopper extends Unit {
             if (rc.canSenseLocation(loc4) && !impossibleSRPLocations.contains(loc4) && !rc.senseMapInfo(loc4).isResourcePatternCenter()) {
                 possibleSRPLocations[3] = loc4;
             }
+            MapLocation loc5 = new MapLocation(loc.x - 4 - x, loc.y - y);
+            if (rc.canSenseLocation(loc5) && !impossibleSRPLocations.contains(loc5) && !rc.senseMapInfo(loc5).isResourcePatternCenter()) {
+                possibleSRPLocations[4] = loc5;
+            }
+            MapLocation loc6 = new MapLocation(loc.x - x, loc.y - 4 - y);
+            if (rc.canSenseLocation(loc6) && !impossibleSRPLocations.contains(loc6) && !rc.senseMapInfo(loc6).isResourcePatternCenter()) {
+                possibleSRPLocations[5] = loc6;
+            }
+            MapLocation loc7 = new MapLocation(loc.x + 4 - x, loc.y - 4 - y);
+            if (rc.canSenseLocation(loc7) && !impossibleSRPLocations.contains(loc7) && !rc.senseMapInfo(loc7).isResourcePatternCenter()) {
+                possibleSRPLocations[6] = loc7;
+            }
+            MapLocation loc8 = new MapLocation(loc.x - 4 - x, loc.y + 4 - y);
+            if (rc.canSenseLocation(loc8) && !impossibleSRPLocations.contains(loc8) && !rc.senseMapInfo(loc8).isResourcePatternCenter()) {
+                possibleSRPLocations[7] = loc8;
+            }
 
             for (MapLocation ruin : rawRuinLocs) {
-                for (int i = 0; i < 5; i++) {
+                for (int i = 0; i < possibleSRPLocations.length; i++) {
                     if (possibleSRPLocations[i] != null && Math.abs(ruin.x - possibleSRPLocations[i].x) <= 5 && Math.abs(ruin.y - possibleSRPLocations[i].y) <= 5) {
                         impossibleSRPLocations.add(possibleSRPLocations[i]);
                         possibleSRPLocations[i] = null;
@@ -402,12 +420,14 @@ public class Mopper extends Unit {
             }
 
             if (closestSRPLocation != null) {
-                state = MopperState.BUILD_SRP;
+                state = MopperState.DEFAULT;
                 buildSRPLocation = closestSRPLocation;
                 noMopCounter = 0;
             } else {
                 return;
             }
+
+            Logger.log("buildSRP: " + buildSRPLocation);
 
             if (rc.canSenseLocation(buildSRPLocation)) {
                 if (rc.senseMapInfo(buildSRPLocation).isResourcePatternCenter()) {
@@ -448,26 +468,30 @@ public class Mopper extends Unit {
                 final MapLocation paintLocation = closestEnemyPaintLocation;
                 final MapLocation ruinLocation = buildSRPLocation;
                 noMopCounter = 0;
-                computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(paintLocation) + newLoc.distanceSquaredTo(ruinLocation));
+                computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(paintLocation) <= 5 ? 0 : newLoc.distanceSquaredTo(paintLocation) + newLoc.distanceSquaredTo(ruinLocation)/3);
             } else {
-                if (rc.getLocation().distanceSquaredTo(buildSRPLocation) <= 2 && rc.isActionReady() && rc.canCompleteResourcePattern(buildSRPLocation)) {
-                    rc.completeResourcePattern(buildSRPLocation);
+                if (rc.getLocation().distanceSquaredTo(buildSRPLocation) <= 4) {
                     impossibleSRPLocations.add(buildSRPLocation);
                     state = MopperState.DEFAULT;
+                    return;
                 } else if (rc.getLocation().distanceSquaredTo(buildSRPLocation) <= 8) {
                     noMopCounter++;
-                } else if (noMopCounter >= Globals.noMopSRPThreshold || rc.getLocation().equals(buildSRPLocation)) {
+                }
+                if (noMopCounter >= Globals.noMopSRPThreshold) {
                     impossibleSRPLocations.add(buildSRPLocation);
                     state = MopperState.DEFAULT;
-                } else {
+                } else if (rc.canSenseLocation(buildSRPLocation)) {
                     final MapLocation opposite = buildSRPLocation.add(rc.getLocation().directionTo(buildSRPLocation));
-                    computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(opposite));
+                    computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(opposite)/3);
+                } else {
+                    Navigator.moveTo(buildSRPLocation);
                 }
             }
         }
     }
 
     public void move() throws GameActionException {
+        Logger.log("state: " + state);
         if (state != MopperState.DEFAULT) return;
 
         Movement.wanderDirection();
@@ -485,10 +509,18 @@ public class Mopper extends Unit {
             }
         }
         if (closestEnemyPaintLocation != null) {
+            Logger.log("paint: " + closestEnemyPaintLocation);
             final MapLocation paintLocation = closestEnemyPaintLocation;
-            computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(paintLocation) + newLoc.distanceSquaredTo(exploreLocations[wanderIndex]));
+            computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(paintLocation));
+            if (rc.isMovementReady() && rc.getLocation().distanceSquaredTo(paintLocation) > 5) {
+                Navigator.moveTo(paintLocation);
+            }
         } else {
-            computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(exploreLocations[wanderIndex]));
+            Logger.log("wander: " + wanderLocation);
+            computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(wanderLocation)/3);
+            if (rc.isMovementReady()) {
+                Navigator.moveTo(wanderLocation);
+            }
         }
     }
 
@@ -548,7 +580,7 @@ public class Mopper extends Unit {
             return new LocationHeuristic(maxPaintBenefit, bestLoc);
         } else {
             if (rc.isActionReady()) {
-                if (rc.senseMapInfo(loc).getPaint().isEnemy()) {
+                if (rc.canSenseLocation(loc) && rc.senseMapInfo(loc).getPaint().isEnemy()) {
                     return new LocationHeuristic(5, loc);
                 }
                 for (Direction dir : Globals.adjacentDirections) {
@@ -563,6 +595,9 @@ public class Mopper extends Unit {
     }
 
     private void computeBestAction(MapLocation loc, Function<MapLocation, Integer> penaltyFunc) throws GameActionException {
+        int startBytecodes = Clock.getBytecodeNum();
+        Logger.log("computeBestAction: " + startBytecodes);
+
         Direction bestDir = null;
         Direction bestSweepDir = null;
         MapLocation succLocation = null;
@@ -573,55 +608,75 @@ public class Mopper extends Unit {
             computeEnemyLocs[enemy.location.x-rc.getLocation().x+3][enemy.location.y-rc.getLocation().y+3] = true;
         }
 
-        // Check adjacent directions
-        for (Direction dir : adjacentDirections) {
-            MapLocation newLoc = loc.add(dir);
-            int penalty = penaltyFunc.apply(newLoc) + Util.paintPenalty(newLoc, rc.senseMapInfo(newLoc).getPaint());
-            if (rc.canMove(dir)) {
-                if (rc.isActionReady()) {
-                    for (Direction sweepDir : Globals.cardinalDirections) {
-                        int heuristic = sweepHeuristic(newLoc, sweepDir) - penalty;
+        Logger.log("computeEnemyLocs: " + (Clock.getBytecodeNum() - startBytecodes));
+        if (!rc.isActionReady()) {
+            if (rc.isMovementReady()) {
+                for (Direction dir : Globals.adjacentDirections) {
+                    if (rc.canMove(dir)) {
+                        MapLocation newLoc = loc.add(dir);
+                        int penalty = penaltyFunc.apply(newLoc) + Util.paintPenalty(newLoc, rc.senseMapInfo(newLoc).getPaint());
+                        int heuristic = -penalty;
                         if (heuristic > bestHeuristic) {
                             bestHeuristic = heuristic;
                             bestDir = dir;
-                            bestSweepDir = sweepDir;
                         }
                     }
                 }
-                int heuristic = -penalty;
-                if (heuristic > bestHeuristic) {
-                    bestHeuristic = heuristic;
-                    bestDir = dir;
-                    bestSweepDir = null;
-                }
             }
-        }
-
-        // Check current location
-        int penalty = penaltyFunc.apply(loc) + Util.paintPenalty(loc, rc.senseMapInfo(loc).getPaint());
-        if (rc.isActionReady()) {
-            for (Direction dir : Globals.cardinalDirections) {
-                int heuristic = sweepHeuristic(loc, dir) - penalty;
-                if (heuristic > bestHeuristic) {
-                    bestHeuristic = heuristic;
-                    bestDir = Direction.CENTER;
-                    bestSweepDir = dir;
+            Logger.log("movement no action: " + (Clock.getBytecodeNum() - startBytecodes));
+        } else {
+            if (rc.isMovementReady()) {
+                // move then succ
+                for (Direction dir : Globals.adjacentDirections) {
+                    if (Clock.getBytecodesLeft() < 2000) break;
+                    if (rc.canMove(dir)) {
+                        MapLocation newLoc = loc.add(dir);
+                        LocationHeuristic heuristicPair = succHeuristic(newLoc);
+                        int penalty = penaltyFunc.apply(newLoc) + Util.paintPenalty(newLoc, rc.senseMapInfo(newLoc).getPaint());
+                        int heuristic = heuristicPair.value() - penalty;
+                        if (heuristic > bestHeuristic) {
+                            bestHeuristic = heuristic;
+                            bestDir = dir;
+                            succLocation = heuristicPair.location();
+                        }
+                    }
                 }
+                Logger.log("movement succ: " + (Clock.getBytecodeNum() - startBytecodes));
             }
+            // no move succ & sweep
+            int penalty = penaltyFunc.apply(loc) + Util.paintPenalty(loc, rc.senseMapInfo(loc).getPaint());
             LocationHeuristic heuristicPair = succHeuristic(loc);
             int heuristic = heuristicPair.value() - penalty;
             if (heuristic > bestHeuristic) {
                 bestHeuristic = heuristic;
                 bestDir = Direction.CENTER;
                 succLocation = heuristicPair.location();
-                bestSweepDir = null;
             }
-        } else {
-            int heuristic = -penalty;
-            if (heuristic > bestHeuristic) {
-                bestHeuristic = heuristic;
-                bestDir = Direction.CENTER;
-                bestSweepDir = null;
+            for (Direction dir : Globals.cardinalDirections) {
+                heuristic = sweepHeuristic(loc, dir) - penalty;
+                if (heuristic > bestHeuristic) {
+                    bestHeuristic = heuristic;
+                    bestDir = Direction.CENTER;
+                    bestSweepDir = dir;
+                    succLocation = null;
+                }
+            }
+            Logger.log("no movement succ & sweep: " + (Clock.getBytecodeNum() - startBytecodes));
+
+            if (Clock.getBytecodesLeft() >= 2000 && rc.isMovementReady()) {
+                for (Direction dir : adjacentDirections) {
+                    if (Clock.getBytecodesLeft() < 2000) break;
+                    if (rc.canMove(dir)) {
+                        for (Direction sweepDir : Globals.cardinalDirections) {
+                            heuristic = sweepHeuristic(loc.add(dir), sweepDir) - penalty;
+                            if (heuristic > bestHeuristic) {
+                                bestHeuristic = heuristic;
+                                bestDir = dir;
+                                bestSweepDir = sweepDir;
+                            }
+                        }
+                    }
+                }
             }
         }
 

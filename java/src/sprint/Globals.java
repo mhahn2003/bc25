@@ -22,6 +22,7 @@ public class Globals {
     static FastSet enemyNonDefenseTowerLocations;
     static FastSet enemyDefenseTowerLocations;
     static FastSet ruinLocations;
+    static MapLocation spawnTowerLocation;
 
     // TODO: make enemy locations expire after a while
     final static int enemyLocMinDist = 16;
@@ -31,10 +32,11 @@ public class Globals {
     static MapLocation[] exploreLocations = new MapLocation[9];
     static boolean[] exploreLocationsVisited = new boolean[9];
     static boolean wandering = false;
-    static int wanderIndex;
+    static MapLocation wanderLocation;
+    static int minWanderDistance = 100;
     static int minDistToTarget = 999999;
     static int wanderCount = 0;
-    static int maxWanderingCounter = 20;
+    static int maxWanderingCounter = 5;
 
     static boolean rushSoldier = false;
     static FastSet taintedRuins;

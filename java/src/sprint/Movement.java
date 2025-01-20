@@ -3,40 +3,23 @@ package sprint;
 import battlecode.common.*;
 
 public class Movement extends Globals {
-    public static void scatter() throws GameActionException {
-        Direction bestDir = null;
-        int minAdjacentAllies = 999999;
-        for (Direction dir : Globals.allDirections) {
-            if (rc.canMove(dir)) {
-                MapLocation loc = rc.getLocation().add(dir);
-                RobotInfo[] nearbyAllies = rc.senseNearbyRobots(loc, 2, myTeam);
-                if (nearbyAllies.length < minAdjacentAllies) {
-                    minAdjacentAllies = nearbyAllies.length;
-                    bestDir = dir;
-                }
-            }
-        }
-        if (bestDir != null) {
-            rc.move(bestDir);
-        }
-    }
 
     public static Direction wanderDirection() throws GameActionException {
         if (wandering) {
-            if (rc.getLocation().distanceSquaredTo(exploreLocations[wanderIndex]) < minDistToTarget) {
+            if (rc.getLocation().distanceSquaredTo(wanderLocation) < minDistToTarget) {
                 wanderCount = 0;
             } else {
                 wanderCount++;
             }
 
-            if (wanderCount >= maxWanderingCounter) {
+            if (wanderCount >= maxWanderingCounter || rc.canSenseLocation(wanderLocation)) {
                 wandering = false;
-                exploreLocationsVisited[wanderIndex] = true;
-            }
-
-            if (rc.canSenseLocation(exploreLocations[wanderIndex])) {
-                wandering = false;
-                exploreLocationsVisited[wanderIndex] = true;
+                for (int i = 0; i < 9; i++) {
+                    if (exploreLocations[i].equals(wanderLocation)) {
+                        exploreLocationsVisited[i] = true;
+                        break;
+                    }
+                }
             }
         }
 
@@ -44,18 +27,27 @@ public class Movement extends Globals {
             wandering = true;
             int wanderIndex = -1;
             int maxDist = 0;
+            FastSet wanderLocations = new FastSet();
             for (int i = 0; i < 9; i++) {
                 if (exploreLocationsVisited[i]) {
                     continue;
                 }
                 int dist = rc.getLocation().distanceSquaredTo(exploreLocations[i]);
+                if (dist >= minWanderDistance) {
+                    wanderLocations.add(exploreLocations[i]);
+                }
                 if (dist > maxDist) {
                     maxDist = dist;
                     wanderIndex = i;
                 }
             }
-            if (wanderIndex != -1) {
-                Movement.wanderIndex = wanderIndex;
+            MapLocation[] wanderLocs = wanderLocations.getLocations();
+            if (wanderLocs.length > 0) {
+                wanderLocation = wanderLocs[rc.getID() % wanderLocs.length];
+                minDistToTarget = rc.getLocation().distanceSquaredTo(wanderLocation);
+                wanderCount = 0;
+            } else if (wanderIndex != -1) {
+                wanderLocation = exploreLocations[wanderIndex];
                 minDistToTarget = maxDist;
                 wanderCount = 0;
             } else {
@@ -67,14 +59,13 @@ public class Movement extends Globals {
             }
         }
 
-        MapLocation wanderLoc = exploreLocations[wanderIndex];
         Direction bestDir = null;
         int maxHeuristic = Integer.MIN_VALUE;
         for (Direction dir : Globals.adjacentDirections) {
             if (rc.canMove(dir)) {
                 MapLocation loc = rc.getLocation().add(dir);
                 PaintType paint = rc.senseMapInfo(loc).getPaint();
-                int heuristic = -Util.paintPenalty(loc, paint) - loc.distanceSquaredTo(wanderLoc);
+                int heuristic = -Util.paintPenalty(loc, paint) - loc.distanceSquaredTo(wanderLocation);
                 if (heuristic > maxHeuristic) {
                     maxHeuristic = heuristic;
                     bestDir = dir;
