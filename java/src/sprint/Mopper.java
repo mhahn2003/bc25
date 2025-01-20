@@ -112,7 +112,7 @@ public class Mopper extends Unit {
     }
 
     public void refill() throws GameActionException {
-        if (state != MopperState.REFILL && ((state == MopperState.DEFAULT && rc.getPaint() <= 40) || rc.getPaint() <= 25)) {
+        if (state != MopperState.REFILL && ((state == MopperState.DEFAULT && rc.getPaint() < 50) || rc.getPaint() <= 25)) {
             Logger.log("need refill");
             MapLocation closestFriendPaintTower = null;
             int minDist = Integer.MAX_VALUE;
@@ -124,13 +124,33 @@ public class Mopper extends Unit {
                     closestFriendPaintTower = loc;
                 }
             }
-            if (closestFriendPaintTower != null) {
+            if (closestFriendPaintTower != null && rc.getLocation().distanceSquaredTo(closestFriendPaintTower) <= refillTowerDistanceThreshold) {
                 Logger.log("paint tower: " + closestFriendPaintTower);
                 state = MopperState.REFILL;
                 refillPaintTowerLocation = closestFriendPaintTower;
             } else {
-                state = MopperState.DEFAULT;
-                return;
+                MapLocation closestRefillTower = null;
+                minDist = Integer.MAX_VALUE;
+                MapLocation[] nearbyRuins = rc.senseNearbyRuins(-1);
+                for (MapLocation ruin : nearbyRuins) {
+                    RobotInfo robot = rc.senseRobotAtLocation(ruin);
+                    if (robot != null && robot.getTeam() == myTeam && robot.getPaintAmount() >= 15) {
+                        int dist = rc.getLocation().distanceSquaredTo(ruin);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            closestRefillTower = ruin;
+                        }
+                    }
+                }
+
+                if (closestRefillTower != null) {
+                    Logger.log("paint tower: " + closestRefillTower);
+                    state = MopperState.REFILL;
+                    refillPaintTowerLocation = closestRefillTower;
+                } else {
+                    state = MopperState.DEFAULT;
+                    return;
+                }
             }
         }
         if (state == MopperState.REFILL) {
@@ -288,6 +308,11 @@ public class Mopper extends Unit {
             noMopCounter = 0;
         }
 
+        if (rc.getNumberTowers() == 25) {
+            state = MopperState.DEFAULT;
+            return;
+        }
+
         if (rc.canSenseRobotAtLocation(buildRuinLocation)) {
             RobotInfo robot = rc.senseRobotAtLocation(buildRuinLocation);
             if (robot != null) {
@@ -420,7 +445,7 @@ public class Mopper extends Unit {
             }
 
             if (closestSRPLocation != null) {
-                state = MopperState.DEFAULT;
+                state = MopperState.BUILD_SRP;
                 buildSRPLocation = closestSRPLocation;
                 noMopCounter = 0;
             } else {
@@ -468,6 +493,7 @@ public class Mopper extends Unit {
                 final MapLocation paintLocation = closestEnemyPaintLocation;
                 final MapLocation ruinLocation = buildSRPLocation;
                 noMopCounter = 0;
+                Logger.log("paint loc: " + paintLocation);
                 computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(paintLocation) <= 5 ? 0 : newLoc.distanceSquaredTo(paintLocation) + newLoc.distanceSquaredTo(ruinLocation)/3);
             } else {
                 if (rc.getLocation().distanceSquaredTo(buildSRPLocation) <= 4) {
@@ -482,6 +508,8 @@ public class Mopper extends Unit {
                     state = MopperState.DEFAULT;
                 } else if (rc.canSenseLocation(buildSRPLocation)) {
                     final MapLocation opposite = buildSRPLocation.add(rc.getLocation().directionTo(buildSRPLocation));
+                    Logger.log("no paint loc: " + opposite);
+                    Logger.log("state: " + state);
                     computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(opposite)/3);
                 } else {
                     Navigator.moveTo(buildSRPLocation);
@@ -608,7 +636,6 @@ public class Mopper extends Unit {
             computeEnemyLocs[enemy.location.x-rc.getLocation().x+3][enemy.location.y-rc.getLocation().y+3] = true;
         }
 
-        Logger.log("computeEnemyLocs: " + (Clock.getBytecodeNum() - startBytecodes));
         if (!rc.isActionReady()) {
             if (rc.isMovementReady()) {
                 for (Direction dir : Globals.adjacentDirections) {

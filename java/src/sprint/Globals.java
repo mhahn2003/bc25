@@ -61,6 +61,7 @@ public class Globals {
     static MapLocation buildSRPLocation;
 
     static MapLocation refillPaintTowerLocation = null;
+    static int refillTowerDistanceThreshold = 100;
     static MapLocation upgradeTowerLocation = null;
 
     static boolean[][] nearbyAllies = new boolean[3][3];

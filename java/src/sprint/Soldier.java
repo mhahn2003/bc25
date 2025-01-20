@@ -136,7 +136,7 @@ public class Soldier extends Unit {
     }
 
     public void refill() throws GameActionException {
-        if (state != SoldierState.REFILL && state != SoldierState.ATTACK && ((state == SoldierState.DEFAULT && rc.getPaint() <= 50) || rc.getPaint() <= 25)) {
+        if (state != SoldierState.REFILL && state != SoldierState.ATTACK && ((state == SoldierState.DEFAULT && rc.getPaint() < 80) || rc.getPaint() <= 25)) {
             Logger.log("need refill");
             MapLocation closestFriendPaintTower = null;
             int minDist = Integer.MAX_VALUE;
@@ -154,15 +154,38 @@ public class Soldier extends Unit {
                     closestFriendPaintTower = loc;
                 }
             }
-            if (closestFriendPaintTower != null) {
+            if (closestFriendPaintTower != null  && rc.getLocation().distanceSquaredTo(closestFriendPaintTower) <= refillTowerDistanceThreshold) {
                 Logger.log("paint tower: " + closestFriendPaintTower);
                 state = SoldierState.REFILL;
                 refillPaintTowerLocation = closestFriendPaintTower;
+            } else {
+                MapLocation closestRefillTower = null;
+                minDist = Integer.MAX_VALUE;
+                MapLocation[] nearbyRuins = rc.senseNearbyRuins(-1);
+                for (MapLocation ruin : nearbyRuins) {
+                    RobotInfo robot = rc.senseRobotAtLocation(ruin);
+                    if (robot != null && robot.getTeam() == myTeam && robot.getPaintAmount() >= 15) {
+                        int dist = rc.getLocation().distanceSquaredTo(ruin);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            closestRefillTower = ruin;
+                        }
+                    }
+                }
+
+                if (closestRefillTower != null) {
+                    Logger.log("paint tower: " + closestRefillTower);
+                    state = SoldierState.REFILL;
+                    refillPaintTowerLocation = closestRefillTower;
+                } else {
+                    state = SoldierState.DEFAULT;
+                    return;
+                }
             }
         }
         if (state == SoldierState.REFILL) {
             Logger.log("refill state");
-            if (rc.getPaint() >= 50) {
+            if (rc.getPaint() >= 80) {
                 state = SoldierState.DEFAULT;
                 return;
             }
@@ -262,7 +285,7 @@ public class Soldier extends Unit {
             }
 
             for (int i = 0; i < symmetryLocations.length; i++) {
-                if (rc.canSenseLocation(symmetryLocations[i])) {
+                if (rc.getLocation().distanceSquaredTo(symmetryLocations[i]) <= 9) {
                     symmetryLocationsVisited[i] = true;
                 }
             }
@@ -414,6 +437,11 @@ public class Soldier extends Unit {
             noPaintCounter = 0;
         }
 
+        if (rc.getNumberTowers() == 25) {
+            state = SoldierState.DEFAULT;
+            return;
+        }
+
         if (rc.canSenseRobotAtLocation(buildRuinLocation)) {
             RobotInfo robot = rc.senseRobotAtLocation(buildRuinLocation);
             if (robot != null) {
@@ -422,9 +450,6 @@ public class Soldier extends Unit {
                 return;
             }
         }
-
-        Logger.log("buildTower: " + buildRuinLocation);
-
         MapInfo[] nearbyLocations = rc.senseNearbyMapInfos(buildRuinLocation, 8);
 
         int numEnemyPaint = 0;
@@ -445,15 +470,13 @@ public class Soldier extends Unit {
             }
         }
 
-        Logger.log("numSoldiersBuilding: " + numSoldiersBuilding);
-
         if (numEnemyPaint > 0 || (numSoldiersBuilding >= 2 && rc.getLocation().distanceSquaredTo(buildRuinLocation) > 1)) {
             state = SoldierState.DEFAULT;
             impossibleRuinLocations.add(buildRuinLocation);
             return;
         }
 
-        Logger.log("buildTower: " + buildRuinLocation);
+        Logger.log("buildTower: " + buildRuinLocation + " " + buildTowerType);
 
         if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 2 && rc.isActionReady() && rc.canCompleteTowerPattern(buildTowerType, buildRuinLocation)) {
             rc.completeTowerPattern(buildTowerType, buildRuinLocation);
@@ -463,8 +486,8 @@ public class Soldier extends Unit {
                     impossibleSRPLocations.remove(loc);
                 }
             }
-
             state = SoldierState.DEFAULT;
+            return;
         }
         rotateAroundTower(buildRuinLocation, buildTowerType, true);
         if (rc.isActionReady() && rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 2) {

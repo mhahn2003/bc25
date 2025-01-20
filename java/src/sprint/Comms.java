@@ -326,7 +326,7 @@ public class Comms extends Globals {
                 if (symmetryLocationsVisited[i]) {
                     continue;
                 }
-                if (rc.canSenseLocation(symmetryLocations[i])) {
+                if (rc.getLocation().distanceSquaredTo(symmetryLocations[i]) <= 9) {
                     symmetryLocationsVisited[i] = true;
                 }
             }

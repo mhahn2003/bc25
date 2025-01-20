@@ -5,9 +5,9 @@ import battlecode.common.*;
 public class Unit extends Globals {
 
     public void act() throws GameActionException {
-        if (rc.getRoundNum() > 15) {
-            rc.disintegrate();
-        }
+//        if (rc.getRoundNum() > 15) {
+//            rc.disintegrate();
+//        }
         flush();
         Comms.senseInfo();
 //        if (rc.getType().isRobotType()) System.out.println("senseInfo: " + Clock.getBytecodeNum());
