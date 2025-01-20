@@ -328,7 +328,6 @@ public class Comms extends Globals {
                 }
                 if (rc.canSenseLocation(symmetryLocations[i])) {
                     symmetryLocationsVisited[i] = true;
-                    symmetryBroken[i] = true;
                 }
             }
         }

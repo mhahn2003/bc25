@@ -41,7 +41,6 @@ public class Globals {
     // diag, vert, horz
     static MapLocation[] symmetryLocations = new MapLocation[3];
     static boolean[] symmetryLocationsVisited = new boolean[3];
-    static boolean[] symmetryBroken = new boolean[3];
     static FastSet vertCheckedLocations;
     static FastSet horzCheckedLocations;
     static FastSet diagCheckedLocations;

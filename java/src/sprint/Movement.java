@@ -33,6 +33,11 @@ public class Movement extends Globals {
                 wandering = false;
                 exploreLocationsVisited[wanderIndex] = true;
             }
+
+            if (rc.canSenseLocation(exploreLocations[wanderIndex])) {
+                wandering = false;
+                exploreLocationsVisited[wanderIndex] = true;
+            }
         }
 
         if (!wandering) {
@@ -69,7 +74,7 @@ public class Movement extends Globals {
             if (rc.canMove(dir)) {
                 MapLocation loc = rc.getLocation().add(dir);
                 PaintType paint = rc.senseMapInfo(loc).getPaint();
-                int heuristic = -Util.paintPenalty(loc, paint) - rc.getLocation().distanceSquaredTo(wanderLoc);
+                int heuristic = -Util.paintPenalty(loc, paint) - loc.distanceSquaredTo(wanderLoc);
                 if (heuristic > maxHeuristic) {
                     maxHeuristic = heuristic;
                     bestDir = dir;

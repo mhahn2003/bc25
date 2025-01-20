@@ -282,7 +282,6 @@ public class Soldier extends Unit {
             for (int i = 0; i < symmetryLocations.length; i++) {
                 if (rc.canSenseLocation(symmetryLocations[i])) {
                     symmetryLocationsVisited[i] = true;
-                    symmetryBroken[i] = true;
                 }
             }
         } else if (rushSoldier && state == SoldierState.DEFAULT) {
@@ -304,6 +303,8 @@ public class Soldier extends Unit {
         if (state == SoldierState.RUSH) {
             Logger.log("rush");
 
+            Util.checkSymmetry();
+
             MapLocation closestPossibleEnemyBase = null;
             int minDist = Integer.MAX_VALUE;
             for (int i = 0; i < 3; i++) {
@@ -315,32 +316,14 @@ public class Soldier extends Unit {
                     closestPossibleEnemyBase = symmetryLocations[i];
                 }
             }
-            Util.checkSymmetry();
             // check if need quit rush
             if (closestPossibleEnemyBase != null && minDist <= 100) {
                 Navigator.moveTo(closestPossibleEnemyBase);
             } else {
                 int bigness = Math.max(mapWidth, mapHeight);
-                if (symmetryBroken[0] && symmetryBroken[1] && symmetryBroken[2]) {
-                    if (bigness >= 35 && rc.getRoundNum() >= bigness * 1.5) {
-                        state = SoldierState.DEFAULT;
-                    } else {
-                        if (symmetryLocationsVisited[0]) {
-                            if (symmetryLocationsVisited[1]) {
-                                Navigator.moveTo(symmetryLocations[2]);
-                            } else if (symmetryLocationsVisited[2]) {
-                                Navigator.moveTo(symmetryLocations[1]);
-                            } else {
-                                if (rc.getLocation().distanceSquaredTo(symmetryLocations[1]) <= rc.getLocation().distanceSquaredTo(symmetryLocations[2])) {
-                                    Navigator.moveTo(symmetryLocations[1]);
-                                } else {
-                                    Navigator.moveTo(symmetryLocations[2]);
-                                }
-                            }
-                        } else {
-                            Navigator.moveTo(symmetryLocations[0]);
-                        }
-                    }
+                if (symmetryLocationsVisited[0] && symmetryLocationsVisited[1] && symmetryLocationsVisited[2]) {
+                    Logger.log("all symmetry broken");
+                    state = SoldierState.DEFAULT;
                 } else {
                     if ((bigness >= 35 && rc.getRoundNum() >= bigness * 1.5) || bigness >= 55) {
                         MapLocation[] ruins = rc.senseNearbyRuins(-1);
@@ -365,19 +348,24 @@ public class Soldier extends Unit {
                         }
                     }
                 }
-                if (symmetryBroken[0]) {
-                    if (symmetryBroken[1]) {
+                if (symmetryLocationsVisited[0]) {
+                    if (symmetryLocationsVisited[1]) {
+                        Logger.log("rush to: " + symmetryLocations[2]);
                         Navigator.moveTo(symmetryLocations[2]);
-                    } else if (symmetryBroken[2]) {
+                    } else if (symmetryLocationsVisited[2]) {
+                        Logger.log("rush to: " + symmetryLocations[1]);
                         Navigator.moveTo(symmetryLocations[1]);
                     } else {
                         if (rc.getLocation().distanceSquaredTo(symmetryLocations[1]) <= rc.getLocation().distanceSquaredTo(symmetryLocations[2])) {
+                            Logger.log("rush to: " + symmetryLocations[1]);
                             Navigator.moveTo(symmetryLocations[1]);
                         } else {
+                            Logger.log("rush to: " + symmetryLocations[2]);
                             Navigator.moveTo(symmetryLocations[2]);
                         }
                     }
                 } else {
+                    Logger.log("rush to: " + symmetryLocations[0]);
                     Navigator.moveTo(symmetryLocations[0]);
                 }
             }

@@ -97,19 +97,19 @@ public class Util extends Globals {
                                 MapLocation loc1 = new MapLocation(x + i, y);
                                 MapLocation loc2 = new MapLocation(mapWidth - 1 - x - i, y);
                                 if (!rc.canSenseLocation(loc1)) break;
-                                if (vertCheckedLocations.contains(loc1) || vertCheckedLocations.contains(loc2)) continue;
+                                if (vertCheckedLocations.contains(loc1)) continue;
                                 vertCheckedLocations.add(loc1);
                                 if (checkSymmetry(loc1, loc2, 1)) symmetryVert = false;
                             } else {
                                 MapLocation loc1 = new MapLocation(x + i, y + j);
                                 MapLocation loc2 = new MapLocation(mapWidth - 1 - x - i, y + j);
                                 if (!rc.canSenseLocation(loc1)) break;
-                                if (!(vertCheckedLocations.contains(loc1) || vertCheckedLocations.contains(loc2))) {
+                                if (!(vertCheckedLocations.contains(loc1))) {
                                     vertCheckedLocations.add(loc1);
                                     if (checkSymmetry(loc1, loc2, 1)) symmetryVert = false;
                                     loc1 = new MapLocation(x + i, y - j);
                                     loc2 = new MapLocation(mapWidth - 1 - x - i, y - j);
-                                    if (vertCheckedLocations.contains(loc1) || vertCheckedLocations.contains(loc2)) continue;
+                                    if (vertCheckedLocations.contains(loc1)) continue;
                                     vertCheckedLocations.add(loc1);
                                     if (checkSymmetry(loc1, loc2, 1)) symmetryVert = false;
                                 }
@@ -127,19 +127,19 @@ public class Util extends Globals {
                                 MapLocation loc1 = new MapLocation(x - i, y);
                                 MapLocation loc2 = new MapLocation(mapWidth - 1 - x + i, y);
                                 if (!rc.canSenseLocation(loc1)) break;
-                                if (vertCheckedLocations.contains(loc1) || vertCheckedLocations.contains(loc2)) continue;
+                                if (vertCheckedLocations.contains(loc1)) continue;
                                 vertCheckedLocations.add(loc1);
                                 if (checkSymmetry(loc1, loc2, 1)) symmetryVert = false;
                             } else {
                                 MapLocation loc1 = new MapLocation(x - i, y + j);
                                 MapLocation loc2 = new MapLocation(mapWidth - 1 - x + i, y + j);
                                 if (!rc.canSenseLocation(loc1)) break;
-                                if (!(vertCheckedLocations.contains(loc1) || vertCheckedLocations.contains(loc2))) {
+                                if (!(vertCheckedLocations.contains(loc1))) {
                                     vertCheckedLocations.add(loc1);
                                     if (checkSymmetry(loc1, loc2, 1)) symmetryVert = false;
                                     loc1 = new MapLocation(x - i, y - j);
                                     loc2 = new MapLocation(mapWidth - 1 - x + i, y - j);
-                                    if (vertCheckedLocations.contains(loc1) || vertCheckedLocations.contains(loc2)) continue;
+                                    if (vertCheckedLocations.contains(loc1)) continue;
                                     vertCheckedLocations.add(loc1);
                                     if (checkSymmetry(loc1, loc2, 1)) symmetryVert = false;
                                 }
@@ -162,19 +162,19 @@ public class Util extends Globals {
                                 MapLocation loc1 = new MapLocation(x, y + i);
                                 MapLocation loc2 = new MapLocation(x, mapHeight - 1 - y - i);
                                 if (!rc.canSenseLocation(loc1)) break;
-                                if (horzCheckedLocations.contains(loc1) || horzCheckedLocations.contains(loc2)) continue;
+                                if (horzCheckedLocations.contains(loc1)) continue;
                                 horzCheckedLocations.add(loc1);
                                 if (checkSymmetry(loc1, loc2, 2)) symmetryHorz = false;
                             } else {
                                 MapLocation loc1 = new MapLocation(x + j, y + i);
                                 MapLocation loc2 = new MapLocation(x + j, mapHeight - 1 - y - i);
                                 if (!rc.canSenseLocation(loc1)) break;
-                                if (!(horzCheckedLocations.contains(loc1) || horzCheckedLocations.contains(loc2))) {
+                                if (!(horzCheckedLocations.contains(loc1))) {
                                     horzCheckedLocations.add(loc1);
                                     if (checkSymmetry(loc1, loc2, 2)) symmetryHorz = false;
                                     loc1 = new MapLocation(x - j, y + i);
                                     loc2 = new MapLocation(x - j, mapHeight - 1 - y - i);
-                                    if (horzCheckedLocations.contains(loc1) || horzCheckedLocations.contains(loc2)) continue;
+                                    if (horzCheckedLocations.contains(loc1)) continue;
                                     horzCheckedLocations.add(loc1);
                                     if (checkSymmetry(loc1, loc2, 2)) symmetryHorz = false;
                                 }
@@ -192,19 +192,19 @@ public class Util extends Globals {
                                 MapLocation loc1 = new MapLocation(x, y - i);
                                 MapLocation loc2 = new MapLocation(x, mapHeight - 1 - y + i);
                                 if (!rc.canSenseLocation(loc1)) break;
-                                if (horzCheckedLocations.contains(loc1) || horzCheckedLocations.contains(loc2)) continue;
+                                if (horzCheckedLocations.contains(loc1)) continue;
                                 horzCheckedLocations.add(loc1);
                                 if (checkSymmetry(loc1, loc2, 2)) symmetryHorz = false;
                             } else {
                                 MapLocation loc1 = new MapLocation(x + j, y - i);
                                 MapLocation loc2 = new MapLocation(x + j, mapHeight - 1 - y + i);
                                 if (!rc.canSenseLocation(loc1)) break;
-                                if (!(horzCheckedLocations.contains(loc1) || horzCheckedLocations.contains(loc2))) {
+                                if (!(horzCheckedLocations.contains(loc1))) {
                                     horzCheckedLocations.add(loc1);
                                     if (checkSymmetry(loc1, loc2, 2)) symmetryHorz = false;
                                     loc1 = new MapLocation(x - j, y - i);
                                     loc2 = new MapLocation(x - j, mapHeight - 1 - y + i);
-                                    if (horzCheckedLocations.contains(loc1) || horzCheckedLocations.contains(loc2)) continue;
+                                    if (horzCheckedLocations.contains(loc1)) continue;
                                     horzCheckedLocations.add(loc1);
                                     if (checkSymmetry(loc1, loc2, 2)) symmetryHorz = false;
                                 }
@@ -225,7 +225,7 @@ public class Util extends Globals {
                         MapLocation loc1 = new MapLocation(x + i, y + j);
                         MapLocation loc2 = new MapLocation(mapWidth - 1 - x - i, mapHeight - 1 - y - j);
                         if (!rc.canSenseLocation(loc1)) break;
-                        if (diagCheckedLocations.contains(loc1) || diagCheckedLocations.contains(loc2)) continue;
+                        if (diagCheckedLocations.contains(loc1)) continue;
                         diagCheckedLocations.add(loc1);
                         if (checkSymmetry(loc1, loc2, 0)) symmetryDiag = false;
                         if (!symmetryDiag) break;
@@ -238,7 +238,7 @@ public class Util extends Globals {
                         MapLocation loc1 = new MapLocation(x + i, y - j);
                         MapLocation loc2 = new MapLocation(mapWidth - 1 - x - i, mapHeight - 1 - y + j);
                         if (!rc.canSenseLocation(loc1)) break;
-                        if (diagCheckedLocations.contains(loc1) || diagCheckedLocations.contains(loc2)) continue;
+                        if (diagCheckedLocations.contains(loc1)) continue;
                         diagCheckedLocations.add(loc1);
                         if (checkSymmetry(loc1, loc2, 0)) symmetryDiag = false;
                         if (!symmetryDiag) break;
@@ -251,7 +251,7 @@ public class Util extends Globals {
                         MapLocation loc1 = new MapLocation(x - i, y + j);
                         MapLocation loc2 = new MapLocation(mapWidth - 1 - x + i, mapHeight - 1 - y - j);
                         if (!rc.canSenseLocation(loc1)) break;
-                        if (diagCheckedLocations.contains(loc1) || diagCheckedLocations.contains(loc2)) continue;
+                        if (diagCheckedLocations.contains(loc1)) continue;
                         diagCheckedLocations.add(loc1);
                         if (checkSymmetry(loc1, loc2, 0)) symmetryDiag = false;
                         if (!symmetryDiag) break;
@@ -264,7 +264,7 @@ public class Util extends Globals {
                         MapLocation loc1 = new MapLocation(x - i, y - j);
                         MapLocation loc2 = new MapLocation(mapWidth - 1 - x + i, mapHeight - 1 - y + j);
                         if (!rc.canSenseLocation(loc1)) break;
-                        if (diagCheckedLocations.contains(loc1) || diagCheckedLocations.contains(loc2)) continue;
+                        if (diagCheckedLocations.contains(loc1)) continue;
                         diagCheckedLocations.add(loc1);
                         if (checkSymmetry(loc1, loc2, 0)) symmetryDiag = false;
                         if (!symmetryDiag) break;
@@ -281,29 +281,14 @@ public class Util extends Globals {
             MapInfo info1 = rc.senseMapInfo(loc1);
             MapInfo info2 = rc.senseMapInfo(loc2);
             if (info1.hasRuin() != info2.hasRuin()) {
-                symmetryBroken[symmetryIndex] = true;
                 symmetryLocationsVisited[symmetryIndex] = true;
                 return true;
             }
             if (info1.isWall() != info2.isWall()) {
-                symmetryBroken[symmetryIndex] = true;
                 symmetryLocationsVisited[symmetryIndex] = true;
                 return true;
             }
-            if (info1.getPaint().isEnemy() && !info2.getPaint().isAlly()) {
-                symmetryBroken[symmetryIndex] = true;
-                return false;
-            }
-            if (!info1.getPaint().isAlly() && !info2.getPaint().isEnemy()) {
-                symmetryBroken[symmetryIndex] = true;
-                return false;
-            }
-            if ((info1.getPaint() == PaintType.EMPTY) != (info2.getPaint() == PaintType.EMPTY)) {
-                symmetryBroken[symmetryIndex] = true;
-                return false;
-            }
         }
-
         return false;
     }
 }
