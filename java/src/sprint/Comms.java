@@ -311,9 +311,6 @@ public class Comms extends Globals {
                 if (enemyDefenseTowerLocations.contains(loc)) {
                     enemyDefenseTowerLocations.remove(loc);
                 }
-                if (targetEnemyTowerLocation != null && targetEnemyTowerLocation.equals(loc)) {
-                    targetEnemyTowerLocation = null;
-                }
             }
         }
 

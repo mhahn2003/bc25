@@ -125,19 +125,32 @@ public class RobotPlayer {
 //            System.out.println("Tower received message: '#" + m.getSenderID() + " " + m.getBytes());
         }
 
+        int startBytecode = Clock.getBytecodeNum();
 //        test = new FastSet();
 //        test.add(new MapLocation(1, 1));
+//        System.out.println("add: " + (Clock.getBytecodeNum() - startBytecode));
 //        System.out.println(test.contains(new MapLocation(1, 1)));
+//        System.out.println("contains: " + (Clock.getBytecodeNum() - startBytecode));
 //        System.out.println(test.contains(new MapLocation(1, 2)));
+//        System.out.println("contains: " + (Clock.getBytecodeNum() - startBytecode));
 //        test.add(new MapLocation(1, 2));
+//        System.out.println("add: " + (Clock.getBytecodeNum() - startBytecode));
 //        System.out.println(test.contains(new MapLocation(1, 1)));
+//        System.out.println("contains: " + (Clock.getBytecodeNum() - startBytecode));
 //        System.out.println(test.contains(new MapLocation(1, 2)));
+//        System.out.println("contains: " + (Clock.getBytecodeNum() - startBytecode));
 //        test.remove(new MapLocation(1, 1));
+//        System.out.println("remove: " + (Clock.getBytecodeNum() - startBytecode));
 //        System.out.println(test.contains(new MapLocation(1, 1)));
+//        System.out.println("contains: " + (Clock.getBytecodeNum() - startBytecode));
 //        System.out.println(test.contains(new MapLocation(1, 2)));
+//        System.out.println("contains: " + (Clock.getBytecodeNum() - startBytecode));
 //        test.remove(new MapLocation(1, 2));
+//        System.out.println("remove: " + (Clock.getBytecodeNum() - startBytecode));
 //        System.out.println(test.contains(new MapLocation(1, 1)));
+//        System.out.println("contains: " + (Clock.getBytecodeNum() - startBytecode));
 //        System.out.println(test.contains(new MapLocation(1, 2)));
+//        System.out.println("contains: " + (Clock.getBytecodeNum() - startBytecode));
 
 
         // TODO: can we attack other bots?

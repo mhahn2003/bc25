@@ -16,8 +16,6 @@ public class Soldier extends Unit {
     static SoldierState state = SoldierState.DEFAULT;
 
     public void act() throws GameActionException {
-        flush();
-//        System.out.println("beginning: " + Clock.getBytecodeNum());
         super.act();
 //        System.out.println("init: " + Clock.getBytecodeNum());
         upgrade();
@@ -41,12 +39,6 @@ public class Soldier extends Unit {
         paintLeftover();
 //        System.out.println("paintLeftover: " + Clock.getBytecodeNum());
         Comms.sendMessagesToTower();
-    }
-
-    public void flush() {
-        // reset FastSets
-        upgradeTowerLocation = null;
-        if (state != SoldierState.DEFAULT) wandering = false;
     }
 
     public void upgrade() throws GameActionException {
@@ -670,6 +662,7 @@ public class Soldier extends Unit {
     public void move() throws GameActionException {
         if (state != SoldierState.DEFAULT || !rc.isMovementReady()) return;
         Direction bestDir = Movement.wanderDirection();
+        Logger.log("wander: " + exploreLocations[wanderIndex]);
         if (bestDir != null && rc.canMove(bestDir)) {
             rc.move(bestDir);
         }
@@ -691,7 +684,8 @@ public class Soldier extends Unit {
                     rc.attack(rc.getLocation(), Util.useSecondaryForTower(rc.getLocation(), closestRuin, towerType()));
                 }
             }
-        } else if (rc.getRoundNum() > 250) {
+        } else {
+            // TODO : add restricting condition to not overpaint in the beginning
             MapInfo[] nearbyPaintLocations = rc.senseNearbyMapInfos(9);
             MapLocation[] nearbyRuins = rc.senseNearbyRuins(-1);
             for (MapInfo info : nearbyPaintLocations) {

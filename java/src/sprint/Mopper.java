@@ -1,11 +1,12 @@
 package sprint;
 
 import battlecode.common.*;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.function.Function;
 
 public class Mopper extends Unit {
+
+    private static boolean[][] computeEnemyLocs;
 
     public enum MopperState {
         DEFAULT,
@@ -19,21 +20,28 @@ public class Mopper extends Unit {
     static MopperState state = MopperState.DEFAULT;
 
     public void act() throws GameActionException {
-        flush();
         super.act();
+//        System.out.println("init: " + Clock.getBytecodeNum());
         upgrade();
+//        System.out.println("upgrade: " + Clock.getBytecodeNum());
         drain();
+//        System.out.println("drain: " + Clock.getBytecodeNum());
         evade();
+//        System.out.println("evade: " + Clock.getBytecodeNum());
         refill();
+//        System.out.println("refill: " + Clock.getBytecodeNum());
         attack();
+//        System.out.println("attack: " + Clock.getBytecodeNum());
         refillOthers();
+//        System.out.println("refillOthers: " + Clock.getBytecodeNum());
         buildTower();
+//        System.out.println("buildTower: " + Clock.getBytecodeNum());
         buildSRP();
+//        System.out.println("buildSRP: " + Clock.getBytecodeNum());
         move();
-    }
-
-    public void flush() {
-        upgradeTowerLocation = null;
+//        System.out.println("move: " + Clock.getBytecodeNum());
+        mopLeftover();
+//        System.out.println("mopLeftover: " + Clock.getBytecodeNum());
     }
 
     public void upgrade() throws GameActionException {
@@ -306,6 +314,11 @@ public class Mopper extends Unit {
             noMopCounter = 0;
             computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(paintLocation) + newLoc.distanceSquaredTo(ruinLocation));
         } else {
+            if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 4) {
+                impossibleRuinLocations.add(buildRuinLocation);
+                state = MopperState.DEFAULT;
+                return;
+            }
             if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 8) noMopCounter++;
             if (noMopCounter >= Globals.noMopTowerThreshold) {
                 impossibleRuinLocations.add(buildRuinLocation);
@@ -443,7 +456,7 @@ public class Mopper extends Unit {
                     state = MopperState.DEFAULT;
                 } else if (rc.getLocation().distanceSquaredTo(buildSRPLocation) <= 8) {
                     noMopCounter++;
-                } else if (noMopCounter >= Globals.noMopTowerThreshold || rc.getLocation().equals(buildSRPLocation)) {
+                } else if (noMopCounter >= Globals.noMopSRPThreshold || rc.getLocation().equals(buildSRPLocation)) {
                     impossibleSRPLocations.add(buildSRPLocation);
                     state = MopperState.DEFAULT;
                 } else {
@@ -479,12 +492,22 @@ public class Mopper extends Unit {
         }
     }
 
-    public static int sweepHeuristic(MapLocation loc, Direction dir) throws GameActionException {
-        RobotInfo[] enemyRobots = rc.senseNearbyRobots(loc, 5, opponentTeam);
-        FastSet enemyLocs = new FastSet();
-        for (RobotInfo enemy : enemyRobots) {
-            enemyLocs.add(enemy.getLocation());
+    public void mopLeftover() throws GameActionException {
+        if (!rc.isActionReady()) return;
+        if (rc.senseMapInfo(rc.getLocation()).getPaint().isEnemy()) {
+            rc.attack(rc.getLocation());
+        } else {
+            for (Direction dir : Globals.adjacentDirections) {
+                MapLocation newLoc = rc.getLocation().add(dir);
+                if (rc.canSenseLocation(newLoc) && rc.senseMapInfo(newLoc).getPaint().isEnemy()) {
+                    rc.attack(newLoc);
+                    return;
+                }
+            }
         }
+    }
+
+    public static int sweepHeuristic(MapLocation loc, Direction dir) {
         int numEnemies = 0;
         MapLocation loc1 = loc.add(dir);
         MapLocation loc2 = loc.add(dir.rotateLeft());
@@ -492,48 +515,50 @@ public class Mopper extends Unit {
         MapLocation loc4 = loc.add(dir).add(dir);
         MapLocation loc5 = loc.add(dir).add(dir.rotateLeft());
         MapLocation loc6 = loc.add(dir).add(dir.rotateRight());
-        if (enemyLocs.contains(loc1)) numEnemies++;
-        if (enemyLocs.contains(loc2)) numEnemies++;
-        if (enemyLocs.contains(loc3)) numEnemies++;
-        if (enemyLocs.contains(loc4)) numEnemies++;
-        if (enemyLocs.contains(loc5)) numEnemies++;
-        if (enemyLocs.contains(loc6)) numEnemies++;
-        return 5 * numEnemies - Util.paintPenalty(loc, rc.senseMapInfo(loc).getPaint());
+        if (computeEnemyLocs[loc1.x-rc.getLocation().x+3][loc1.y-rc.getLocation().y+3]) numEnemies++;
+        if (computeEnemyLocs[loc2.x-rc.getLocation().x+3][loc2.y-rc.getLocation().y+3]) numEnemies++;
+        if (computeEnemyLocs[loc3.x-rc.getLocation().x+3][loc3.y-rc.getLocation().y+3]) numEnemies++;
+        if (computeEnemyLocs[loc4.x-rc.getLocation().x+3][loc4.y-rc.getLocation().y+3]) numEnemies++;
+        if (computeEnemyLocs[loc5.x-rc.getLocation().x+3][loc5.y-rc.getLocation().y+3]) numEnemies++;
+        if (computeEnemyLocs[loc6.x-rc.getLocation().x+3][loc6.y-rc.getLocation().y+3]) numEnemies++;
+        if (numEnemies == 0) return -9999;
+        else return 5 * numEnemies;
     }
 
-    public static Pair<Integer, MapLocation> succHeuristic(MapLocation loc) throws GameActionException {
-        RobotInfo[] enemyRobots = rc.senseNearbyRobots(loc, 8, opponentTeam);
+    public record LocationHeuristic(Integer value, MapLocation location) {}
+
+    public LocationHeuristic succHeuristic(MapLocation loc) throws GameActionException {
         int maxPaintBenefit = 0;
         MapLocation bestLoc = null;
         if (rc.isActionReady()) {
-            for (RobotInfo enemy : enemyRobots) {
-                if (enemy.getType().isRobotType() && rc.senseMapInfo(enemy.getLocation()).getPaint().isEnemy()) {
-                    int paintBenefit = Math.max(10, enemy.getPaintAmount()) + 5;
+            for (Direction dir : Globals.adjacentDirections) {
+                MapLocation newLoc = loc.add(dir);
+                if (computeEnemyLocs[newLoc.x-rc.getLocation().x+3][newLoc.y-rc.getLocation().y+3] && rc.senseMapInfo(newLoc).getPaint().isEnemy()) {
+                    int paintBenefit = Math.max(10, rc.senseRobotAtLocation(newLoc).getPaintAmount()) + 5;
                     if (paintBenefit > maxPaintBenefit) {
                         maxPaintBenefit = paintBenefit;
-                        bestLoc = enemy.getLocation();
+                        bestLoc = newLoc;
                     }
+                    if (maxPaintBenefit == 15) break;
                 }
             }
         }
 
-        PaintType paint = rc.senseMapInfo(loc).getPaint();
         if (maxPaintBenefit != 0) {
-            return Pair.of(maxPaintBenefit - Util.paintPenalty(loc, paint), bestLoc);
+            return new LocationHeuristic(maxPaintBenefit, bestLoc);
         } else {
             if (rc.isActionReady()) {
-                if (paint.isEnemy()) {
-                    paint = PaintType.EMPTY;
-                    return Pair.of(5-Util.paintPenalty(loc, paint), loc);
+                if (rc.senseMapInfo(loc).getPaint().isEnemy()) {
+                    return new LocationHeuristic(5, loc);
                 }
                 for (Direction dir : Globals.adjacentDirections) {
                     MapLocation newLoc = loc.add(dir);
                     if (rc.canSenseLocation(newLoc) && rc.senseMapInfo(newLoc).getPaint().isEnemy()) {
-                        return Pair.of(5-Util.paintPenalty(loc, paint), newLoc);
+                        return new LocationHeuristic(5, newLoc);
                     }
                 }
             }
-            return Pair.of(-Util.paintPenalty(loc, paint), null);
+            return new LocationHeuristic(0, null);
         }
     }
 
@@ -542,11 +567,16 @@ public class Mopper extends Unit {
         Direction bestSweepDir = null;
         MapLocation succLocation = null;
         int bestHeuristic = Integer.MIN_VALUE;
+        computeEnemyLocs = new boolean[7][7];
+        RobotInfo[] enemyRobots = rc.senseNearbyRobots(loc, 13, opponentTeam);
+        for (RobotInfo enemy : enemyRobots) {
+            computeEnemyLocs[enemy.location.x-rc.getLocation().x+3][enemy.location.y-rc.getLocation().y+3] = true;
+        }
 
         // Check adjacent directions
         for (Direction dir : adjacentDirections) {
             MapLocation newLoc = loc.add(dir);
-            int penalty = penaltyFunc.apply(newLoc);
+            int penalty = penaltyFunc.apply(newLoc) + Util.paintPenalty(newLoc, rc.senseMapInfo(newLoc).getPaint());
             if (rc.canMove(dir)) {
                 if (rc.isActionReady()) {
                     for (Direction sweepDir : Globals.cardinalDirections) {
@@ -555,39 +585,44 @@ public class Mopper extends Unit {
                             bestHeuristic = heuristic;
                             bestDir = dir;
                             bestSweepDir = sweepDir;
-                            succLocation = null;
                         }
                     }
                 }
-                Pair<Integer, MapLocation> heuristicPair = succHeuristic(newLoc);
-                int heuristic = heuristicPair.getLeft() - penalty;
+                int heuristic = -penalty;
                 if (heuristic > bestHeuristic) {
                     bestHeuristic = heuristic;
                     bestDir = dir;
-                    succLocation = heuristicPair.getRight();
                     bestSweepDir = null;
                 }
             }
         }
 
         // Check current location
-        int penalty = penaltyFunc.apply(loc);
-        for (Direction dir : Globals.cardinalDirections) {
-            int heuristic = sweepHeuristic(loc, dir) - penalty;
+        int penalty = penaltyFunc.apply(loc) + Util.paintPenalty(loc, rc.senseMapInfo(loc).getPaint());
+        if (rc.isActionReady()) {
+            for (Direction dir : Globals.cardinalDirections) {
+                int heuristic = sweepHeuristic(loc, dir) - penalty;
+                if (heuristic > bestHeuristic) {
+                    bestHeuristic = heuristic;
+                    bestDir = Direction.CENTER;
+                    bestSweepDir = dir;
+                }
+            }
+            LocationHeuristic heuristicPair = succHeuristic(loc);
+            int heuristic = heuristicPair.value() - penalty;
             if (heuristic > bestHeuristic) {
                 bestHeuristic = heuristic;
                 bestDir = Direction.CENTER;
-                bestSweepDir = dir;
-                succLocation = null;
+                succLocation = heuristicPair.location();
+                bestSweepDir = null;
             }
-        }
-        Pair<Integer, MapLocation> heuristicPair = succHeuristic(loc);
-        int heuristic = heuristicPair.getLeft() - penalty;
-        if (heuristic > bestHeuristic) {
-            bestHeuristic = heuristic;
-            bestDir = Direction.CENTER;
-            succLocation = heuristicPair.getRight();
-            bestSweepDir = null;
+        } else {
+            int heuristic = -penalty;
+            if (heuristic > bestHeuristic) {
+                bestHeuristic = heuristic;
+                bestDir = Direction.CENTER;
+                bestSweepDir = null;
+            }
         }
 
         // Execute the best action

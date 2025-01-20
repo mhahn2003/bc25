@@ -69,21 +69,21 @@ public class Tower extends Unit {
             }
         } else if (rc.getType().getBaseType() != UnitType.LEVEL_ONE_PAINT_TOWER) {
             // TODO : spawn logic for new money towers newly minted
-//            if (rc.getChips() >= UnitType.MOPPER.moneyCost + newTowerChipThreshold && rc.getPaint() == UnitType.MOPPER.paintCost) {
-//                MapLocation loc = rc.getLocation();
-//                Direction dir = loc.directionTo(exploreLocations[4]);
-//                for (int i = 0; i < 8; i++) {
-//                    MapLocation newLoc = loc.add(dir).add(dir);
-//                    if (buildRobot(UnitType.MOPPER, newLoc)) {
-//                        break;
-//                    }
-//                    MapLocation newLoc2 = loc.add(dir);
-//                    if (buildRobot(UnitType.MOPPER, newLoc2)) {
-//                        break;
-//                    }
-//                    dir = dir.rotateRight();
-//                }
-//            }
+            if (rc.getChips() >= UnitType.MOPPER.moneyCost + newTowerChipThreshold && rc.getPaint() == UnitType.MOPPER.paintCost) {
+                MapLocation loc = rc.getLocation();
+                Direction dir = loc.directionTo(exploreLocations[4]);
+                for (int i = 0; i < 8; i++) {
+                    MapLocation newLoc = loc.add(dir).add(dir);
+                    if (buildRobot(UnitType.MOPPER, newLoc)) {
+                        break;
+                    }
+                    MapLocation newLoc2 = loc.add(dir);
+                    if (buildRobot(UnitType.MOPPER, newLoc2)) {
+                        break;
+                    }
+                    dir = dir.rotateRight();
+                }
+            }
         } else {
             if (rc.getChips() >= UnitType.SOLDIER.moneyCost + newTowerChipThreshold && rc.getPaint() >= UnitType.SOLDIER.paintCost + 100) {
                 MapLocation loc = rc.getLocation();

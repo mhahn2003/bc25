@@ -46,9 +46,18 @@ public class Util extends Globals {
         };
     }
 
-    public static int paintPenalty(MapLocation loc, PaintType paint) throws GameActionException {
-        RobotInfo[] friendlyRobots = rc.senseNearbyRobots(loc, 8, myTeam);
-        int numAllies = friendlyRobots.length;
+    public static int paintPenalty(MapLocation loc, PaintType paint) {
+        int numAllies = 0;
+        int x = loc.x - rc.getLocation().x;
+        int y = loc.y - rc.getLocation().y;
+        if (nearbyAllies[x+1][y+1]) numAllies++;
+        if (nearbyAllies[x+1][y+2]) numAllies++;
+        if (nearbyAllies[x+1][y+3]) numAllies++;
+        if (nearbyAllies[x+2][y+1]) numAllies++;
+        if (nearbyAllies[x+2][y+3]) numAllies++;
+        if (nearbyAllies[x+3][y+1]) numAllies++;
+        if (nearbyAllies[x+3][y+2]) numAllies++;
+        if (nearbyAllies[x+3][y+3]) numAllies++;
         int paintPenalty = numAllies;
         if (paint == PaintType.EMPTY) {
             paintPenalty = 1 + numAllies;
