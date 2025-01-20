@@ -5,7 +5,7 @@ import battlecode.common.*;
 public class Unit extends Globals {
 
     public void act() throws GameActionException {
-//        if (rc.getRoundNum() > 15) {
+//        if (rc.getRoundNum() > 10) {
 //            rc.disintegrate();
 //        }
         flush();

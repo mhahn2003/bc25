@@ -155,7 +155,9 @@ public class Tower extends Unit {
                 }
             }
         } else {
-            if (rc.getPaint() < 200) {
+            if (rc.getRoundNum() < midGameRoundStart) {
+                return UnitType.SOLDIER;
+            } else if (rc.getPaint() < 200) {
                 return UnitType.MOPPER;
             } else {
                 return UnitType.SOLDIER;

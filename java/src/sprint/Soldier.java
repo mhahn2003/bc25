@@ -298,9 +298,17 @@ public class Soldier extends Unit {
             rushSoldier = true;
             MapLocation[] ruins = rc.senseNearbyRuins(4);
             if (ruins.length == 0) {
+                rushSoldier = false;
                 state = SoldierState.DEFAULT;
+                return;
             } else {
                 MapLocation base = ruins[0];
+                RobotInfo robot = rc.senseRobotAtLocation(base);
+                if (robot != null && robot.getType().getBaseType() == UnitType.LEVEL_ONE_MONEY_TOWER) {
+                    state = SoldierState.DEFAULT;
+                    rushSoldier = false;
+                    return;
+                }
                 symmetryLocations[0] = new MapLocation(mapWidth - base.x - 1, mapHeight - base.y - 1);
                 symmetryLocations[1] = new MapLocation(mapWidth - base.x - 1, base.y);
                 symmetryLocations[2] = new MapLocation(base.x, mapHeight - base.y - 1);
@@ -723,6 +731,7 @@ public class Soldier extends Unit {
     public void paintLeftover() throws GameActionException {
         if (state != SoldierState.DEFAULT || !rc.isActionReady()) return;
 
+        if (rc.getNumberTowers() < 4 && rc.getRoundNum() < 100) return;
         MapInfo locInfo = rc.senseMapInfo(rc.getLocation());
         if (locInfo.getPaint() == PaintType.EMPTY) {
             MapLocation[] nearbyRuins = rc.senseNearbyRuins(8);
@@ -737,9 +746,7 @@ public class Soldier extends Unit {
                 }
             }
         } else {
-            if (rc.getNumberTowers() < 6 && rc.getRoundNum() < 200) {
-                return;
-            }
+            if (rc.getNumberTowers() < 6 && rc.getRoundNum() < 200) return;
             MapInfo[] nearbyPaintLocations = rc.senseNearbyMapInfos(9);
             MapLocation[] nearbyRuins = rc.senseNearbyRuins(-1);
             for (MapInfo info : nearbyPaintLocations) {
