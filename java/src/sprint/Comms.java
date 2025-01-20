@@ -13,10 +13,8 @@ public class Comms extends Globals {
 
     public enum InfoCategory {
         EMPTY,
-        FRIEND_NON_PAINT_TOWER,
-        FRIEND_PAINT_TOWER,
-        ENEMY_NON_DEFENSE_TOWER,
-        ENEMY_DEFENSE_TOWER,
+        FRIEND_TOWER,
+        ENEMY_TOWER,
         RUIN,
         ENEMY_UNIT,
         EXPLORE_LOC_VISITED,
@@ -27,14 +25,12 @@ public class Comms extends Globals {
         int infoNum = 0;
         switch (info) {
             case EMPTY -> infoNum = 0;
-            case FRIEND_NON_PAINT_TOWER -> infoNum = 1;
-            case FRIEND_PAINT_TOWER -> infoNum = 2;
-            case ENEMY_NON_DEFENSE_TOWER -> infoNum = 3;
-            case ENEMY_DEFENSE_TOWER -> infoNum = 4;
-            case RUIN -> infoNum = 5;
-            case ENEMY_UNIT -> infoNum = 6;
-            case EXPLORE_LOC_VISITED -> infoNum = 7;
-            case UPGRADE -> infoNum = 8;
+            case FRIEND_TOWER -> infoNum = 1;
+            case ENEMY_TOWER -> infoNum = 2;
+            case RUIN -> infoNum = 3;
+            case ENEMY_UNIT -> infoNum = 4;
+            case EXPLORE_LOC_VISITED -> infoNum = 5;
+            case UPGRADE -> infoNum = 6;
         }
         return (infoNum * 4096) + encodeLoc(loc);
     }
@@ -170,20 +166,12 @@ public class Comms extends Globals {
         InfoCategory info = InfoCategory.values()[infoNum];
         MapLocation loc = decodeLoc(m % 4096);
         switch (info) {
-            case FRIEND_NON_PAINT_TOWER -> {
-                friendlyNonPaintTowerLocations.add(loc);
+            case FRIEND_TOWER -> {
+                friendlyTowerLocations.add(loc);
                 ruinLocations.add(loc);
             }
-            case FRIEND_PAINT_TOWER -> {
-                friendlyPaintTowerLocations.add(loc);
-                ruinLocations.add(loc);
-            }
-            case ENEMY_NON_DEFENSE_TOWER -> {
-                enemyNonDefenseTowerLocations.add(loc);
-                ruinLocations.add(loc);
-            }
-            case ENEMY_DEFENSE_TOWER -> {
-                enemyDefenseTowerLocations.add(loc);
+            case ENEMY_TOWER -> {
+                enemyTowerLocations.add(loc);
                 ruinLocations.add(loc);
             }
             case RUIN -> ruinLocations.add(loc);
@@ -226,46 +214,24 @@ public class Comms extends Globals {
             if (robot.getTeam() == myTeam) {
                 if (robot.getType().isTowerType()) {
                     MapLocation loc = robot.getLocation();
-                    if (robot.getType().getBaseType() == UnitType.LEVEL_ONE_PAINT_TOWER) {
-                        if (!friendlyPaintTowerLocations.contains(loc)) {
-                            friendlyPaintTowerLocations.add(loc);
-                            addToMessageQueue(InfoCategory.FRIEND_PAINT_TOWER, loc, false);
-                        }
-                        if (!ruinLocations.contains(loc)) {
-                            ruinLocations.add(loc);
-                            addToMessageQueue(InfoCategory.RUIN, loc, false);
-                        }
-                    } else {
-                        if (!friendlyNonPaintTowerLocations.contains(loc)) {
-                            friendlyNonPaintTowerLocations.add(loc);
-                            addToMessageQueue(InfoCategory.FRIEND_NON_PAINT_TOWER, loc, false);
-                        }
-                        if (!ruinLocations.contains(loc)) {
-                            ruinLocations.add(loc);
-                            addToMessageQueue(InfoCategory.RUIN, loc, false);
-                        }
+                    if (!friendlyTowerLocations.contains(loc)) {
+                        friendlyTowerLocations.add(loc);
+                        addToMessageQueue(InfoCategory.FRIEND_TOWER, loc, false);
+                    }
+                    if (!ruinLocations.contains(loc)) {
+                        ruinLocations.add(loc);
+                        addToMessageQueue(InfoCategory.RUIN, loc, false);
                     }
                 }
             } else {
                 if (robot.getType().isTowerType()) {
-                    if (robot.getType().getBaseType() == UnitType.LEVEL_ONE_DEFENSE_TOWER) {
-                        if (!enemyDefenseTowerLocations.contains(robot.getLocation())) {
-                            enemyDefenseTowerLocations.add(robot.getLocation());
-                            addToMessageQueue(InfoCategory.ENEMY_DEFENSE_TOWER, robot.getLocation(), false);
-                        }
-                        if (!ruinLocations.contains(robot.getLocation())) {
-                            ruinLocations.add(robot.getLocation());
-                            addToMessageQueue(InfoCategory.RUIN, robot.getLocation(), false);
-                        }
-                    } else {
-                        if (!enemyNonDefenseTowerLocations.contains(robot.getLocation())) {
-                            enemyNonDefenseTowerLocations.add(robot.getLocation());
-                            addToMessageQueue(InfoCategory.ENEMY_NON_DEFENSE_TOWER, robot.getLocation(), false);
-                        }
-                        if (!ruinLocations.contains(robot.getLocation())) {
-                            ruinLocations.add(robot.getLocation());
-                            addToMessageQueue(InfoCategory.RUIN, robot.getLocation(), false);
-                        }
+                    if (!enemyTowerLocations.contains(robot.getLocation())) {
+                        enemyTowerLocations.add(robot.getLocation());
+                        addToMessageQueue(InfoCategory.ENEMY_TOWER, robot.getLocation(), false);
+                    }
+                    if (!ruinLocations.contains(robot.getLocation())) {
+                        ruinLocations.add(robot.getLocation());
+                        addToMessageQueue(InfoCategory.RUIN, robot.getLocation(), false);
                     }
                 }
                 int emptyIndex = -1;
@@ -299,17 +265,11 @@ public class Comms extends Globals {
                 addToMessageQueue(InfoCategory.RUIN, loc, false);
             }
             if (rc.canSenseRobotAtLocation(loc) && rc.senseRobotAtLocation(loc) == null) {
-                if (friendlyNonPaintTowerLocations.contains(loc)) {
-                    friendlyNonPaintTowerLocations.remove(loc);
+                if (friendlyTowerLocations.contains(loc)) {
+                    friendlyTowerLocations.remove(loc);
                 }
-                if (friendlyPaintTowerLocations.contains(loc)) {
-                    friendlyPaintTowerLocations.remove(loc);
-                }
-                if (enemyNonDefenseTowerLocations.contains(loc)) {
-                    enemyNonDefenseTowerLocations.remove(loc);
-                }
-                if (enemyDefenseTowerLocations.contains(loc)) {
-                    enemyDefenseTowerLocations.remove(loc);
+                if (enemyTowerLocations.contains(loc)) {
+                    enemyTowerLocations.remove(loc);
                 }
             }
         }

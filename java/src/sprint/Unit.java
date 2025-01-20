@@ -19,16 +19,8 @@ public class Unit extends Globals {
         upgradeTowerLocation = null;
         nearbyAllies = new boolean[5][5];
         RobotInfo[] friendlyRobots = rc.senseNearbyRobots(8, myTeam);
-        MapLocation tower = null;
         for (RobotInfo robot : friendlyRobots) {
-            if (robot.getType().isTowerType()) {
-                tower = robot.location;
-            }
             nearbyAllies[robot.location.x - rc.getLocation().x + 2][robot.location.y - rc.getLocation().y + 2] = true;
-        }
-        if (spawnTowerLocation == null && rc.getType().isRobotType() && tower != null) {
-            spawnTowerLocation = tower;
-            friendlyPaintTowerLocations.add(tower);
         }
     }
 }

@@ -17,14 +17,11 @@ public class Globals {
     public static Team opponentTeam;
     public static Unit r;
 
-    static FastSet friendlyNonPaintTowerLocations;
-    static FastSet friendlyPaintTowerLocations;
-    static FastSet enemyNonDefenseTowerLocations;
-    static FastSet enemyDefenseTowerLocations;
+    static FastSet friendlyTowerLocations;
+    static FastSet enemyTowerLocations;
+    static FastSet noRefillTowerLocations;
     static FastSet ruinLocations;
-    static MapLocation spawnTowerLocation;
 
-    // TODO: make enemy locations expire after a while
     final static int enemyLocMinDist = 16;
     static MapLocation[] latestEnemyLocations = new MapLocation[25];
     static int latestEnemyLocationIndex = 0;
@@ -54,6 +51,7 @@ public class Globals {
     static int noMopCounter = 0;
     static int noMopTowerThreshold = 5;
     static int noMopSRPThreshold = 3;
+    static boolean continueBuild = false;
 
     static FastSet impossibleRuinLocations;
     static FastSet impossibleSRPLocations;
@@ -112,10 +110,9 @@ public class Globals {
         exploreLocations[7] = new MapLocation(midX, maxY);
         exploreLocations[8] = new MapLocation(maxX, maxY);
 
-        friendlyPaintTowerLocations = new FastSet();
-        friendlyNonPaintTowerLocations = new FastSet();
-        enemyDefenseTowerLocations = new FastSet();
-        enemyNonDefenseTowerLocations = new FastSet();
+        friendlyTowerLocations = new FastSet();
+        enemyTowerLocations = new FastSet();
+        noRefillTowerLocations = new FastSet();
         ruinLocations = new FastSet();
         taintedRuins = new FastSet();
         vertCheckedLocations = new FastSet();

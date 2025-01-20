@@ -140,16 +140,19 @@ public class Soldier extends Unit {
             Logger.log("need refill");
             MapLocation closestFriendPaintTower = null;
             int minDist = Integer.MAX_VALUE;
-            MapLocation[] friendlyPaintTowerLocations = Globals.friendlyPaintTowerLocations.getLocations();
+            MapLocation[] friendlyPaintTowerLocations = Globals.friendlyTowerLocations.getLocations();
             for (MapLocation loc : friendlyPaintTowerLocations) {
                 int dist = rc.getLocation().distanceSquaredTo(loc);
-                if (dist < minDist) {
+                if (dist < minDist && !noRefillTowerLocations.contains(loc)) {
                     minDist = dist;
                     closestFriendPaintTower = loc;
                 }
             }
             if (closestFriendPaintTower != null && rc.getLocation().distanceSquaredTo(closestFriendPaintTower) <= refillTowerDistanceThreshold) {
                 Logger.log("paint tower: " + closestFriendPaintTower);
+                if (state == SoldierState.BUILD_TOWER) {
+                    continueBuild = true;
+                }
                 state = SoldierState.REFILL;
                 refillPaintTowerLocation = closestFriendPaintTower;
             } else {
@@ -169,6 +172,9 @@ public class Soldier extends Unit {
 
                 if (closestRefillTower != null) {
                     Logger.log("paint tower: " + closestRefillTower);
+                    if (state == SoldierState.BUILD_TOWER) {
+                        continueBuild = true;
+                    }
                     state = SoldierState.REFILL;
                     refillPaintTowerLocation = closestRefillTower;
                 } else {
@@ -180,18 +186,22 @@ public class Soldier extends Unit {
         if (state == SoldierState.REFILL) {
             Logger.log("refill state");
             if (rc.getPaint() >= 80) {
-                state = SoldierState.DEFAULT;
+                if (continueBuild) state = SoldierState.BUILD_TOWER;
+                else state = SoldierState.DEFAULT;
                 return;
             }
             RobotInfo tower = null;
             if (rc.canSenseRobotAtLocation(refillPaintTowerLocation)) {
                 tower = rc.senseRobotAtLocation(refillPaintTowerLocation);
                 if (tower == null || tower.getTeam() == opponentTeam || (tower.getType().getBaseType() != UnitType.LEVEL_ONE_PAINT_TOWER && tower.getPaintAmount() < 15)) {
-                    state = SoldierState.DEFAULT;
+                    noRefillTowerLocations.add(refillPaintTowerLocation);
+                    if (continueBuild) state = SoldierState.BUILD_TOWER;
+                    else state = SoldierState.DEFAULT;
                     return;
                 }
             } else if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) <= GameConstants.VISION_RADIUS_SQUARED) {
-                state = SoldierState.DEFAULT;
+                if (continueBuild) state = SoldierState.BUILD_TOWER;
+                else state = SoldierState.DEFAULT;
                 return;
             }
 
@@ -474,6 +484,7 @@ public class Soldier extends Unit {
         }
 
         Logger.log("buildTower: " + buildRuinLocation + " " + buildTowerType);
+        continueBuild = false;
 
         if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 2 && rc.isActionReady() && rc.canCompleteTowerPattern(buildTowerType, buildRuinLocation)) {
             rc.completeTowerPattern(buildTowerType, buildRuinLocation);
@@ -487,7 +498,7 @@ public class Soldier extends Unit {
             return;
         }
         rotateAroundTower(buildRuinLocation, buildTowerType, true);
-        if (rc.isActionReady() && rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 2) {
+        if (rc.isActionReady() && rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 2 && rc.getChips() < 800) {
             noPaintCounter += 1;
             if (noPaintCounter >= noPaintTowerThreshold) {
                 state = SoldierState.DEFAULT;
@@ -508,7 +519,7 @@ public class Soldier extends Unit {
         MapLocation[] ruinLocs = ruinLocations.getLocations();
         FastSet rawRuins = new FastSet();
         for (MapLocation ruin : ruinLocs) {
-            if (!friendlyPaintTowerLocations.contains(ruin) && !friendlyNonPaintTowerLocations.contains(ruin) && !enemyNonDefenseTowerLocations.contains(ruin) && !enemyDefenseTowerLocations.contains(ruin)) {
+            if (!friendlyTowerLocations.contains(ruin) && !enemyTowerLocations.contains(ruin)) {
                 rawRuins.add(ruin);
             }
         }

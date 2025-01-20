@@ -116,10 +116,10 @@ public class Mopper extends Unit {
             Logger.log("need refill");
             MapLocation closestFriendPaintTower = null;
             int minDist = Integer.MAX_VALUE;
-            MapLocation[] friendlyPaintTowerLocations = Globals.friendlyPaintTowerLocations.getLocations();
+            MapLocation[] friendlyPaintTowerLocations = Globals.friendlyTowerLocations.getLocations();
             for (MapLocation loc : friendlyPaintTowerLocations) {
                 int dist = rc.getLocation().distanceSquaredTo(loc);
-                if (dist < minDist) {
+                if (dist < minDist && !noRefillTowerLocations.contains(loc)) {
                     minDist = dist;
                     closestFriendPaintTower = loc;
                 }
@@ -162,7 +162,7 @@ public class Mopper extends Unit {
             if (rc.canSenseRobotAtLocation(refillPaintTowerLocation)) {
                 tower = rc.senseRobotAtLocation(refillPaintTowerLocation);
                 if (tower == null || tower.getTeam() == opponentTeam || (tower.getType().getBaseType() != UnitType.LEVEL_ONE_PAINT_TOWER && tower.getPaintAmount() < 15)) {
-                    friendlyPaintTowerLocations.remove(refillPaintTowerLocation);
+                    noRefillTowerLocations.add(refillPaintTowerLocation);
                     state = MopperState.DEFAULT;
                     return;
                 }
@@ -369,7 +369,7 @@ public class Mopper extends Unit {
         MapLocation[] ruinLocs = ruinLocations.getLocations();
         FastSet rawRuins = new FastSet();
         for (MapLocation ruin : ruinLocs) {
-            if (!friendlyPaintTowerLocations.contains(ruin) && !friendlyNonPaintTowerLocations.contains(ruin) && !enemyNonDefenseTowerLocations.contains(ruin) && !enemyDefenseTowerLocations.contains(ruin)) {
+            if (!friendlyTowerLocations.contains(ruin) && !enemyTowerLocations.contains(ruin)) {
                 rawRuins.add(ruin);
             }
         }

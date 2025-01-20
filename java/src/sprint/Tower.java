@@ -20,11 +20,7 @@ public class Tower extends Unit {
             if (rc.getRoundNum() == 1) {
                 startingTower = true;
             }
-            if (rc.getType().getBaseType() == UnitType.LEVEL_ONE_PAINT_TOWER) {
-                friendlyPaintTowerLocations.add(rc.getLocation());
-            } else {
-                friendlyNonPaintTowerLocations.add(rc.getLocation());
-            }
+            friendlyTowerLocations.add(rc.getLocation());
         }
         super.act();
         attackEnemyUnits();
@@ -178,17 +174,13 @@ public class Tower extends Unit {
         for (MapLocation ruin : ruins) {
             Comms.addToMessageQueue(Comms.InfoCategory.RUIN, ruin, true);
         }
-        MapLocation[] friendlyPaintTowerLocations = Globals.friendlyPaintTowerLocations.getLocations();
-        for (MapLocation friendlyPaintTowerLoc : friendlyPaintTowerLocations) {
-            Comms.addToMessageQueue(Comms.InfoCategory.FRIEND_PAINT_TOWER, friendlyPaintTowerLoc, true);
+        MapLocation[] friendlyTowerLocations = Globals.friendlyTowerLocations.getLocations();
+        for (MapLocation friendlyTowerLoc : friendlyTowerLocations) {
+            Comms.addToMessageQueue(Comms.InfoCategory.FRIEND_TOWER, friendlyTowerLoc, true);
         }
-        MapLocation[] enemyNonDefenseTowerLocations = Globals.enemyNonDefenseTowerLocations.getLocations();
-        for (MapLocation enemyNonDefenseTowerLoc : enemyNonDefenseTowerLocations) {
-            Comms.addToMessageQueue(Comms.InfoCategory.ENEMY_NON_DEFENSE_TOWER, enemyNonDefenseTowerLoc, true);
-        }
-        MapLocation[] enemyDefenseTowerLocations = Globals.enemyDefenseTowerLocations.getLocations();
-        for (MapLocation enemyDefenseTowerLoc : enemyDefenseTowerLocations) {
-            Comms.addToMessageQueue(Comms.InfoCategory.ENEMY_DEFENSE_TOWER, enemyDefenseTowerLoc, true);
+        MapLocation[] enemyTowerLocations = Globals.enemyTowerLocations.getLocations();
+        for (MapLocation enemyTowerLoc : enemyTowerLocations) {
+            Comms.addToMessageQueue(Comms.InfoCategory.ENEMY_TOWER, enemyTowerLoc, true);
         }
     }
 
