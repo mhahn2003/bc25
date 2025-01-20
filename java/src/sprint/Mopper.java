@@ -214,7 +214,7 @@ public class Mopper extends Unit {
         RobotInfo closestEnemy = null;
         int minDist = Integer.MAX_VALUE;
         for (RobotInfo enemy : enemyRobots) {
-            if (enemy.getType().isRobotType()) {
+            if (enemy.getType().isRobotType() && enemy.getPaintAmount() > 0) {
                 int dist = rc.getLocation().distanceSquaredTo(enemy.getLocation());
                 if (dist < minDist) {
                     minDist = dist;
@@ -636,7 +636,7 @@ public class Mopper extends Unit {
         computeEnemyLocs = new boolean[7][7];
         RobotInfo[] enemyRobots = rc.senseNearbyRobots(loc, 13, opponentTeam);
         for (RobotInfo enemy : enemyRobots) {
-            computeEnemyLocs[enemy.location.x-rc.getLocation().x+3][enemy.location.y-rc.getLocation().y+3] = true;
+            if (enemy.getPaintAmount() > 0) computeEnemyLocs[enemy.location.x-rc.getLocation().x+3][enemy.location.y-rc.getLocation().y+3] = true;
         }
 
         if (!rc.isActionReady()) {

@@ -142,19 +142,13 @@ public class Soldier extends Unit {
             int minDist = Integer.MAX_VALUE;
             MapLocation[] friendlyPaintTowerLocations = Globals.friendlyPaintTowerLocations.getLocations();
             for (MapLocation loc : friendlyPaintTowerLocations) {
-                if (loc == null) {
-                    break;
-                }
-                if (loc.equals(new MapLocation(-1, -1))) {
-                    continue;
-                }
                 int dist = rc.getLocation().distanceSquaredTo(loc);
                 if (dist < minDist) {
                     minDist = dist;
                     closestFriendPaintTower = loc;
                 }
             }
-            if (closestFriendPaintTower != null  && rc.getLocation().distanceSquaredTo(closestFriendPaintTower) <= refillTowerDistanceThreshold) {
+            if (closestFriendPaintTower != null && rc.getLocation().distanceSquaredTo(closestFriendPaintTower) <= refillTowerDistanceThreshold) {
                 Logger.log("paint tower: " + closestFriendPaintTower);
                 state = SoldierState.REFILL;
                 refillPaintTowerLocation = closestFriendPaintTower;
@@ -506,6 +500,10 @@ public class Soldier extends Unit {
 
     public void buildSRP() throws GameActionException {
         if (state != SoldierState.BUILD_SRP && state != SoldierState.DEFAULT) return;
+        if (rc.getNumberTowers() < 4) {
+            state = SoldierState.DEFAULT;
+            return;
+        }
 
         MapLocation[] ruinLocs = ruinLocations.getLocations();
         FastSet rawRuins = new FastSet();
@@ -693,7 +691,9 @@ public class Soldier extends Unit {
                 }
             }
         } else {
-            // TODO : add restricting condition to not overpaint in the beginning
+            if (rc.getNumberTowers() < 4 && rc.getRoundNum() < 200) {
+                return;
+            }
             MapInfo[] nearbyPaintLocations = rc.senseNearbyMapInfos(9);
             MapLocation[] nearbyRuins = rc.senseNearbyRuins(-1);
             for (MapInfo info : nearbyPaintLocations) {
@@ -736,7 +736,6 @@ public class Soldier extends Unit {
                     }
                 }
             }
-
         }
     }
 
@@ -961,20 +960,14 @@ public class Soldier extends Unit {
 
     public static UnitType towerType() {
         int numTowers = rc.getNumberTowers();
-        if (rc.getRoundNum() < 300) {
-            if (numTowers < 4) {
-                return UnitType.LEVEL_ONE_MONEY_TOWER;
-            } else if (numTowers % 2 == 0) {
-                return UnitType.LEVEL_ONE_PAINT_TOWER;
-            } else {
-                return UnitType.LEVEL_ONE_MONEY_TOWER;
-            }
+        if (numTowers < 8) {
+            return UnitType.LEVEL_ONE_MONEY_TOWER;
+        } else if (numTowers < 14) {
+            return UnitType.LEVEL_ONE_PAINT_TOWER;
+        } else if (numTowers % 2 == 0) {
+            return UnitType.LEVEL_ONE_MONEY_TOWER;
         } else {
-            if (numTowers % 3 != 0) {
-                return UnitType.LEVEL_ONE_PAINT_TOWER;
-            } else  {
-                return UnitType.LEVEL_ONE_MONEY_TOWER;
-            }
+            return UnitType.LEVEL_ONE_PAINT_TOWER;
         }
     }
 }

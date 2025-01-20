@@ -26,7 +26,7 @@ public class Unit extends Globals {
             }
             nearbyAllies[robot.location.x - rc.getLocation().x + 2][robot.location.y - rc.getLocation().y + 2] = true;
         }
-        if (spawnTowerLocation == null && rc.getType().isRobotType()) {
+        if (spawnTowerLocation == null && rc.getType().isRobotType() && tower != null) {
             spawnTowerLocation = tower;
             friendlyPaintTowerLocations.add(tower);
         }
