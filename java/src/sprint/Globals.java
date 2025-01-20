@@ -34,6 +34,9 @@ public class Globals {
     static int minDistToTarget = 999999;
     static int wanderCount = 0;
     static int maxWanderingCounter = 5;
+    static int noActionCounter = 0;
+    static int noActionThreshold = 15;
+    static MapLocation flipLocation = null;
 
     static boolean rushSoldier = false;
     static FastSet taintedRuins;

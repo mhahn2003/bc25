@@ -16,6 +16,7 @@ public class Mopper extends Unit {
         REFILL_OTHERS,
         BUILD_TOWER,
         BUILD_SRP,
+        INACTION,
     }
 
     static MopperState state = MopperState.DEFAULT;
@@ -43,6 +44,9 @@ public class Mopper extends Unit {
 //        System.out.println("move: " + Clock.getBytecodeNum());
         mopLeftover();
 //        System.out.println("mopLeftover: " + Clock.getBytecodeNum());
+
+        if (rc.isActionReady()) noActionCounter++;
+        else noActionCounter = 0;
     }
 
     public void upgrade() throws GameActionException {
@@ -112,7 +116,7 @@ public class Mopper extends Unit {
     }
 
     public void refill() throws GameActionException {
-        if (state != MopperState.REFILL && ((state == MopperState.DEFAULT && rc.getPaint() < 50) || rc.getPaint() <= 25)) {
+        if (state != MopperState.REFILL && ((state == MopperState.DEFAULT && rc.getPaint() < 50) || rc.getPaint() <= 25) && rc.getChips() < 2000) {
             Logger.log("need refill");
             MapLocation closestFriendPaintTower = null;
             int minDist = Integer.MAX_VALUE;
@@ -165,6 +169,15 @@ public class Mopper extends Unit {
                     noRefillTowerLocations.add(refillPaintTowerLocation);
                     state = MopperState.DEFAULT;
                     return;
+                }
+
+                if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) > 4) {
+                    RobotInfo[] nearbyRobots = rc.senseNearbyRobots(refillPaintTowerLocation, 4, myTeam);
+                    if (nearbyRobots.length >= 8) {
+                        noRefillTowerLocations.add(refillPaintTowerLocation);
+                        state = MopperState.DEFAULT;
+                        return;
+                    }
                 }
             } else if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) <= GameConstants.VISION_RADIUS_SQUARED) {
                 state = MopperState.DEFAULT;
@@ -523,9 +536,7 @@ public class Mopper extends Unit {
 
     public void move() throws GameActionException {
         Logger.log("state: " + state);
-        if (state != MopperState.DEFAULT) return;
-
-        Movement.wanderDirection();
+        if (state != MopperState.DEFAULT && state != MopperState.INACTION) return;
 
         MapInfo[] nearbyLocations = rc.senseNearbyMapInfos();
         MapLocation closestEnemyPaintLocation = null;
@@ -547,8 +558,33 @@ public class Mopper extends Unit {
                 Navigator.moveTo(paintLocation);
             }
         } else {
+            if (noActionCounter > noActionThreshold && state != MopperState.INACTION) {
+                state = MopperState.INACTION;
+                int totalDiagLength = mapWidth * mapWidth + mapHeight * mapHeight;
+                flipLocation = null;
+                if (rc.getLocation().distanceSquaredTo(exploreLocations[4]) < totalDiagLength/36) {
+                    MapLocation furtherOpposite = new MapLocation(3 * exploreLocations[4].x - 2 * rc.getLocation().x, 3 * exploreLocations[4].y - 2 * rc.getLocation().y);
+                    if (rc.onTheMap(furtherOpposite)) {
+                        flipLocation = furtherOpposite;
+                    }
+                }
+                if (flipLocation == null) {
+                    flipLocation = new MapLocation(mapWidth - rc.getLocation().x - 1, mapHeight - rc.getLocation().y - 1);
+                }
+            }
+
+            if (flipLocation != null) {
+                if (rc.getLocation().distanceSquaredTo(flipLocation) <= 8) {
+                    flipLocation = null;
+                } else {
+                    Logger.log("flip: " + flipLocation);
+                    Navigator.moveTo(flipLocation);
+                    return;
+                }
+            }
+            Movement.wanderDirection();
             Logger.log("wander: " + wanderLocation);
-            computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(wanderLocation)/3);
+            computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(wanderLocation) / 3);
             if (rc.isMovementReady()) {
                 Navigator.moveTo(wanderLocation);
             }

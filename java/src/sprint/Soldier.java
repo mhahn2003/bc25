@@ -11,6 +11,7 @@ public class Soldier extends Unit {
         RUSH,
         BUILD_TOWER,
         BUILD_SRP,
+        INACTION,
     }
 
     static SoldierState state = SoldierState.DEFAULT;
@@ -39,6 +40,9 @@ public class Soldier extends Unit {
         paintLeftover();
 //        System.out.println("paintLeftover: " + Clock.getBytecodeNum());
         Comms.sendMessagesToTower();
+
+        if (rc.isActionReady()) noActionCounter++;
+        else noActionCounter = 0;
     }
 
     public void upgrade() throws GameActionException {
@@ -136,7 +140,8 @@ public class Soldier extends Unit {
     }
 
     public void refill() throws GameActionException {
-        if (state != SoldierState.REFILL && state != SoldierState.ATTACK && ((state == SoldierState.DEFAULT && rc.getPaint() < 80) || rc.getPaint() <= 25)) {
+        if (state == SoldierState.INACTION) return;
+        if (state != SoldierState.REFILL && state != SoldierState.ATTACK && ((state == SoldierState.DEFAULT && rc.getPaint() < 80) || rc.getPaint() <= 25) && rc.getChips() < 2000) {
             Logger.log("need refill");
             MapLocation closestFriendPaintTower = null;
             int minDist = Integer.MAX_VALUE;
@@ -198,6 +203,16 @@ public class Soldier extends Unit {
                     if (continueBuild) state = SoldierState.BUILD_TOWER;
                     else state = SoldierState.DEFAULT;
                     return;
+                }
+
+                if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) > 4) {
+                    RobotInfo[] nearbyRobots = rc.senseNearbyRobots(refillPaintTowerLocation, 4, myTeam);
+                    if (nearbyRobots.length >= 8) {
+                        noRefillTowerLocations.add(refillPaintTowerLocation);
+                        if (continueBuild) state = SoldierState.BUILD_TOWER;
+                        else state = SoldierState.DEFAULT;
+                        return;
+                    }
                 }
             } else if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) <= GameConstants.VISION_RADIUS_SQUARED) {
                 if (continueBuild) state = SoldierState.BUILD_TOWER;
@@ -674,14 +689,34 @@ public class Soldier extends Unit {
     }
 
     public void move() throws GameActionException {
-        if (state != SoldierState.DEFAULT || !rc.isMovementReady()) return;
-        Direction bestDir = Movement.wanderDirection();
-        Logger.log("wander: " + wanderLocation);
-        RobotInfo[] nearbyAllies = rc.senseNearbyRobots(8, myTeam);
-        if (nearbyAllies.length < 3) {
-            Navigator.moveTo(wanderLocation);
-        } else if (bestDir != null && rc.canMove(bestDir)) {
-            rc.move(bestDir);
+        if ((state != SoldierState.INACTION && state != SoldierState.DEFAULT) || !rc.isMovementReady()) return;
+        if (noActionCounter > noActionThreshold && state != SoldierState.INACTION) {
+            state = SoldierState.INACTION;
+            int totalDiagLength = mapWidth * mapWidth + mapHeight * mapHeight;
+            flipLocation = null;
+            if (rc.getLocation().distanceSquaredTo(exploreLocations[4]) < totalDiagLength/36) {
+                MapLocation furtherOpposite = new MapLocation(3 * exploreLocations[4].x - 2 * rc.getLocation().x, 3 * exploreLocations[4].y - 2 * rc.getLocation().y);
+                if (rc.onTheMap(furtherOpposite)) {
+                    flipLocation = furtherOpposite;
+                }
+            }
+            if (flipLocation == null) {
+                flipLocation = new MapLocation(mapWidth - rc.getLocation().x - 1, mapHeight - rc.getLocation().y - 1);
+            }
+        }
+
+        if (state == SoldierState.INACTION && noActionCounter != 0 && rc.getLocation().distanceSquaredTo(flipLocation) > 8) {
+            Logger.log("flip: " + flipLocation);
+            Navigator.moveTo(flipLocation);
+        } else {
+            Direction bestDir = Movement.wanderDirection();
+            Logger.log("wander: " + wanderLocation);
+            RobotInfo[] nearbyAllies = rc.senseNearbyRobots(8, myTeam);
+            if (nearbyAllies.length < 3) {
+                Navigator.moveTo(wanderLocation);
+            } else if (bestDir != null && rc.canMove(bestDir)) {
+                rc.move(bestDir);
+            }
         }
     }
 
