@@ -11,8 +11,10 @@ public class Tower extends Unit {
     static int spawnedSoldiers = 0;
     static int spawnedMoppers = 0;
     static int spawnedSplashers = 0;
-
     static int spawnedDefenseMoppers = 0;
+
+    static int midGameRoundStart = 100;
+    static int endGameRoundStart = 250;
 
     public void act() throws GameActionException {
         if (!init) {
@@ -23,10 +25,20 @@ public class Tower extends Unit {
             friendlyTowerLocations.add(rc.getLocation());
         }
         super.act();
+        resetCounter();
         attackEnemyUnits();
         spawn();
         requestUpgrade();
         sendComms();
+    }
+
+    public void resetCounter() {
+        if (rc.getRoundNum() == midGameRoundStart || rc.getRoundNum() == endGameRoundStart) {
+            spawnedSoldiers = 0;
+            spawnedMoppers = 0;
+            spawnedSplashers = 0;
+            spawnedDefenseMoppers = 0;
+        }
     }
 
     public void attackEnemyUnits() throws GameActionException {
@@ -94,22 +106,10 @@ public class Tower extends Unit {
                     }
                 }
 
-                // early game
-                if (rc.getRoundNum() < 100) {
-                    if (rc.getChips() >= UnitType.SOLDIER.moneyCost + newTowerChipThreshold && rc.getPaint() >= UnitType.SOLDIER.paintCost) {
-                        Direction dir = rc.getLocation().directionTo(exploreLocations[4]);
-                        if (tryBuildRobot(UnitType.SOLDIER, dir)) {
-                            return;
-                        }
-                    }
-                } else {
-                    UnitType type = getNextToSpawn();
-                    if (rc.getChips() >= type.moneyCost + newTowerChipThreshold && rc.getPaint() >= type.paintCost) {
-                        Direction dir = rc.getLocation().directionTo(exploreLocations[4]);
-                        if (tryBuildRobot(type, dir)) {
-                            return;
-                        }
-                    }
+                UnitType type = getNextToSpawn();
+                if (rc.getChips() >= type.moneyCost + newTowerChipThreshold && rc.getPaint() >= type.paintCost) {
+                    Direction dir = rc.getLocation().directionTo(exploreLocations[4]);
+                    tryBuildRobot(type, dir);
                 }
             }
         }
@@ -117,17 +117,42 @@ public class Tower extends Unit {
 
     public UnitType getNextToSpawn() {
         if (rc.getType().getBaseType() == UnitType.LEVEL_ONE_PAINT_TOWER) {
-            if (spawnedSoldiers - spawnedMoppers >= 2) {
-                return UnitType.MOPPER;
-            }
-            if (spawnedMoppers - spawnedSoldiers >= 2) {
+            if (rc.getRoundNum() < midGameRoundStart) {
+                // early game
+                // purely soldier
                 return UnitType.SOLDIER;
-            }
+            } else if (rc.getRoundNum() < endGameRoundStart) {
+                // mid game
+                // 6:1:3 ratio of soldiers to splashers to moppers
+                double divSoldierCount = (double) spawnedSoldiers / 6.0;
+                double divMopperCount = (double) spawnedMoppers / 3.0;
+                double divSplasherCount = (double) spawnedSplashers / 1.0;
+                if (divSplasherCount <= divSoldierCount && divSplasherCount <= divMopperCount) {
+                    return UnitType.SPLASHER;
+                } else {
+                    if (divMopperCount <= divSoldierCount - 0.5) {
+                        return UnitType.MOPPER;
+                    }
+                    if (divSoldierCount <= divMopperCount - 0.5) {
+                        return UnitType.SOLDIER;
+                    }
 
-            if (rc.getChips() >= 3000) {
-                return UnitType.MOPPER;
+                    if (rc.getChips() >= 2500) {
+                        return UnitType.MOPPER;
+                    } else {
+                        return UnitType.SOLDIER;
+                    }
+                }
             } else {
-                return UnitType.SOLDIER;
+                // end game
+                // 1:1:1 ratio of soldiers to splashers to moppers
+                if (spawnedSoldiers <= spawnedSplashers && spawnedSoldiers <= spawnedMoppers) {
+                    return UnitType.SOLDIER;
+                } else if (spawnedSplashers <= spawnedSoldiers && spawnedSplashers <= spawnedMoppers) {
+                    return UnitType.SPLASHER;
+                } else {
+                    return UnitType.MOPPER;
+                }
             }
         } else {
             if (rc.getPaint() < 200) {

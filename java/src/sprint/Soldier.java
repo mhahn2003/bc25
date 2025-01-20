@@ -526,7 +526,7 @@ public class Soldier extends Unit {
 
     public void buildSRP() throws GameActionException {
         if (state != SoldierState.BUILD_SRP && state != SoldierState.DEFAULT) return;
-        if (rc.getNumberTowers() < 4) {
+        if (rc.getNumberTowers() < 6 && rc.getRoundNum() < 100) {
             state = SoldierState.DEFAULT;
             return;
         }
@@ -737,7 +737,7 @@ public class Soldier extends Unit {
                 }
             }
         } else {
-            if (rc.getNumberTowers() < 4 && rc.getRoundNum() < 200) {
+            if (rc.getNumberTowers() < 6 && rc.getRoundNum() < 200) {
                 return;
             }
             MapInfo[] nearbyPaintLocations = rc.senseNearbyMapInfos(9);
