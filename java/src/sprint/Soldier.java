@@ -283,7 +283,7 @@ public class Soldier extends Unit {
                     }
                     if (!tainted && bestPaintLocation != null) {
                         if (rc.canAttack(bestPaintLocation)) {
-                            rc.attack(bestPaintLocation, Util.useSecondaryForTower(bestPaintLocation, ruin, towerType()));
+                            rc.attack(bestPaintLocation, Util.useSecondaryForTower(bestPaintLocation, ruin, Util.towerType()));
                             taintedRuins.add(ruin);
                         }
                     }
@@ -435,7 +435,7 @@ public class Soldier extends Unit {
 
             if (closestRuin == null) return;
             MapLocation markLoc = closestRuin.add(Direction.EAST);
-            UnitType towerType = towerType();
+            UnitType towerType = Util.towerType();
             if (rc.canSenseLocation(markLoc)) {
                 if (rc.senseMapInfo(markLoc).getMark() == PaintType.EMPTY) {
                     if (towerType != UnitType.LEVEL_ONE_DEFENSE_TOWER) {
@@ -508,6 +508,31 @@ public class Soldier extends Unit {
 
         Logger.log("buildTower: " + buildRuinLocation + " " + buildTowerType);
         continueBuild = false;
+
+        UnitType newTowerType = Util.towerType();
+        if (buildTowerType != newTowerType) {
+            if (!(buildTowerType == UnitType.LEVEL_ONE_PAINT_TOWER && rc.getNumberTowers() < 10)) {
+                Logger.log("need overwrite");
+                MapLocation markLoc = buildRuinLocation.add(Direction.EAST);
+                if (rc.canSenseLocation(markLoc)) {
+                    boolean overwrite = newTowerType == UnitType.LEVEL_ONE_PAINT_TOWER;
+                    if (rc.senseMapInfo(markLoc).getMark().isSecondary() != overwrite) {
+                        if (rc.getLocation().distanceSquaredTo(markLoc) <= 2) {
+                            if (rc.canMark(markLoc)) {
+                                rc.mark(markLoc, overwrite);
+                                buildTowerType = newTowerType;
+                            }
+                        } else {
+                            Navigator.moveTo(markLoc);
+                            return;
+                        }
+                    }
+                } else {
+                    Navigator.moveTo(markLoc);
+                    return;
+                }
+            }
+        }
 
         if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 2 && rc.isActionReady() && rc.canCompleteTowerPattern(buildTowerType, buildRuinLocation)) {
             rc.completeTowerPattern(buildTowerType, buildRuinLocation);
@@ -742,7 +767,7 @@ public class Soldier extends Unit {
             } else {
                 MapLocation closestRuin = nearbyRuins[0];
                 if (rc.canAttack(rc.getLocation())) {
-                    rc.attack(rc.getLocation(), Util.useSecondaryForTower(rc.getLocation(), closestRuin, towerType()));
+                    rc.attack(rc.getLocation(), Util.useSecondaryForTower(rc.getLocation(), closestRuin, Util.towerType()));
                 }
             }
         } else {
@@ -774,7 +799,7 @@ public class Soldier extends Unit {
                             if (rc.canSenseLocation(markLoc)) {
                                 if (rc.senseMapInfo(markLoc).getMark() == PaintType.EMPTY) {
                                     if (rc.canAttack(info.getMapLocation())) {
-                                        rc.attack(info.getMapLocation(), Util.useSecondaryForTower(info.getMapLocation(), ruin, towerType()));
+                                        rc.attack(info.getMapLocation(), Util.useSecondaryForTower(info.getMapLocation(), ruin, Util.towerType()));
                                         return;
                                     }
                                 } else {
@@ -1008,19 +1033,6 @@ public class Soldier extends Unit {
                     rc.attack(bestPaintLocation, Util.useSecondaryGeneral(bestPaintLocation, center, type, forTower));
                 }
             }
-        }
-    }
-
-    public static UnitType towerType() {
-        int numTowers = rc.getNumberTowers();
-        if (numTowers < 8) {
-            return UnitType.LEVEL_ONE_MONEY_TOWER;
-        } else if (numTowers < 14) {
-            return UnitType.LEVEL_ONE_PAINT_TOWER;
-        } else if (numTowers % 2 == 0) {
-            return UnitType.LEVEL_ONE_MONEY_TOWER;
-        } else {
-            return UnitType.LEVEL_ONE_PAINT_TOWER;
         }
     }
 }

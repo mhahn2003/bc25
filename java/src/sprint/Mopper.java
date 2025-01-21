@@ -34,10 +34,10 @@ public class Mopper extends Unit {
 //        System.out.println("refill: " + Clock.getBytecodeNum());
         attack();
 //        System.out.println("attack: " + Clock.getBytecodeNum());
-        refillOthers();
-//        System.out.println("refillOthers: " + Clock.getBytecodeNum());
         buildTower();
 //        System.out.println("buildTower: " + Clock.getBytecodeNum());
+        refillOthers();
+//        System.out.println("refillOthers: " + Clock.getBytecodeNum());
         buildSRP();
 //        System.out.println("buildSRP: " + Clock.getBytecodeNum());
         move();
@@ -90,29 +90,40 @@ public class Mopper extends Unit {
 
     public void evade() throws GameActionException {
         MapLocation[] nearbyRuins = rc.senseNearbyRuins(-1);
-        MapLocation enemyTower = null;
+        MapLocation closestEnemyTower = null;
+        int minDist = Integer.MAX_VALUE;
         for (MapLocation ruin : nearbyRuins) {
             RobotInfo robot = rc.senseRobotAtLocation(ruin);
             if (robot != null && robot.getType().isTowerType() && robot.getTeam() == opponentTeam) {
-                enemyTower = ruin;
-                break;
+                int dist = rc.getLocation().distanceSquaredTo(ruin);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closestEnemyTower = ruin;
+                }
             }
         }
-        if (enemyTower == null) {
+        if (closestEnemyTower == null) {
             state = MopperState.DEFAULT;
             return;
         }
         state = MopperState.EVADE;
 
-        Logger.log("evade: " + enemyTower);
-        Movement.wanderDirection();
-        Logger.log("towards: " + wanderLocation);
-        final MapLocation finalEnemyTower = enemyTower;
-        computeBestAction(rc.getLocation(), newLoc -> {
-            int distanceToTower = newLoc.distanceSquaredTo(finalEnemyTower);
-            return (distanceToTower > 9 ? 0 : 50 * (11 - distanceToTower)) + newLoc.distanceSquaredTo(wanderLocation);
-        });
-
+        Logger.log("evade: " + closestEnemyTower);
+        final MapLocation finalEnemyTower = closestEnemyTower;
+        if (flipLocation != null) {
+            Logger.log("towards: " + flipLocation);
+            computeBestAction(rc.getLocation(), newLoc -> {
+                int distanceToTower = newLoc.distanceSquaredTo(finalEnemyTower);
+                return (distanceToTower > 9 ? 0 : 50 * (11 - distanceToTower)) + newLoc.distanceSquaredTo(flipLocation);
+            });
+        } else {
+            Movement.wanderDirection();
+            Logger.log("towards: " + wanderLocation);
+            computeBestAction(rc.getLocation(), newLoc -> {
+                int distanceToTower = newLoc.distanceSquaredTo(finalEnemyTower);
+                return (distanceToTower > 9 ? 0 : 50 * (11 - distanceToTower)) + newLoc.distanceSquaredTo(wanderLocation);
+            });
+        }
     }
 
     public void refill() throws GameActionException {
@@ -246,7 +257,7 @@ public class Mopper extends Unit {
     }
 
     public void refillOthers() throws GameActionException {
-        if (rc.getPaint() <= 50 || state == MopperState.REFILL || state == MopperState.ATTACK) return;
+        if (rc.getPaint() <= 50 || state == MopperState.REFILL || state == MopperState.ATTACK || state == MopperState.BUILD_TOWER) return;
         RobotInfo[] friendlyRobots = rc.senseNearbyRobots(-1, myTeam);
         RobotInfo closestRobot = null;
         int minDist = Integer.MAX_VALUE;
@@ -321,6 +332,7 @@ public class Mopper extends Unit {
 
             state = MopperState.BUILD_TOWER;
             buildRuinLocation = closestRuin;
+            Logger.log("reset no mop");
             noMopCounter = 0;
         }
 
@@ -355,11 +367,31 @@ public class Mopper extends Unit {
         }
 
         if (bestEnemyPaintLocation != null) {
+            Logger.log("paint loc: " + bestEnemyPaintLocation);
             final MapLocation paintLocation = bestEnemyPaintLocation;
             final MapLocation ruinLocation = buildRuinLocation;
-            noMopCounter = 0;
-            computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(paintLocation) <= 5 ? 0 : newLoc.distanceSquaredTo(paintLocation) + newLoc.distanceSquaredTo(ruinLocation)/3);
+            Logger.log("no mop counter: " + noMopCounter);
+            if (noMopCounter >= Globals.noMopTowerThreshold) {
+                Logger.log("no mop");
+                Navigator.moveTo(paintLocation);
+            } else {
+                computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(paintLocation) <= 5 ? 0 : newLoc.distanceSquaredTo(paintLocation) + newLoc.distanceSquaredTo(ruinLocation) / 3);
+            }
+            if (rc.isActionReady()) noMopCounter++;
         } else {
+            if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 2 && rc.isActionReady()) {
+                MapLocation markLoc = buildRuinLocation.add(Direction.EAST);
+                UnitType towerType;
+                PaintType mark = rc.senseMapInfo(markLoc).getPaint();
+                if (mark == PaintType.EMPTY) towerType = UnitType.LEVEL_ONE_DEFENSE_TOWER;
+                else if (mark.isSecondary()) towerType = UnitType.LEVEL_ONE_PAINT_TOWER;
+                else towerType = UnitType.LEVEL_ONE_MONEY_TOWER;
+                if (rc.canCompleteTowerPattern(towerType, buildRuinLocation)) {
+                    rc.completeTowerPattern(towerType, buildRuinLocation);
+                    state = MopperState.DEFAULT;
+                    return;
+                }
+            }
             if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 4) {
                 impossibleRuinLocations.add(buildRuinLocation);
                 state = MopperState.DEFAULT;
@@ -370,8 +402,12 @@ public class Mopper extends Unit {
                 impossibleRuinLocations.add(buildRuinLocation);
                 state = MopperState.DEFAULT;
             } else {
-                final MapLocation opposite = buildRuinLocation.add(rc.getLocation().directionTo(buildRuinLocation));
-                computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(opposite)/3);
+                if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 8) {
+                    final MapLocation opposite = buildRuinLocation.add(rc.getLocation().directionTo(buildRuinLocation));
+                    computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(opposite) / 3);
+                } else {
+                    Navigator.moveTo(buildRuinLocation);
+                }
             }
         }
     }
@@ -524,8 +560,6 @@ public class Mopper extends Unit {
                     state = MopperState.DEFAULT;
                 } else if (rc.canSenseLocation(buildSRPLocation)) {
                     final MapLocation opposite = buildSRPLocation.add(rc.getLocation().directionTo(buildSRPLocation));
-                    Logger.log("no paint loc: " + opposite);
-                    Logger.log("state: " + state);
                     computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(opposite)/3);
                 } else {
                     Navigator.moveTo(buildSRPLocation);

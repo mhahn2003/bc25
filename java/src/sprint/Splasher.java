@@ -221,7 +221,7 @@ public class Splasher extends Unit {
                 Logger.log("run away: " + target.getLocation() + " -> " + opposite);
                 Navigator.moveTo(opposite);
             } else {
-                RobotInfo [] alliedRobots = rc.senseNearbyRobots(target.getLocation(), 9, myTeam);
+                RobotInfo [] alliedRobots = rc.senseNearbyRobots(target.getLocation(), 20, myTeam);
                 int numSoldiers = 0;
                 for (RobotInfo ally : alliedRobots) {
                     if (ally.getType() == UnitType.SOLDIER || ally.getType() == UnitType.SPLASHER) {
@@ -280,15 +280,17 @@ public class Splasher extends Unit {
             bestSplash = heuristic;
             dir = Direction.CENTER;
         }
-        for (Direction d : Globals.adjacentDirections) {
-            if (rc.canMove(d)) {
-                MapLocation loc = rc.getLocation().add(d).add(d);
+        Direction centerDir = rc.getLocation().directionTo(exploreLocations[4]);
+        for (int i = 0; i < 8; i++) {
+            if (rc.canMove(centerDir)) {
+                MapLocation loc = rc.getLocation().add(centerDir);
                 heuristic = getHeuristic(loc);
                 if (heuristic > bestSplash) {
                     bestSplash = heuristic;
-                    dir = d;
+                    dir = centerDir;
                 }
             }
+            centerDir = centerDir.rotateRight();
         }
         if (dir != null) {
             if (dir != Direction.CENTER) {

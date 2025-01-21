@@ -81,10 +81,12 @@ public class Tower extends Unit {
                     MapLocation closestEnemyLocation = enemyUnits[0].getLocation();
                     int minDist = rc.getLocation().distanceSquaredTo(closestEnemyLocation);
                     for (RobotInfo enemyUnit : enemyUnits) {
-                        int dist = rc.getLocation().distanceSquaredTo(enemyUnit.getLocation());
-                        if (dist < minDist) {
-                            minDist = dist;
-                            closestEnemyLocation = enemyUnit.getLocation();
+                        if (enemyUnit.getPaintAmount() >= 20 && enemyUnit.getType() != UnitType.MOPPER) {
+                            int dist = rc.getLocation().distanceSquaredTo(enemyUnit.getLocation());
+                            if (dist < minDist) {
+                                minDist = dist;
+                                closestEnemyLocation = enemyUnit.getLocation();
+                            }
                         }
                     }
                     if (closestEnemyLocation != null) {
@@ -94,8 +96,8 @@ public class Tower extends Unit {
                             if (nearbyAlly.getType() == UnitType.MOPPER) mopperCount++;
                         }
 
-                        if ((mopperCount < 1 || rc.getHealth() <= 200) && rc.getChips() >= UnitType.MOPPER.moneyCost && rc.getPaint() >= UnitType.MOPPER.paintCost) {
-                            if (rc.getLocation().distanceSquaredTo(closestEnemyLocation) <= 9 || spawnedDefenseMoppers < 1 || rc.getHealth() <= 200) {
+                        if (rc.getChips() >= UnitType.MOPPER.moneyCost && rc.getPaint() >= UnitType.MOPPER.paintCost) {
+                            if (mopperCount < 2 && rc.getLocation().distanceSquaredTo(closestEnemyLocation) <= 9 && (spawnedDefenseMoppers < 1 || rc.getChips() >= newTowerChipThreshold + UnitType.MOPPER.moneyCost)) {
                                 Direction dir = rc.getLocation().directionTo(closestEnemyLocation);
                                 if (tryBuildRobot(UnitType.MOPPER, dir)) {
                                     spawnedDefenseMoppers++;
@@ -145,13 +147,25 @@ public class Tower extends Unit {
                 }
             } else {
                 // end game
-                // 1:1:1 ratio of soldiers to splashers to moppers
-                if (spawnedSoldiers <= spawnedSplashers && spawnedSoldiers <= spawnedMoppers) {
-                    return UnitType.SOLDIER;
-                } else if (spawnedSplashers <= spawnedSoldiers && spawnedSplashers <= spawnedMoppers) {
+                // 1:2:1 ratio of soldiers to splashers to moppers
+                double divSoldierCount = (double) spawnedSoldiers / 1.0;
+                double divMopperCount = (double) spawnedMoppers / 1.0;
+                double divSplasherCount = (double) spawnedSplashers / 2.0;
+                if (divSplasherCount <= divSoldierCount && divSplasherCount <= divMopperCount) {
                     return UnitType.SPLASHER;
                 } else {
-                    return UnitType.MOPPER;
+                    if (divMopperCount <= divSoldierCount - 2) {
+                        return UnitType.MOPPER;
+                    }
+                    if (divSoldierCount <= divMopperCount - 2) {
+                        return UnitType.SOLDIER;
+                    }
+
+                    if (rc.getChips() >= 2500) {
+                        return UnitType.MOPPER;
+                    } else {
+                        return UnitType.SOLDIER;
+                    }
                 }
             }
         } else {

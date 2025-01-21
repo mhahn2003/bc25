@@ -69,6 +69,32 @@ public class Util extends Globals {
         return paintPenalty;
     }
 
+    public static UnitType towerType() {
+        int numTowers = rc.getNumberTowers();
+        if (numTowers < 6) {
+            if (rc.getChips() > 1500 && rc.getRoundNum() > 100) return UnitType.LEVEL_ONE_PAINT_TOWER;
+            else return UnitType.LEVEL_ONE_MONEY_TOWER;
+        } else if (numTowers < 10) {
+            return UnitType.LEVEL_ONE_PAINT_TOWER;
+        } else if (numTowers < 12) {
+            return UnitType.LEVEL_ONE_MONEY_TOWER;
+        } else if (numTowers < 14) {
+            return UnitType.LEVEL_ONE_PAINT_TOWER;
+        } else if (numTowers < 16) {
+            return UnitType.LEVEL_ONE_MONEY_TOWER;
+        } else if (numTowers < 18) {
+            return UnitType.LEVEL_ONE_PAINT_TOWER;
+        } else if (numTowers < 20) {
+            return UnitType.LEVEL_ONE_MONEY_TOWER;
+        } else if (numTowers < 22) {
+            return UnitType.LEVEL_ONE_PAINT_TOWER;
+        } else if (numTowers < 24) {
+            return UnitType.LEVEL_ONE_MONEY_TOWER;
+        } else {
+            return UnitType.LEVEL_ONE_PAINT_TOWER;
+        }
+    }
+
     public static void checkSymmetry() throws GameActionException {
         int midX1, midX2;
         if (mapWidth % 2 == 1) {
