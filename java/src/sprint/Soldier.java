@@ -509,6 +509,14 @@ public class Soldier extends Unit {
         Logger.log("buildTower: " + buildRuinLocation + " " + buildTowerType);
         continueBuild = false;
 
+        if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 2 && rc.getPaint() < 5) {
+            if (rc.getPaint() == 0) rc.disintegrate();
+            else {
+                state = SoldierState.REFILL;
+                return;
+            }
+        }
+
         UnitType newTowerType = Util.towerType();
         if (buildTowerType != newTowerType) {
             if (!(buildTowerType == UnitType.LEVEL_ONE_PAINT_TOWER && rc.getNumberTowers() < 10)) {
