@@ -1,4 +1,4 @@
-package quals;
+package newwander;
 
 import battlecode.common.*;
 
@@ -37,8 +37,8 @@ public class Mopper extends Unit {
 //        System.out.println("buildTower: " + Clock.getBytecodeNum());
         refillOthers();
 //        System.out.println("refillOthers: " + Clock.getBytecodeNum());
-        buildSRP();
-//        System.out.println("buildSRP: " + Clock.getBytecodeNum());
+//        buildSRP();
+////        System.out.println("buildSRP: " + Clock.getBytecodeNum());
         move();
 //        System.out.println("move: " + Clock.getBytecodeNum());
         mopLeftover();
@@ -263,7 +263,7 @@ public class Mopper extends Unit {
         int transferAmount = 0;
         for (RobotInfo robot : friendlyRobots) {
             if (robot.getType().isRobotType()) {
-                if ((robot.getType() != UnitType.MOPPER && robot.getPaintAmount() < robot.getType().paintCapacity * 0.4) && rc.getRoundNum() < 200) {
+                if ((robot.getType() != UnitType.MOPPER && robot.getPaintAmount() < robot.getType().paintCapacity * 0.4) || (robot.getType() == UnitType.MOPPER && robot.getPaintAmount() <= 10)) {
                     int dist = rc.getLocation().distanceSquaredTo(robot.getLocation());
                     if (dist < minDist) {
                         minDist = dist;
@@ -604,12 +604,12 @@ public class Mopper extends Unit {
         if (rc.isMovementReady()) {
             if (noActionCounter > noActionThreshold && flipLocation == null) {
                 int totalDiagLength = mapWidth * mapWidth + mapHeight * mapHeight;
-                flipLocation = exploreLocations[4];
+                flipLocation = centerLocation;
                 if (rc.getLocation().equals(flipLocation)) flipLocation = null;
                 else {
-                    while (flipLocation.distanceSquaredTo(exploreLocations[4]) < totalDiagLength/16) {
+                    while (flipLocation.distanceSquaredTo(centerLocation) < totalDiagLength/16) {
                         Logger.log("flip iteration: " + flipLocation);
-                        flipLocation = flipLocation.translate(exploreLocations[4].x - rc.getLocation().x, exploreLocations[4].y - rc.getLocation().y);
+                        flipLocation = flipLocation.translate(centerLocation.x - rc.getLocation().x, centerLocation.y - rc.getLocation().y);
                     }
                 }
             }

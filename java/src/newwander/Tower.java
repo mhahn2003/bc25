@@ -1,4 +1,4 @@
-package quals;
+package newwander;
 
 import battlecode.common.*;
 
@@ -15,7 +15,7 @@ public class Tower extends Unit {
     static int spawnedDefenseMoppers = 0;
 
     static int midGameRoundStart = 100;
-    static int endGameRoundStart = 250;
+    static int endGameRoundStart = 300;
 
     public void act() throws GameActionException {
         if (!init) {
@@ -71,7 +71,7 @@ public class Tower extends Unit {
     public void spawn() throws GameActionException {
         if (startingTower && rc.getRoundNum() <= 3) {
             MapLocation loc = rc.getLocation();
-            Direction dir = loc.directionTo(exploreLocations[4]);
+            Direction dir = loc.directionTo(centerLocation);
             if (tryBuildRobot(UnitType.SOLDIER, dir)) {
                 return;
             }
@@ -112,7 +112,7 @@ public class Tower extends Unit {
 
                 UnitType type = getNextToSpawn();
                 if (rc.getChips() >= type.moneyCost + newTowerChipThreshold && rc.getPaint() >= type.paintCost) {
-                    Direction dir = rc.getLocation().directionTo(exploreLocations[4]);
+                    Direction dir = rc.getLocation().directionTo(centerLocation);
                     tryBuildRobot(type, dir);
                 }
             }
@@ -125,14 +125,12 @@ public class Tower extends Unit {
                 // early game
                 // purely soldier
                 return UnitType.SOLDIER;
-            } else if (rc.getNumberTowers() > 5 && rc.getChips() > 3000) {
-                return UnitType.SPLASHER;
             } else if (rc.getRoundNum() < endGameRoundStart) {
                 // mid game
-                // 3:1:2 ratio of soldiers to splashers to moppers
-                double divSoldierCount = (double) spawnedSoldiers / 3.0;
+                // 6:1:3 ratio of soldiers to splashers to moppers
+                double divSoldierCount = (double) spawnedSoldiers / 6.0;
+                double divMopperCount = (double) spawnedMoppers / 3.0;
                 double divSplasherCount = (double) spawnedSplashers / 1.0;
-                double divMopperCount = (double) spawnedMoppers / 2.0;
                 if (divSplasherCount <= divSoldierCount && divSplasherCount <= divMopperCount && rc.getNumberTowers() > 6) {
                     return UnitType.SPLASHER;
                 } else {
@@ -143,7 +141,7 @@ public class Tower extends Unit {
                         return UnitType.SOLDIER;
                     }
 
-                    if (rc.getChips() >= 2000) {
+                    if (rc.getChips() >= 2500) {
                         return UnitType.MOPPER;
                     } else {
                         return UnitType.SOLDIER;
@@ -151,10 +149,10 @@ public class Tower extends Unit {
                 }
             } else {
                 // end game
-                // 1:4:2 ratio of soldiers to splashers to moppers
+                // 1:2:1 ratio of soldiers to splashers to moppers
                 double divSoldierCount = (double) spawnedSoldiers / 1.0;
-                double divSplasherCount = (double) spawnedSplashers / 4.0;
-                double divMopperCount = (double) spawnedMoppers / 2.0;
+                double divMopperCount = (double) spawnedMoppers / 1.0;
+                double divSplasherCount = (double) spawnedSplashers / 2.0;
                 if (divSplasherCount <= divSoldierCount && divSplasherCount <= divMopperCount) {
                     return UnitType.SPLASHER;
                 } else {
@@ -165,7 +163,7 @@ public class Tower extends Unit {
                         return UnitType.SOLDIER;
                     }
 
-                    if (rc.getChips() >= 2000) {
+                    if (rc.getChips() >= 2500) {
                         return UnitType.MOPPER;
                     } else {
                         return UnitType.SOLDIER;

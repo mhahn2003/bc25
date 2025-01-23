@@ -1,4 +1,4 @@
-package quals;
+package newwander;
 
 import battlecode.common.*;
 
@@ -119,25 +119,38 @@ public class Util extends Globals {
 
     public static UnitType newTowerType(MapLocation ruin) {
         int numTowers = rc.getNumberTowers();
-        if (numTowers < 5) {
+        if (numTowers < 6) {
             if (rc.getChips() > 1500 && rc.getRoundNum() > 100) return UnitType.LEVEL_ONE_PAINT_TOWER;
             else return UnitType.LEVEL_ONE_MONEY_TOWER;
         } else if (isDefenseTowerLocation(ruin)) {
             return UnitType.LEVEL_ONE_DEFENSE_TOWER;
-        } else if (numTowers < 8) {
+        } else if (numTowers < 10) {
             return UnitType.LEVEL_ONE_PAINT_TOWER;
+        } else if (numTowers < 12) {
+            return UnitType.LEVEL_ONE_MONEY_TOWER;
+        } else if (numTowers < 14) {
+            return UnitType.LEVEL_ONE_PAINT_TOWER;
+        } else if (numTowers < 16) {
+            return UnitType.LEVEL_ONE_MONEY_TOWER;
+        } else if (numTowers < 18) {
+            return UnitType.LEVEL_ONE_PAINT_TOWER;
+        } else if (numTowers < 20) {
+            return UnitType.LEVEL_ONE_MONEY_TOWER;
+        } else if (numTowers < 22) {
+            return UnitType.LEVEL_ONE_PAINT_TOWER;
+        } else if (numTowers < 24) {
+            return UnitType.LEVEL_ONE_MONEY_TOWER;
         } else {
-            if (rc.getID() % 2 == 0) return UnitType.LEVEL_ONE_PAINT_TOWER;
-            else return UnitType.LEVEL_ONE_MONEY_TOWER;
+            return UnitType.LEVEL_ONE_PAINT_TOWER;
         }
     }
 
     public static boolean isDefenseTowerLocation(MapLocation loc) {
-        if (Math.abs(loc.x - exploreLocations[4].x) <= 5 && Math.abs(loc.y - exploreLocations[4].y) <= 5) return true;
+        if (Math.abs(loc.x - centerLocation.x) <= 5 && Math.abs(loc.y - centerLocation.y) <= 5) return true;
         if (symmetry == 1) {
-            return Math.abs(loc.x - exploreLocations[4].x) <= 5 && Math.abs(loc.y - exploreLocations[4].y) <= mapHeight / 4;
+            return Math.abs(loc.x - centerLocation.x) <= 5 && Math.abs(loc.y - centerLocation.y) <= mapHeight / 4;
         } else if (symmetry == 2) {
-            return Math.abs(loc.x - exploreLocations[4].x) <= mapWidth / 4 && Math.abs(loc.y - exploreLocations[4].y) <= 5;
+            return Math.abs(loc.x - centerLocation.x) <= mapWidth / 4 && Math.abs(loc.y - centerLocation.y) <= 5;
         }
         return false;
     }
