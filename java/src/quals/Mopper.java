@@ -16,7 +16,6 @@ public class Mopper extends Unit {
         REFILL_OTHERS,
         BUILD_TOWER,
         BUILD_SRP,
-        INACTION,
     }
 
     static MopperState state = MopperState.DEFAULT;
@@ -574,7 +573,7 @@ public class Mopper extends Unit {
 
     public void move() throws GameActionException {
         Logger.log("state: " + state);
-        if (state != MopperState.DEFAULT && state != MopperState.INACTION) return;
+        if (state != MopperState.DEFAULT) return;
 
         if (!(rc.getNumberTowers() < 6 && rc.getRoundNum() < 200)) {
             RobotInfo[] nearbyAllies = rc.senseNearbyRobots(8, myTeam);
@@ -603,8 +602,7 @@ public class Mopper extends Unit {
         }
 
         if (rc.isMovementReady()) {
-            if (noActionCounter > noActionThreshold && state != MopperState.INACTION) {
-                state = MopperState.INACTION;
+            if (noActionCounter > noActionThreshold && flipLocation == null) {
                 int totalDiagLength = mapWidth * mapWidth + mapHeight * mapHeight;
                 flipLocation = null;
                 if (rc.getLocation().distanceSquaredTo(exploreLocations[4]) < totalDiagLength/36) {
@@ -618,7 +616,7 @@ public class Mopper extends Unit {
                 }
             }
 
-            if (state == MopperState.INACTION) {
+            if (flipLocation != null) {
                 Util.checkSymmetry();
                 MapLocation base = Util.getBaseToVisit();
                 if (base != null) {

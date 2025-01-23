@@ -10,7 +10,6 @@ public class Soldier extends Unit {
         REFILL,
         BUILD_TOWER,
         BUILD_SRP,
-        INACTION,
     }
 
     static SoldierState state = SoldierState.DEFAULT;
@@ -137,7 +136,6 @@ public class Soldier extends Unit {
     }
 
     public void refill() throws GameActionException {
-        if (state == SoldierState.INACTION) return;
         if (state != SoldierState.REFILL && state != SoldierState.ATTACK && ((state == SoldierState.DEFAULT && rc.getPaint() < 80) || rc.getPaint() <= 25) && rc.getChips() < 2000) {
             Logger.log("need refill");
             MapLocation closestFriendPaintTower = null;
@@ -314,14 +312,9 @@ public class Soldier extends Unit {
             }
 
             if (closestRuin == null) return;
-            UnitType towerType = Util.getTowerType(closestRuin);
-            if (towerType == null) {
-                Navigator.moveTo(closestRuin);
-                return;
-            }
 
             state = SoldierState.BUILD_TOWER;
-            buildTowerType = towerType;
+            buildTowerType = null;
             buildRuinLocation = closestRuin;
             noPaintCounter = 0;
         }
@@ -376,6 +369,14 @@ public class Soldier extends Unit {
             }
         }
 
+        if (buildTowerType == null) {
+            UnitType towerType = Util.getTowerType(buildRuinLocation);
+            if (towerType == null) {
+                Navigator.moveTo(buildRuinLocation);
+                return;
+            }
+            buildTowerType = towerType;
+        }
         if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 2 && rc.isActionReady() && rc.canCompleteTowerPattern(buildTowerType, buildRuinLocation)) {
             rc.completeTowerPattern(buildTowerType, buildRuinLocation);
             MapLocation[] impossibleSRPLocs = impossibleSRPLocations.getLocations();
@@ -571,11 +572,10 @@ public class Soldier extends Unit {
     }
 
     public void move() throws GameActionException {
-        if ((state != SoldierState.INACTION && state != SoldierState.DEFAULT) || !rc.isMovementReady()) return;
-        if (noActionCounter > noActionThreshold && state != SoldierState.INACTION) {
-            state = SoldierState.INACTION;
+        Logger.log("state: " + state);
+        if (state != SoldierState.DEFAULT || !rc.isMovementReady()) return;
+        if (noActionCounter > noActionThreshold && flipLocation == null) {
             int totalDiagLength = mapWidth * mapWidth + mapHeight * mapHeight;
-            flipLocation = null;
             if (rc.getLocation().distanceSquaredTo(exploreLocations[4]) < totalDiagLength/36) {
                 MapLocation furtherOpposite = new MapLocation(3 * exploreLocations[4].x - 2 * rc.getLocation().x, 3 * exploreLocations[4].y - 2 * rc.getLocation().y);
                 if (rc.onTheMap(furtherOpposite)) {
@@ -587,7 +587,7 @@ public class Soldier extends Unit {
             }
         }
 
-        if (state == SoldierState.INACTION) {
+        if (flipLocation != null) {
             Util.checkSymmetry();
             MapLocation base = Util.getBaseToVisit();
             if (base != null) {
@@ -627,9 +627,7 @@ public class Soldier extends Unit {
         } else {
             if (rc.getNumberTowers() < 6 && rc.getRoundNum() < 200) return;
             RobotInfo[] nearbyAllies = rc.senseNearbyRobots(8, myTeam);
-            if (nearbyAllies.length < 4) {
-                return;
-            }
+            if (nearbyAllies.length < 3 && rc.getRoundNum() < 400) return;
             MapInfo[] nearbyPaintLocations = rc.senseNearbyMapInfos(9);
             MapLocation[] nearbyRuins = rc.senseNearbyRuins(-1);
             for (MapInfo info : nearbyPaintLocations) {

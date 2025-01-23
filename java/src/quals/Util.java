@@ -35,10 +35,10 @@ public class Util extends Globals {
         return switch (type) {
             case LEVEL_ONE_PAINT_TOWER -> 3500;
             case LEVEL_ONE_MONEY_TOWER -> 20000;
-            case LEVEL_ONE_DEFENSE_TOWER -> 4500;
+            case LEVEL_ONE_DEFENSE_TOWER -> 4000;
             case LEVEL_TWO_PAINT_TOWER -> 6000;
             case LEVEL_TWO_MONEY_TOWER -> 40000;
-            case LEVEL_TWO_DEFENSE_TOWER -> 7000;
+            case LEVEL_TWO_DEFENSE_TOWER -> 6500;
             case LEVEL_THREE_PAINT_TOWER -> Integer.MAX_VALUE;
             case LEVEL_THREE_MONEY_TOWER -> Integer.MAX_VALUE;
             case LEVEL_THREE_DEFENSE_TOWER -> Integer.MAX_VALUE;

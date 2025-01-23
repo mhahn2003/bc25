@@ -6,7 +6,7 @@ public class Tower extends Unit {
     static boolean init = false;
     static boolean startingTower = false;
     static int newTowerChipThreshold = 1000;
-    static int roundsSinceLastAttack = 0;
+    static int roundsSinceLastAttack = -2000;
 
     static int spawnedSoldiers = 0;
     static int spawnedMoppers = 0;

@@ -188,7 +188,7 @@ public class Soldier extends Unit {
         }
         if (state == SoldierState.REFILL) {
             Logger.log("refill state");
-            if (rc.getPaint() >= 80) {
+            if (rc.getPaint() >= 80 || refillPaintTowerLocation == null) {
                 if (continueBuild) state = SoldierState.BUILD_TOWER;
                 else state = SoldierState.DEFAULT;
                 return;

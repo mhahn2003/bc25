@@ -9,7 +9,6 @@ public class Splasher extends Unit {
     public enum SplasherState {
         DEFAULT,
         REFILL,
-        INACTION,
     }
 
     static SplasherState state = SplasherState.DEFAULT;
@@ -305,8 +304,7 @@ public class Splasher extends Unit {
             if (base != null) {
                 Logger.log("base rush: " + base);
                 Navigator.moveTo(base);
-            } else if (noActionCounter > noActionThreshold && state != SplasherState.INACTION) {
-                state = SplasherState.INACTION;
+            } else if (noActionCounter > noActionThreshold) {
                 int totalDiagLength = mapWidth * mapWidth + mapHeight * mapHeight;
                 flipLocation = null;
                 if (rc.getLocation().distanceSquaredTo(exploreLocations[4]) < totalDiagLength/36) {
@@ -320,14 +318,12 @@ public class Splasher extends Unit {
                 }
             }
 
-            if (state == SplasherState.INACTION) {
-                if (flipLocation != null) {
-                    if (rc.getLocation().distanceSquaredTo(flipLocation) <= 9) {
-                        flipLocation = null;
-                    } else {
-                        Logger.log("flip: " + flipLocation);
-                        Navigator.moveTo(flipLocation);
-                    }
+            if (flipLocation != null) {
+                if (rc.getLocation().distanceSquaredTo(flipLocation) <= 9) {
+                    flipLocation = null;
+                } else {
+                    Logger.log("flip: " + flipLocation);
+                    Navigator.moveTo(flipLocation);
                 }
             }
 
