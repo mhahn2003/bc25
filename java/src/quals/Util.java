@@ -69,11 +69,61 @@ public class Util extends Globals {
         return paintPenalty;
     }
 
-    public static UnitType towerType() {
+    // left/right true = paint, false = money
+    public static UnitType getTowerType(MapLocation ruin) throws GameActionException {
+        MapLocation leftMark = ruin.add(Direction.WEST);
+        MapLocation rightMark = ruin.add(Direction.EAST);
+        MapLocation topMark = ruin.add(Direction.NORTH);
+        MapLocation bottomMark = ruin.add(Direction.SOUTH);
+        if (!rc.canSenseLocation(leftMark) || !rc.canSenseLocation(rightMark) || !rc.canSenseLocation(topMark) || !rc.canSenseLocation(bottomMark)) return null;
+        PaintType leftPaint = rc.senseMapInfo(leftMark).getMark();
+        PaintType rightPaint = rc.senseMapInfo(rightMark).getMark();
+        PaintType topPaint = rc.senseMapInfo(topMark).getMark();
+        PaintType bottomPaint = rc.senseMapInfo(bottomMark).getMark();
+        if (leftPaint == PaintType.EMPTY && rightPaint == PaintType.EMPTY && topPaint == PaintType.EMPTY && bottomPaint == PaintType.EMPTY) {
+            if (rc.getLocation().distanceSquaredTo(ruin) <= 2) {
+                Logger.log("all empty");
+                UnitType towerType = newTowerType(ruin);
+                switch (towerType) {
+                    case LEVEL_ONE_PAINT_TOWER -> {
+                        if (rc.getLocation().distanceSquaredTo(leftMark) <= 2 && rc.canMark(leftMark)) rc.mark(leftMark, true);
+                        else if (rc.canMark(rightMark)) rc.mark(rightMark, true);
+                    }
+                    case LEVEL_ONE_MONEY_TOWER -> {
+                        if (rc.getLocation().distanceSquaredTo(leftMark) <= 2 && rc.canMark(leftMark)) rc.mark(leftMark, false);
+                        else if (rc.canMark(rightMark)) rc.mark(rightMark, false);
+                    }
+                    case LEVEL_ONE_DEFENSE_TOWER -> {
+                        if (rc.getLocation().distanceSquaredTo(topMark) <= 2 && rc.canMark(topMark)) rc.mark(topMark, true);
+                        else if (rc.canMark(bottomMark)) rc.mark(bottomMark, true);
+                    }
+                }
+                return towerType;
+            } else {
+                return null;
+            }
+        } else if (topPaint != PaintType.EMPTY || bottomPaint != PaintType.EMPTY) {
+            Logger.log("top bottom nonempty");
+            return UnitType.LEVEL_ONE_DEFENSE_TOWER;
+        } else {
+            Logger.log("left right nonempty");
+            if (leftPaint != PaintType.EMPTY) {
+                if (leftPaint.isSecondary()) return UnitType.LEVEL_ONE_PAINT_TOWER;
+                else return UnitType.LEVEL_ONE_MONEY_TOWER;
+            } else {
+                if (rightPaint.isSecondary()) return UnitType.LEVEL_ONE_PAINT_TOWER;
+                else return UnitType.LEVEL_ONE_MONEY_TOWER;
+            }
+        }
+    }
+
+    public static UnitType newTowerType(MapLocation ruin) {
         int numTowers = rc.getNumberTowers();
         if (numTowers < 6) {
             if (rc.getChips() > 1500 && rc.getRoundNum() > 100) return UnitType.LEVEL_ONE_PAINT_TOWER;
             else return UnitType.LEVEL_ONE_MONEY_TOWER;
+        } else if (isDefenseTowerLocation(ruin)) {
+            return UnitType.LEVEL_ONE_DEFENSE_TOWER;
         } else if (numTowers < 10) {
             return UnitType.LEVEL_ONE_PAINT_TOWER;
         } else if (numTowers < 12) {
@@ -92,6 +142,40 @@ public class Util extends Globals {
             return UnitType.LEVEL_ONE_MONEY_TOWER;
         } else {
             return UnitType.LEVEL_ONE_PAINT_TOWER;
+        }
+    }
+
+    public static boolean isDefenseTowerLocation(MapLocation loc) {
+        if (Math.abs(loc.x - exploreLocations[4].x) <= 5 && Math.abs(loc.y - exploreLocations[4].y) <= 5) return true;
+        if (symmetry == 1) {
+            return Math.abs(loc.x - exploreLocations[4].x) <= 5 && Math.abs(loc.y - exploreLocations[4].y) <= mapHeight / 4;
+        } else if (symmetry == 2) {
+            return Math.abs(loc.x - exploreLocations[4].x) <= mapWidth / 4 && Math.abs(loc.y - exploreLocations[4].y) <= 5;
+        }
+        return false;
+    }
+
+    public static MapLocation getBaseToVisit() throws GameActionException {
+        MapLocation closestPossibleEnemyBase = null;
+        int minDist = Integer.MAX_VALUE;
+        for (int i = 0; i < 3; i++) {
+            if (symmetryLocationsVisited[i]) {
+                continue;
+            }
+            if (rc.getLocation().distanceSquaredTo(symmetryLocations[i]) <= minDist) {
+                minDist = rc.getLocation().distanceSquaredTo(symmetryLocations[i]);
+                closestPossibleEnemyBase = symmetryLocations[i];
+            }
+        }
+        if (closestPossibleEnemyBase == null) return null;
+        if (minDist <= 100) return closestPossibleEnemyBase;
+        if (symmetryLocationsVisited[0]) {
+            if (symmetryLocationsVisited[1]) return symmetryLocations[2];
+            else if (symmetryLocationsVisited[2]) return symmetryLocations[1];
+            else if (rc.getLocation().distanceSquaredTo(symmetryLocations[1]) <= rc.getLocation().distanceSquaredTo(symmetryLocations[2])) return symmetryLocations[1];
+            else return symmetryLocations[2];
+        } else {
+            return symmetryLocations[0];
         }
     }
 
@@ -308,12 +392,21 @@ public class Util extends Globals {
         if (rc.canSenseLocation(loc1) && rc.canSenseLocation(loc2)) {
             MapInfo info1 = rc.senseMapInfo(loc1);
             MapInfo info2 = rc.senseMapInfo(loc2);
-            if (info1.hasRuin() != info2.hasRuin()) {
+            if (info1.hasRuin() != info2.hasRuin() || info1.isWall() != info2.isWall()) {
                 symmetryLocationsVisited[symmetryIndex] = true;
-                return true;
-            }
-            if (info1.isWall() != info2.isWall()) {
-                symmetryLocationsVisited[symmetryIndex] = true;
+                symmetryBroken[symmetryIndex] = true;
+                Logger.log("Symmetry broken at " + symmetryIndex);
+                if (symmetry == -1) {
+                    int numSymmetriesUnbroken = 0;
+                    for (int i = 0; i < 3; i++) {
+                        if (!symmetryBroken[i]) {
+                            symmetry = i;
+                            numSymmetriesUnbroken++;
+                        }
+                    }
+                    if (numSymmetriesUnbroken != 1) symmetry = -1;
+                    Logger.log("Symmetry is " + symmetry);
+                }
                 return true;
             }
         }

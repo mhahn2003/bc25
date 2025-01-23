@@ -281,6 +281,7 @@ public class Splasher extends Unit {
             dir = Direction.CENTER;
         }
         Direction centerDir = rc.getLocation().directionTo(exploreLocations[4]);
+        if (centerDir == Direction.CENTER) centerDir = Direction.NORTH;
         for (int i = 0; i < 8; i++) {
             if (rc.canMove(centerDir)) {
                 MapLocation loc = rc.getLocation().add(centerDir);
@@ -299,7 +300,12 @@ public class Splasher extends Unit {
         } else {
             if (state == SplasherState.REFILL) return;
 
-            if (noActionCounter > noActionThreshold && state != SplasherState.INACTION) {
+            Util.checkSymmetry();
+            MapLocation base = Util.getBaseToVisit();
+            if (base != null) {
+                Logger.log("base rush: " + base);
+                Navigator.moveTo(base);
+            } else if (noActionCounter > noActionThreshold && state != SplasherState.INACTION) {
                 state = SplasherState.INACTION;
                 int totalDiagLength = mapWidth * mapWidth + mapHeight * mapHeight;
                 flipLocation = null;
@@ -314,19 +320,26 @@ public class Splasher extends Unit {
                 }
             }
 
-            if (flipLocation != null) {
-                if (rc.getLocation().distanceSquaredTo(flipLocation) <= 8) {
-                    flipLocation = null;
-                } else {
-                    Logger.log("flip: " + flipLocation);
-                    Navigator.moveTo(flipLocation);
-                    return;
+            if (state == SplasherState.INACTION) {
+                if (flipLocation != null) {
+                    if (rc.getLocation().distanceSquaredTo(flipLocation) <= 9) {
+                        flipLocation = null;
+                    } else {
+                        Logger.log("flip: " + flipLocation);
+                        Navigator.moveTo(flipLocation);
+                    }
                 }
             }
-            Movement.wanderDirection();
-            Logger.log("wander: " + wanderLocation);
+
             if (rc.isMovementReady()) {
-                Navigator.moveTo(wanderLocation);
+                Direction bestDir = Movement.wanderDirection();
+                Logger.log("wander: " + wanderLocation);
+                RobotInfo[] nearbyAllies = rc.senseNearbyRobots(8, myTeam);
+                if (nearbyAllies.length < 3) {
+                    Navigator.moveTo(wanderLocation);
+                } else if (bestDir != null && rc.canMove(bestDir)) {
+                    rc.move(bestDir);
+                }
             }
         }
     }

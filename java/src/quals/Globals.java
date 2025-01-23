@@ -35,14 +35,16 @@ public class Globals {
     static int wanderCount = 0;
     static int maxWanderingCounter = 5;
     static int noActionCounter = 0;
-    static int noActionThreshold = 15;
+    static int noActionThreshold = 10;
     static MapLocation flipLocation = null;
 
-    static boolean rushSoldier = false;
     static FastSet taintedRuins;
+    static MapLocation spawnLocation;
     // diag, vert, horz
     static MapLocation[] symmetryLocations = new MapLocation[3];
     static boolean[] symmetryLocationsVisited = new boolean[3];
+    static int symmetry = -1;
+    static boolean[] symmetryBroken = new boolean[3];
     static FastSet vertCheckedLocations;
     static FastSet horzCheckedLocations;
     static FastSet diagCheckedLocations;
@@ -67,7 +69,6 @@ public class Globals {
 
     static boolean[][] nearbyAllies = new boolean[3][3];
 
-    public static Direction[] allDirections = Direction.values();
     public static Direction[] adjacentDirections = {
             Direction.NORTH,
             Direction.EAST,

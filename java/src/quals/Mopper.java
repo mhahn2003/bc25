@@ -414,6 +414,10 @@ public class Mopper extends Unit {
 
     public void buildSRP() throws GameActionException {
         if (state != MopperState.BUILD_SRP && state != MopperState.DEFAULT || rc.getRoundNum() < 100) return;
+        if (rc.getNumberTowers() < 6 && rc.getRoundNum() < 100) {
+            state = MopperState.DEFAULT;
+            return;
+        }
 
         MapLocation[] ruinLocs = ruinLocations.getLocations();
         FastSet rawRuins = new FastSet();
@@ -572,26 +576,33 @@ public class Mopper extends Unit {
         Logger.log("state: " + state);
         if (state != MopperState.DEFAULT && state != MopperState.INACTION) return;
 
-        MapInfo[] nearbyLocations = rc.senseNearbyMapInfos();
-        MapLocation closestEnemyPaintLocation = null;
-        int minDist = Integer.MAX_VALUE;
-        for (MapInfo info : nearbyLocations) {
-            if (info.getPaint().isEnemy()) {
-                int dist = rc.getLocation().distanceSquaredTo(info.getMapLocation());
-                if (dist < minDist) {
-                    minDist = dist;
-                    closestEnemyPaintLocation = info.getMapLocation();
+        if (!(rc.getNumberTowers() < 6 && rc.getRoundNum() < 200)) {
+            RobotInfo[] nearbyAllies = rc.senseNearbyRobots(8, myTeam);
+            if (nearbyAllies.length >= 4) {
+                MapInfo[] nearbyLocations = rc.senseNearbyMapInfos();
+                MapLocation closestEnemyPaintLocation = null;
+                int minDist = Integer.MAX_VALUE;
+                for (MapInfo info : nearbyLocations) {
+                    if (info.getPaint().isEnemy()) {
+                        int dist = rc.getLocation().distanceSquaredTo(info.getMapLocation());
+                        if (dist < minDist) {
+                            minDist = dist;
+                            closestEnemyPaintLocation = info.getMapLocation();
+                        }
+                    }
+                }
+                if (closestEnemyPaintLocation != null) {
+                    Logger.log("paint: " + closestEnemyPaintLocation);
+                    final MapLocation paintLocation = closestEnemyPaintLocation;
+                    computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(paintLocation));
+                    if (rc.isMovementReady() && rc.getLocation().distanceSquaredTo(paintLocation) > 5) {
+                        Navigator.moveTo(paintLocation);
+                    }
                 }
             }
         }
-        if (closestEnemyPaintLocation != null) {
-            Logger.log("paint: " + closestEnemyPaintLocation);
-            final MapLocation paintLocation = closestEnemyPaintLocation;
-            computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(paintLocation));
-            if (rc.isMovementReady() && rc.getLocation().distanceSquaredTo(paintLocation) > 5) {
-                Navigator.moveTo(paintLocation);
-            }
-        } else {
+
+        if (rc.isMovementReady()) {
             if (noActionCounter > noActionThreshold && state != MopperState.INACTION) {
                 state = MopperState.INACTION;
                 int totalDiagLength = mapWidth * mapWidth + mapHeight * mapHeight;
@@ -607,20 +618,29 @@ public class Mopper extends Unit {
                 }
             }
 
-            if (flipLocation != null) {
-                if (rc.getLocation().distanceSquaredTo(flipLocation) <= 8) {
-                    flipLocation = null;
-                } else {
-                    Logger.log("flip: " + flipLocation);
-                    Navigator.moveTo(flipLocation);
-                    return;
+            if (state == MopperState.INACTION) {
+                Util.checkSymmetry();
+                MapLocation base = Util.getBaseToVisit();
+                if (base != null) {
+                    Logger.log("base rush: " + base);
+                    Navigator.moveTo(base);
+                } else if (flipLocation != null) {
+                    if (rc.getLocation().distanceSquaredTo(flipLocation) <= 9) {
+                        flipLocation = null;
+                    } else {
+                        Logger.log("flip: " + flipLocation);
+                        Navigator.moveTo(flipLocation);
+                    }
                 }
             }
-            Movement.wanderDirection();
-            Logger.log("wander: " + wanderLocation);
-            computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(wanderLocation) / 3);
+
             if (rc.isMovementReady()) {
-                Navigator.moveTo(wanderLocation);
+                Movement.wanderDirection();
+                Logger.log("wander: " + wanderLocation);
+                computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(wanderLocation) / 3);
+                if (rc.isMovementReady()) {
+                    Navigator.moveTo(wanderLocation);
+                }
             }
         }
     }

@@ -284,14 +284,12 @@ public class Comms extends Globals {
                 break;
             }
         }
-        if (rushSoldier) {
-            for (int i = 0; i < symmetryLocations.length; i++) {
-                if (symmetryLocationsVisited[i]) {
-                    continue;
-                }
-                if (rc.getLocation().distanceSquaredTo(symmetryLocations[i]) <= 9) {
-                    symmetryLocationsVisited[i] = true;
-                }
+        for (int i = 0; i < symmetryLocations.length; i++) {
+            if (symmetryLocationsVisited[i]) {
+                continue;
+            }
+            if (rc.canSenseLocation(symmetryLocations[i])) {
+                symmetryLocationsVisited[i] = true;
             }
         }
     }

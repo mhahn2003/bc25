@@ -97,7 +97,7 @@ public class Tower extends Unit {
                         }
 
                         if (rc.getChips() >= UnitType.MOPPER.moneyCost && rc.getPaint() >= UnitType.MOPPER.paintCost) {
-                            if (mopperCount < 2 && rc.getLocation().distanceSquaredTo(closestEnemyLocation) <= 9 && (spawnedDefenseMoppers < 1 || rc.getChips() >= newTowerChipThreshold + UnitType.MOPPER.moneyCost)) {
+                            if (mopperCount < 1 && rc.getLocation().distanceSquaredTo(closestEnemyLocation) <= 9 && spawnedDefenseMoppers < 1) {
                                 Direction dir = rc.getLocation().directionTo(closestEnemyLocation);
                                 if (tryBuildRobot(UnitType.MOPPER, dir)) {
                                     spawnedDefenseMoppers++;
