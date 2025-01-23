@@ -304,17 +304,15 @@ public class Splasher extends Unit {
             if (base != null) {
                 Logger.log("base rush: " + base);
                 Navigator.moveTo(base);
-            } else if (noActionCounter > noActionThreshold) {
+            } else if (noActionCounter > noActionThreshold && flipLocation == null) {
                 int totalDiagLength = mapWidth * mapWidth + mapHeight * mapHeight;
-                flipLocation = null;
-                if (rc.getLocation().distanceSquaredTo(exploreLocations[4]) < totalDiagLength/36) {
-                    MapLocation furtherOpposite = new MapLocation(3 * exploreLocations[4].x - 2 * rc.getLocation().x, 3 * exploreLocations[4].y - 2 * rc.getLocation().y);
-                    if (rc.onTheMap(furtherOpposite)) {
-                        flipLocation = furtherOpposite;
+                flipLocation = exploreLocations[4];
+                if (rc.getLocation().equals(flipLocation)) flipLocation = null;
+                else {
+                    while (flipLocation.distanceSquaredTo(exploreLocations[4]) < totalDiagLength/16) {
+                        Logger.log("flip iteration: " + flipLocation);
+                        flipLocation = flipLocation.translate(exploreLocations[4].x - rc.getLocation().x, exploreLocations[4].y - rc.getLocation().y);
                     }
-                }
-                if (flipLocation == null) {
-                    flipLocation = new MapLocation(mapWidth - rc.getLocation().x - 1, mapHeight - rc.getLocation().y - 1);
                 }
             }
 

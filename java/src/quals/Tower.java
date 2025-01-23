@@ -6,7 +6,8 @@ public class Tower extends Unit {
     static boolean init = false;
     static boolean startingTower = false;
     static int newTowerChipThreshold = 1000;
-    static int roundsSinceLastAttack = -2000;
+    static int roundsSinceLastAttack = 0;
+    static boolean hasBeenAttacked = false;
 
     static int spawnedSoldiers = 0;
     static int spawnedMoppers = 0;
@@ -49,6 +50,7 @@ public class Tower extends Unit {
             return;
         }
         roundsSinceLastAttack = 0;
+        hasBeenAttacked = true;
         if (enemyUnits.length == 0) {
             return;
         }
@@ -180,8 +182,9 @@ public class Tower extends Unit {
     }
 
     public void requestUpgrade() throws GameActionException {
-        // TODO : different criteria for defense towers
-        if (roundsSinceLastAttack >= 40 && rc.getChips() >= Util.getUpgradeCost(rc.getType())) {
+        if (((rc.getType().getBaseType() != UnitType.LEVEL_ONE_DEFENSE_TOWER && roundsSinceLastAttack >= 40)
+                || (rc.getType().getBaseType() == UnitType.LEVEL_ONE_DEFENSE_TOWER
+                && hasBeenAttacked && roundsSinceLastAttack < 3)) && rc.getChips() >= Util.getUpgradeCost(rc.getType())) {
             RobotInfo[] friendlyRobots = rc.senseNearbyRobots(-1, myTeam);
             RobotInfo closestFriendlyRobot = null;
             int minDist = Integer.MAX_VALUE;

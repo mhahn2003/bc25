@@ -576,14 +576,9 @@ public class Soldier extends Unit {
         if (state != SoldierState.DEFAULT || !rc.isMovementReady()) return;
         if (noActionCounter > noActionThreshold && flipLocation == null) {
             int totalDiagLength = mapWidth * mapWidth + mapHeight * mapHeight;
-            if (rc.getLocation().distanceSquaredTo(exploreLocations[4]) < totalDiagLength/36) {
-                MapLocation furtherOpposite = new MapLocation(3 * exploreLocations[4].x - 2 * rc.getLocation().x, 3 * exploreLocations[4].y - 2 * rc.getLocation().y);
-                if (rc.onTheMap(furtherOpposite)) {
-                    flipLocation = furtherOpposite;
-                }
-            }
-            if (flipLocation == null) {
-                flipLocation = new MapLocation(mapWidth - rc.getLocation().x - 1, mapHeight - rc.getLocation().y - 1);
+            flipLocation = exploreLocations[4];
+            while (flipLocation.distanceSquaredTo(exploreLocations[4]) < totalDiagLength/16) {
+                flipLocation = flipLocation.translate(exploreLocations[4].x - rc.getLocation().x, exploreLocations[4].y - rc.getLocation().y);
             }
         }
 
