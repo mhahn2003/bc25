@@ -379,13 +379,8 @@ public class Mopper extends Unit {
             if (rc.isActionReady()) noMopCounter++;
         } else {
             if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 2 && rc.isActionReady()) {
-                MapLocation markLoc = buildRuinLocation.add(Direction.EAST);
-                UnitType towerType;
-                PaintType mark = rc.senseMapInfo(markLoc).getPaint();
-                if (mark == PaintType.EMPTY) towerType = UnitType.LEVEL_ONE_DEFENSE_TOWER;
-                else if (mark.isSecondary()) towerType = UnitType.LEVEL_ONE_PAINT_TOWER;
-                else towerType = UnitType.LEVEL_ONE_MONEY_TOWER;
-                if (rc.canCompleteTowerPattern(towerType, buildRuinLocation)) {
+                UnitType towerType = Util.getTowerType(buildRuinLocation);
+                if (towerType != null && rc.canCompleteTowerPattern(towerType, buildRuinLocation)) {
                     rc.completeTowerPattern(towerType, buildRuinLocation);
                     state = MopperState.DEFAULT;
                     return;

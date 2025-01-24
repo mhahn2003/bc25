@@ -49,14 +49,6 @@ public class Splasher extends Unit {
             else if (p == PaintType.EMPTY) computeSplashHeuristic[x][y] = 5;
             else computeSplashHeuristic[x][y] = 13;
         }
-        RobotInfo[] nearbyRobots = rc.senseNearbyRobots(10, opponentTeam);
-        for (RobotInfo robot : nearbyRobots) {
-            if (robot.getType().isTowerType()) {
-                int x = robot.getLocation().x - rc.getLocation().x + 3;
-                int y = robot.getLocation().y - rc.getLocation().y + 3;
-                computeSplashHeuristic[x][y] += 15;
-            }
-        }
 
         MapLocation[] nearbyRuins = rc.senseNearbyRuins(-1);
         for (MapLocation ruin : nearbyRuins) {
@@ -66,8 +58,8 @@ public class Splasher extends Unit {
                 int y = ruin.y - rc.getLocation().y + 3;
                 for (int dx = -2; dx <= 2; dx++) {
                     for (int dy = -2; dy <= 2; dy++) {
-                        if (x + dx >= 0 && x + dx < 7 && y + dy >= 0 && y + dy < 7 && rc.canSenseLocation(ruin.translate(dx, dy)) && !rc.senseMapInfo(ruin.translate(dx, dy)).getPaint().isAlly()) {
-                            computeSplashHeuristic[x + dx][y + dy] += 5;
+                        if (x + dx >= 0 && x + dx < 7 && y + dy >= 0 && y + dy < 7 && rc.canSenseLocation(ruin.translate(dx, dy)) && rc.senseMapInfo(ruin.translate(dx, dy)).getPaint().isEnemy()) {
+                            computeSplashHeuristic[x + dx][y + dy] += 10;
                         }
                     }
                 }

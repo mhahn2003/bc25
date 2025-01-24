@@ -360,6 +360,7 @@ public class Soldier extends Unit {
 
         Logger.log("buildTower: " + buildRuinLocation + " " + buildTowerType);
         continueBuild = false;
+        Util.checkSymmetry();
 
         if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 2 && rc.getPaint() < 5) {
             if (rc.getPaint() == 0) rc.disintegrate();
@@ -369,13 +370,29 @@ public class Soldier extends Unit {
             }
         }
 
-        if (buildTowerType == null) {
-            UnitType towerType = Util.getTowerType(buildRuinLocation);
-            if (towerType == null) {
+        UnitType towerType = Util.getTowerType(buildRuinLocation);
+        if (towerType == null) {
+            Navigator.moveTo(buildRuinLocation);
+            return;
+        }
+        buildTowerType = towerType;
+        if (buildTowerType == UnitType.LEVEL_ONE_DEFENSE_TOWER) {
+            RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(buildRuinLocation, -1, opponentTeam);
+            if (nearbyEnemies.length == 0 && Util.newTowerType(buildRuinLocation) != UnitType.LEVEL_ONE_DEFENSE_TOWER) {
+                MapLocation topMark = buildRuinLocation.add(Direction.NORTH);
+                MapLocation bottomMark = buildRuinLocation.add(Direction.SOUTH);
+                if (rc.getLocation().distanceSquaredTo(topMark) <= 2 && rc.canRemoveMark(topMark)) {
+                    rc.removeMark(topMark);
+                }
+                if (rc.getLocation().distanceSquaredTo(bottomMark) <= 2 && rc.canRemoveMark(bottomMark)) {
+                    rc.removeMark(bottomMark);
+                }
+            }
+            buildTowerType = Util.getTowerType(buildRuinLocation);
+            if (buildTowerType == UnitType.LEVEL_ONE_DEFENSE_TOWER) {
                 Navigator.moveTo(buildRuinLocation);
                 return;
             }
-            buildTowerType = towerType;
         }
         if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 2 && rc.isActionReady() && rc.canCompleteTowerPattern(buildTowerType, buildRuinLocation)) {
             rc.completeTowerPattern(buildTowerType, buildRuinLocation);
@@ -613,7 +630,7 @@ public class Soldier extends Unit {
     public void paintLeftover() throws GameActionException {
         if (state != SoldierState.DEFAULT || !rc.isActionReady()) return;
 
-        if (rc.getNumberTowers() < 4 && rc.getRoundNum() < 100) return;
+        if (rc.getRoundNum() < 150) return;
         MapInfo locInfo = rc.senseMapInfo(rc.getLocation());
         if (locInfo.getPaint() == PaintType.EMPTY) {
             if (rc.canAttack(rc.getLocation())) {
