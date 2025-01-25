@@ -149,6 +149,12 @@ public class BugNavigator extends Globals {
     }
 
     private static boolean canMove(Direction direction) {
+        if (closestDefenseTower != null) {
+            MapLocation location = rc.adjacentLocation(direction);
+            if (location.distanceSquaredTo(closestDefenseTower) <= 16) {
+                return false;
+            }
+        }
         return rc.canMove(direction);
     }
 

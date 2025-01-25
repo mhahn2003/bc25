@@ -127,15 +127,24 @@ public class Splasher extends Unit {
         }
         if (target != null) {
             if (target.getType().getBaseType() == UnitType.LEVEL_ONE_DEFENSE_TOWER) {
+                if (closestDefenseTower == null) {
+                    closestDefenseTower = target.getLocation();
+                } else {
+                    int dist = rc.getLocation().distanceSquaredTo(target.getLocation());
+                    int closestDist = rc.getLocation().distanceSquaredTo(closestDefenseTower);
+                    if (dist < closestDist) {
+                        closestDefenseTower = target.getLocation();
+                    }
+                }
                 MapLocation opposite = new MapLocation(2 * rc.getLocation().x - target.getLocation().x, 2 * rc.getLocation().y - target.getLocation().y);
                 Logger.log("run away: " + target.getLocation() + " -> " + opposite);
                 Navigator.moveTo(opposite);
             } else {
                 state = SplasherState.ATTACK;
-                if (rc.getLocation().distanceSquaredTo(target.getLocation()) != 16) {
+                if (rc.getLocation().distanceSquaredTo(target.getLocation()) != 10) {
                     for (Direction dir : Globals.adjacentDirections) {
                         MapLocation loc = rc.getLocation().add(dir);
-                        if (rc.canMove(dir) && loc.distanceSquaredTo(target.getLocation()) == 16) {
+                        if (rc.canMove(dir) && loc.distanceSquaredTo(target.getLocation()) == 10) {
                             rc.move(dir);
                             break;
                         }
@@ -148,21 +157,40 @@ public class Splasher extends Unit {
                     if (rc.canAttack(attackLoc)) {
                         rc.attack(attackLoc);
                     }
+                } else if (rc.getLocation().distanceSquaredTo(target.getLocation()) == 10) {
+                    Direction dir = rc.getLocation().directionTo(target.getLocation()).opposite();
+                    MapLocation farAttackLoc = target.getLocation().add(dir).add(dir);
+                    MapLocation closeAttackLoc = rc.getLocation().add(dir.opposite()).add(dir.opposite());
+                    if (getHeuristic(farAttackLoc) > getHeuristic(closeAttackLoc)) {
+                        if (rc.canAttack(farAttackLoc)) {
+                            rc.attack(farAttackLoc);
+                        }
+                    } else {
+                        if (rc.canAttack(closeAttackLoc)) {
+                            rc.attack(closeAttackLoc);
+                        }
+                    }
                 } else {
-                    MapLocation[] attackLocs = new MapLocation[4];
+                    MapLocation[] attackLocs = new MapLocation[12];
                     attackLocs[0] = new MapLocation(target.getLocation().x, target.getLocation().y + 4);
                     attackLocs[1] = new MapLocation(target.getLocation().x, target.getLocation().y - 4);
                     attackLocs[2] = new MapLocation(target.getLocation().x + 4, target.getLocation().y);
                     attackLocs[3] = new MapLocation(target.getLocation().x - 4, target.getLocation().y);
+                    attackLocs[4] = new MapLocation(target.getLocation().x + 3, target.getLocation().y + 1);
+                    attackLocs[5] = new MapLocation(target.getLocation().x + 3, target.getLocation().y - 1);
+                    attackLocs[6] = new MapLocation(target.getLocation().x - 3, target.getLocation().y + 1);
+                    attackLocs[7] = new MapLocation(target.getLocation().x - 3, target.getLocation().y - 1);
+                    attackLocs[8] = new MapLocation(target.getLocation().x + 1, target.getLocation().y + 3);
+                    attackLocs[9] = new MapLocation(target.getLocation().x - 1, target.getLocation().y + 3);
+                    attackLocs[10] = new MapLocation(target.getLocation().x + 1, target.getLocation().y - 3);
+                    attackLocs[11] = new MapLocation(target.getLocation().x - 1, target.getLocation().y - 3);
                     minDist = Integer.MAX_VALUE;
                     MapLocation bestLoc = null;
                     for (MapLocation loc : attackLocs) {
                         if (rc.onTheMap(loc)) {
                             if (rc.canSenseLocation(loc)) {
                                 RobotInfo robot = rc.senseRobotAtLocation(loc);
-                                if (robot != null && robot.getTeam() == myTeam && robot.getType() == UnitType.SPLASHER) {
-                                    continue;
-                                }
+                                if (robot != null || rc.senseMapInfo(loc).isWall()) continue;
                             }
                             int dist = rc.getLocation().distanceSquaredTo(loc);
                             if (dist < minDist) {
@@ -184,7 +212,7 @@ public class Splasher extends Unit {
     }
 
     public void refill() throws GameActionException {
-        if (state != SplasherState.REFILL && ((state == SplasherState.DEFAULT && rc.getPaint() < 150) || rc.getPaint() <= 49) && rc.getChips() < 2000) {
+        if (state != SplasherState.REFILL && rc.getPaint() <= 49) {
             Logger.log("need refill");
             MapLocation closestFriendPaintTower = null;
             int minDist = Integer.MAX_VALUE;
@@ -351,26 +379,27 @@ public class Splasher extends Unit {
             if (base != null) {
                 Logger.log("base rush: " + base);
                 Navigator.moveTo(base);
-            } else if (noActionCounter > noActionThreshold && flipLocation == null) {
-                int totalDiagLength = mapWidth * mapWidth + mapHeight * mapHeight;
-                flipLocation = exploreLocations[4];
-                if (rc.getLocation().equals(flipLocation)) flipLocation = null;
-                else {
-                    while (flipLocation.distanceSquaredTo(exploreLocations[4]) < totalDiagLength/16) {
-                        Logger.log("flip iteration: " + flipLocation);
-                        flipLocation = flipLocation.translate(exploreLocations[4].x - rc.getLocation().x, exploreLocations[4].y - rc.getLocation().y);
-                    }
-                }
             }
-
-            if (flipLocation != null) {
-                if (rc.getLocation().distanceSquaredTo(flipLocation) <= 9) {
-                    flipLocation = null;
-                } else {
-                    Logger.log("flip: " + flipLocation);
-                    Navigator.moveTo(flipLocation);
-                }
-            }
+//            else if (noActionCounter > noActionThreshold && flipLocation == null) {
+//                int totalDiagLength = mapWidth * mapWidth + mapHeight * mapHeight;
+//                flipLocation = exploreLocations[4];
+//                if (rc.getLocation().equals(flipLocation)) flipLocation = null;
+//                else {
+//                    while (flipLocation.distanceSquaredTo(exploreLocations[4]) < totalDiagLength/16) {
+//                        Logger.log("flip iteration: " + flipLocation);
+//                        flipLocation = flipLocation.translate(exploreLocations[4].x - rc.getLocation().x, exploreLocations[4].y - rc.getLocation().y);
+//                    }
+//                }
+//            }
+//
+//            if (flipLocation != null) {
+//                if (rc.getLocation().distanceSquaredTo(flipLocation) <= 9) {
+//                    flipLocation = null;
+//                } else {
+//                    Logger.log("flip: " + flipLocation);
+//                    Navigator.moveTo(flipLocation);
+//                }
+//            }
 
             if (rc.isMovementReady()) {
                 Direction bestDir = Movement.wanderDirection();

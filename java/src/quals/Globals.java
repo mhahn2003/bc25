@@ -68,6 +68,7 @@ public class Globals {
     static MapLocation upgradeTowerLocation = null;
 
     static boolean[][] nearbyAllies = new boolean[3][3];
+    static MapLocation closestDefenseTower = null;
 
     public static Direction[] adjacentDirections = {
             Direction.NORTH,

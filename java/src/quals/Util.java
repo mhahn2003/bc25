@@ -4,6 +4,8 @@ import battlecode.common.*;
 
 public class Util extends Globals {
 
+    private static int symmetryCheckBytecodeThreshold = 2500;
+
     public static boolean useSecondary(MapLocation location) {
         int x = (location.x % 4) - 2;
         int y = (location.y % 4) - 2;
@@ -213,10 +215,10 @@ public class Util extends Globals {
                                     if (checkSymmetry(loc1, loc2, 1)) symmetryVert = false;
                                 }
                             }
-                            if (!symmetryVert) break;
+                            if (!symmetryVert || Clock.getBytecodesLeft() < symmetryCheckBytecodeThreshold) break;
                         }
                     }
-                    if (!symmetryVert) break;
+                    if (!symmetryVert || Clock.getBytecodesLeft() < symmetryCheckBytecodeThreshold) break;
                 }
             } else {
                 for (int i = 4; i >= 0; i--) {
@@ -243,10 +245,10 @@ public class Util extends Globals {
                                     if (checkSymmetry(loc1, loc2, 1)) symmetryVert = false;
                                 }
                             }
-                            if (!symmetryVert) break;
+                            if (!symmetryVert || Clock.getBytecodesLeft() < symmetryCheckBytecodeThreshold) break;
                         }
                     }
-                    if (!symmetryVert) break;
+                    if (!symmetryVert || Clock.getBytecodesLeft() < symmetryCheckBytecodeThreshold) break;
                 }
             }
         }
@@ -278,10 +280,10 @@ public class Util extends Globals {
                                     if (checkSymmetry(loc1, loc2, 2)) symmetryHorz = false;
                                 }
                             }
-                            if (!symmetryHorz) break;
+                            if (!symmetryHorz || Clock.getBytecodesLeft() < symmetryCheckBytecodeThreshold) break;
                         }
                     }
-                    if (!symmetryHorz) break;
+                    if (!symmetryHorz || Clock.getBytecodesLeft() < symmetryCheckBytecodeThreshold) break;
                 }
             } else {
                 for (int i = 4; i >= 0; i--) {
@@ -308,10 +310,10 @@ public class Util extends Globals {
                                     if (checkSymmetry(loc1, loc2, 2)) symmetryHorz = false;
                                 }
                             }
-                            if (!symmetryHorz) break;
+                            if (!symmetryHorz || Clock.getBytecodesLeft() < symmetryCheckBytecodeThreshold) break;
                         }
                     }
-                    if (!symmetryHorz) break;
+                    if (!symmetryHorz || Clock.getBytecodesLeft() < symmetryCheckBytecodeThreshold) break;
                 }
             }
         }
@@ -327,9 +329,9 @@ public class Util extends Globals {
                         if (diagCheckedLocations.contains(loc1)) continue;
                         diagCheckedLocations.add(loc1);
                         if (checkSymmetry(loc1, loc2, 0)) symmetryDiag = false;
-                        if (!symmetryDiag) break;
+                        if (!symmetryDiag || Clock.getBytecodesLeft() < symmetryCheckBytecodeThreshold) break;
                     }
-                    if (!symmetryDiag) break;
+                    if (!symmetryDiag || Clock.getBytecodesLeft() < symmetryCheckBytecodeThreshold) break;
                 }
             } else if (x <= midX1 && y >= midY2) {
                 for (int i = 4; i >= 0; i--) {
@@ -340,9 +342,9 @@ public class Util extends Globals {
                         if (diagCheckedLocations.contains(loc1)) continue;
                         diagCheckedLocations.add(loc1);
                         if (checkSymmetry(loc1, loc2, 0)) symmetryDiag = false;
-                        if (!symmetryDiag) break;
+                        if (!symmetryDiag || Clock.getBytecodesLeft() < symmetryCheckBytecodeThreshold) break;
                     }
-                    if (!symmetryDiag) break;
+                    if (!symmetryDiag || Clock.getBytecodesLeft() < symmetryCheckBytecodeThreshold) break;
                 }
             } else if (x >= midX2 && y <= midY1) {
                 for (int i = 4; i >= 0; i--) {
@@ -353,9 +355,9 @@ public class Util extends Globals {
                         if (diagCheckedLocations.contains(loc1)) continue;
                         diagCheckedLocations.add(loc1);
                         if (checkSymmetry(loc1, loc2, 0)) symmetryDiag = false;
-                        if (!symmetryDiag) break;
+                        if (!symmetryDiag || Clock.getBytecodesLeft() < symmetryCheckBytecodeThreshold) break;
                     }
-                    if (!symmetryDiag) break;
+                    if (!symmetryDiag || Clock.getBytecodesLeft() < symmetryCheckBytecodeThreshold) break;
                 }
             } else {
                 for (int i = 4; i >= 0; i--) {
@@ -366,9 +368,9 @@ public class Util extends Globals {
                         if (diagCheckedLocations.contains(loc1)) continue;
                         diagCheckedLocations.add(loc1);
                         if (checkSymmetry(loc1, loc2, 0)) symmetryDiag = false;
-                        if (!symmetryDiag) break;
+                        if (!symmetryDiag || Clock.getBytecodesLeft() < symmetryCheckBytecodeThreshold) break;
                     }
-                    if (!symmetryDiag) break;
+                    if (!symmetryDiag || Clock.getBytecodesLeft() < symmetryCheckBytecodeThreshold) break;
                 }
             }
         }

@@ -292,6 +292,15 @@ public class Comms extends Globals {
                 symmetryLocationsVisited[i] = true;
             }
         }
+
+        if (closestDefenseTower != null) {
+            if (rc.canSenseLocation(closestDefenseTower)) {
+                RobotInfo robot = rc.senseRobotAtLocation(closestDefenseTower);
+                if (robot == null || robot.getTeam() == myTeam) {
+                    closestDefenseTower = null;
+                }
+            }
+        }
     }
 
     public static void sendMessagesToTower() throws GameActionException {

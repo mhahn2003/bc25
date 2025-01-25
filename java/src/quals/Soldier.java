@@ -83,14 +83,21 @@ public class Soldier extends Unit {
     public void attack() throws GameActionException {
         RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, opponentTeam);
         MapLocation closestTower = null;
+        MapLocation secondClosestTower = null;
         int minDist = Integer.MAX_VALUE;
+        int secondMinDist = Integer.MAX_VALUE;
         for (RobotInfo robot : enemyRobots) {
             if (robot.getType().isTowerType()) {
                 MapLocation robotLoc = robot.getLocation();
                 int dist = rc.getLocation().distanceSquaredTo(robotLoc);
                 if (dist < minDist) {
+                    secondMinDist = minDist;
+                    secondClosestTower = closestTower;
                     minDist = dist;
                     closestTower = robotLoc;
+                } else if (dist < secondMinDist) {
+                    secondMinDist = dist;
+                    secondClosestTower = robotLoc;
                 }
             }
         }
@@ -387,11 +394,11 @@ public class Soldier extends Unit {
                 if (rc.getLocation().distanceSquaredTo(bottomMark) <= 2 && rc.canRemoveMark(bottomMark)) {
                     rc.removeMark(bottomMark);
                 }
-            }
-            buildTowerType = Util.getTowerType(buildRuinLocation);
-            if (buildTowerType == UnitType.LEVEL_ONE_DEFENSE_TOWER) {
-                Navigator.moveTo(buildRuinLocation);
-                return;
+                buildTowerType = Util.getTowerType(buildRuinLocation);
+                if (buildTowerType == UnitType.LEVEL_ONE_DEFENSE_TOWER) {
+                    Navigator.moveTo(buildRuinLocation);
+                    return;
+                }
             }
         }
         if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 2 && rc.isActionReady() && rc.canCompleteTowerPattern(buildTowerType, buildRuinLocation)) {
