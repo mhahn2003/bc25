@@ -70,22 +70,78 @@ public class Tower extends Unit {
     }
 
     public void flicker() throws GameActionException {
-        if (rc.getType() != UnitType.LEVEL_ONE_MONEY_TOWER || rc.getChips() < 2000 || rc.getPaint() >= 100) return;
-        MapInfo[] paintInfo = rc.senseNearbyMapInfos(8);
-        int numIncorrectPaint = 0;
-        for (MapInfo info : paintInfo) {
-            if (info.getMapLocation().equals(rc.getLocation())) continue;
-            if (info.getPaint().isEnemy()) return;
-            if (info.getPaint() == PaintType.EMPTY) {
-                Logger.log("empty: " + info.getMapLocation());
-                numIncorrectPaint++;
+        if (rc.getChips() < 1000 || rc.getPaint() >= 100) return;
+        if (rc.getType() == UnitType.LEVEL_ONE_MONEY_TOWER && rc.getChips() >= 2000) {
+            if (Util.isDefenseTowerLocation(rc.getLocation())) return;
+            MapInfo[] paintInfo = rc.senseNearbyMapInfos(8);
+            int numIncorrectPaint = 0;
+            for (MapInfo info : paintInfo) {
+                if (info.getMapLocation().equals(rc.getLocation())) continue;
+                if (info.getPaint().isEnemy()) return;
+                if (info.getPaint() == PaintType.EMPTY) {
+                    numIncorrectPaint++;
+                } else if (info.getPaint().isSecondary() != Util.useSecondaryForTower(info.getMapLocation(), rc.getLocation(), UnitType.LEVEL_ONE_MONEY_TOWER)) {
+                    numIncorrectPaint++;
+                }
             }
-            else if (info.getPaint().isSecondary() != Util.useSecondaryForTower(info.getMapLocation(), rc.getLocation(), UnitType.LEVEL_ONE_MONEY_TOWER)) {
-                Logger.log("secondary: " + info.getMapLocation());
-                numIncorrectPaint++;
+            if (numIncorrectPaint < 3) {
+                RobotInfo[] nearbyAllies = rc.senseNearbyRobots(-1, myTeam);
+                int minDist = Integer.MAX_VALUE;
+                Logger.log("need flicker");
+                RobotInfo closestAlly = null;
+                for (RobotInfo ally : nearbyAllies) {
+                    if (ally.getType() == UnitType.SOLDIER && rc.canSendMessage(ally.getLocation()) && ally.getPaintAmount() > numIncorrectPaint * 5) {
+                        int dist = rc.getLocation().distanceSquaredTo(ally.getLocation());
+                        if (dist < minDist) {
+                            minDist = dist;
+                            closestAlly = ally;
+                        }
+                    }
+                }
+                if (closestAlly != null) {
+                    RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(-1, opponentTeam);
+                    for (RobotInfo enemy : nearbyEnemies) {
+                        if (enemy.getType() == UnitType.MOPPER || enemy.getType() == UnitType.SPLASHER) {
+                            return;
+                        }
+                    }
+
+                    int message = Comms.encodeMessage(Comms.InfoCategory.FLICKER, rc.getLocation());
+                    message = Comms.combineMessage(message, 0);
+                    if (rc.canSendMessage(closestAlly.getLocation(), message)) {
+                        Logger.log("sending flicker: " + closestAlly.getLocation());
+                        rc.sendMessage(closestAlly.getLocation(), message);
+                    }
+                    if (closestAlly.getLocation().distanceSquaredTo(rc.getLocation()) <= 2 && numIncorrectPaint == 0) {
+                        rc.disintegrate();
+                    }
+                }
             }
-        }
-        if (numIncorrectPaint < 3) {
+        } else if (rc.getType().getBaseType() == UnitType.LEVEL_ONE_DEFENSE_TOWER) {
+            switch (rc.getType()) {
+                case LEVEL_ONE_DEFENSE_TOWER -> {
+                    if (roundsSinceLastAttack < 100) return;
+                }
+                case LEVEL_TWO_DEFENSE_TOWER -> {
+                    if (roundsSinceLastAttack < 150) return;
+                }
+                case LEVEL_THREE_DEFENSE_TOWER -> {
+                    if (roundsSinceLastAttack < 200) return;
+                }
+            }
+
+            MapInfo[] paintInfo = rc.senseNearbyMapInfos(8);
+            int numIncorrectPaint = 0;
+            for (MapInfo info : paintInfo) {
+                if (info.getMapLocation().equals(rc.getLocation())) continue;
+                if (info.getPaint().isEnemy()) return;
+                if (info.getPaint() == PaintType.EMPTY) {
+                    numIncorrectPaint++;
+                } else if (info.getPaint().isSecondary() != Util.useSecondaryForTower(info.getMapLocation(), rc.getLocation(), UnitType.LEVEL_ONE_MONEY_TOWER)) {
+                    numIncorrectPaint++;
+                }
+            }
+
             RobotInfo[] nearbyAllies = rc.senseNearbyRobots(-1, myTeam);
             int minDist = Integer.MAX_VALUE;
             Logger.log("need flicker");
@@ -100,20 +156,13 @@ public class Tower extends Unit {
                 }
             }
             if (closestAlly != null) {
-                RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(-1, opponentTeam);
-                for (RobotInfo enemy : nearbyEnemies) {
-                    if (enemy.getType() == UnitType.MOPPER || enemy.getType() == UnitType.SPLASHER) {
-                        return;
-                    }
-                }
-
                 int message = Comms.encodeMessage(Comms.InfoCategory.FLICKER, rc.getLocation());
                 message = Comms.combineMessage(message, 0);
                 if (rc.canSendMessage(closestAlly.getLocation(), message)) {
                     Logger.log("sending flicker: " + closestAlly.getLocation());
                     rc.sendMessage(closestAlly.getLocation(), message);
                 }
-                if (closestAlly.getLocation().distanceSquaredTo(rc.getLocation()) <= 8 && numIncorrectPaint == 0) {
+                if (closestAlly.getLocation().distanceSquaredTo(rc.getLocation()) <= 2 && numIncorrectPaint == 0) {
                     rc.disintegrate();
                 }
             }
@@ -231,7 +280,7 @@ public class Tower extends Unit {
                 return UnitType.MOPPER;
             } else if (rc.getPaint() < 300) {
                 return UnitType.SOLDIER;
-            } else if (rc.getChips() > 2000) {
+            } else if (rc.getChips() > 1500 && rc.getRoundNum() % 10 != 0) {
                 return UnitType.SPLASHER;
             } else {
                 return UnitType.SOLDIER;

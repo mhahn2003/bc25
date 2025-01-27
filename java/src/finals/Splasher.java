@@ -17,6 +17,7 @@ public class Splasher extends Unit {
     public void act() throws GameActionException {
         super.act();
 //        System.out.println("init: " + Clock.getBytecodeNum());
+        if (rc.getPaint() == 0) rc.disintegrate();
         preprocess();
 //        System.out.println("preprocess: " + Clock.getBytecodeNum());
         upgrade();
@@ -212,7 +213,7 @@ public class Splasher extends Unit {
     }
 
     public void refill() throws GameActionException {
-        if (state != SplasherState.REFILL && rc.getPaint() <= 49) {
+        if (state != SplasherState.REFILL && rc.getPaint() < 50) {
             Logger.log("need refill");
             MapLocation closestFriendPaintTower = null;
             int minDist = Integer.MAX_VALUE;
@@ -248,73 +249,63 @@ public class Splasher extends Unit {
                     state = SplasherState.REFILL;
                     refillPaintTowerLocation = closestRefillTower;
                 } else {
-                    state = SplasherState.DEFAULT;
-                    return;
+                    refillPaintTowerLocation = null;
                 }
             }
         }
         if (state == SplasherState.REFILL) {
-            if (rc.getPaint() >= 150) {
-                state = SplasherState.DEFAULT;
-                return;
-            }
             RobotInfo tower = null;
-            if (rc.canSenseRobotAtLocation(refillPaintTowerLocation)) {
-                tower = rc.senseRobotAtLocation(refillPaintTowerLocation);
-                if (tower == null || tower.getTeam() == opponentTeam || (tower.getType().getBaseType() != UnitType.LEVEL_ONE_PAINT_TOWER && tower.getPaintAmount() < 15)) {
-                    noRefillTowerLocations.add(refillPaintTowerLocation);
-                    state = SplasherState.DEFAULT;
-                    return;
-                }
-
-                if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) > 4) {
-                    RobotInfo[] nearbyRobots = rc.senseNearbyRobots(refillPaintTowerLocation, 4, myTeam);
-                    if (nearbyRobots.length >= 8) {
+            if (refillPaintTowerLocation != null) {
+                if (rc.canSenseRobotAtLocation(refillPaintTowerLocation)) {
+                    tower = rc.senseRobotAtLocation(refillPaintTowerLocation);
+                    if (tower == null || tower.getTeam() == opponentTeam || (tower.getType().getBaseType() != UnitType.LEVEL_ONE_PAINT_TOWER && tower.getPaintAmount() < 15)) {
                         noRefillTowerLocations.add(refillPaintTowerLocation);
-                        state = SplasherState.DEFAULT;
-                        return;
-                    }
-                }
-            } else if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) <= GameConstants.VISION_RADIUS_SQUARED) {
-                state = SplasherState.DEFAULT;
-                return;
-            }
-
-            MapLocation[] nearbyRuins = rc.senseNearbyRuins(-1);
-            for (MapLocation ruin : nearbyRuins) {
-                RobotInfo robot = rc.senseRobotAtLocation(ruin);
-                if (robot != null && robot.getTeam() == myTeam && rc.getLocation().distanceSquaredTo(ruin) < rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) && robot.getPaintAmount() >= 15) {
-                    refillPaintTowerLocation = ruin;
-                    tower = robot;
-                    break;
-                }
-            }
-
-            if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) <= 2) {
-                int transferAmount = Math.min(UnitType.SPLASHER.paintCapacity - rc.getPaint(), tower.getPaintAmount());
-                if (rc.canTransferPaint(refillPaintTowerLocation, -transferAmount)) {
-                    rc.transferPaint(refillPaintTowerLocation, -transferAmount);
-                    MapLocation opposite = new MapLocation(2 * refillPaintTowerLocation.x - rc.getLocation().x, 2 * refillPaintTowerLocation.y - rc.getLocation().y);
-                    Navigator.moveTo(opposite);
-                }
-            } else if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) <= 8) {
-                if (rc.isActionReady()) {
-                    Navigator.moveTo(refillPaintTowerLocation);
-                    if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) <= 2) {
-                        int transferAmount = Math.min(UnitType.SPLASHER.paintCapacity - rc.getPaint(), tower.getPaintAmount());
-                        if (rc.canTransferPaint(refillPaintTowerLocation, -transferAmount)) {
-                            rc.transferPaint(refillPaintTowerLocation, -transferAmount);
+                        refillPaintTowerLocation = null;
+                    } else if (rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) > 4) {
+                        RobotInfo[] nearbyRobots = rc.senseNearbyRobots(refillPaintTowerLocation, 4, myTeam);
+                        if (nearbyRobots.length >= 8) {
+                            noRefillTowerLocations.add(refillPaintTowerLocation);
+                            refillPaintTowerLocation = null;
                         }
                     }
                 }
+            }
+
+            RobotInfo[] nearbyMoppers = rc.senseNearbyRobots(-1, myTeam);
+            MapLocation closestMopper = null;
+            int minDist = Integer.MAX_VALUE;
+            for (RobotInfo mopper : nearbyMoppers) {
+                if (mopper.getType() == UnitType.MOPPER && mopper.getPaintAmount() <= UnitType.MOPPER.paintCapacity - rc.getPaint()) {
+                    int dist = rc.getLocation().distanceSquaredTo(mopper.getLocation());
+                    if (dist < minDist) {
+                        minDist = dist;
+                        closestMopper = mopper.getLocation();
+                    }
+                }
+            }
+            if (closestMopper != null) {
+                if (rc.getLocation().distanceSquaredTo(closestMopper) > 2) {
+                    Navigator.moveTo(closestMopper);
+                }
             } else {
-                Navigator.moveTo(refillPaintTowerLocation);
+                if (tower != null && refillPaintTowerLocation != null && rc.getLocation().distanceSquaredTo(refillPaintTowerLocation) <= 2) {
+                    int transferAmount = Math.min(UnitType.SOLDIER.paintCapacity - rc.getPaint(), tower.getPaintAmount());
+                    if (rc.canTransferPaint(refillPaintTowerLocation, -transferAmount)) {
+                        rc.transferPaint(refillPaintTowerLocation, -transferAmount);
+                    }
+                } else {
+                    if (refillPaintTowerLocation != null) {
+                        Navigator.moveTo(refillPaintTowerLocation);
+                    } else {
+                        state = SplasherState.DEFAULT;
+                    }
+                }
             }
         }
     }
 
     public void splash() throws GameActionException {
-        if (!rc.isActionReady()) return;
+        if (!rc.isActionReady() || rc.getPaint() < 50) return;
 
         int bestSplash = 0;
         MapLocation bestSplashLocation = null;
@@ -343,7 +334,7 @@ public class Splasher extends Unit {
     }
 
     public void move() throws GameActionException {
-        if (!rc.isMovementReady() || state == SplasherState.ATTACK) return;
+        if (!rc.isMovementReady() || state == SplasherState.ATTACK || state == SplasherState.REFILL) return;
 
         Direction dir = null;
         int bestSplash = 0;
@@ -380,26 +371,6 @@ public class Splasher extends Unit {
                 Logger.log("base rush: " + base);
                 Navigator.moveTo(base);
             }
-//            else if (noActionCounter > noActionThreshold && flipLocation == null) {
-//                int totalDiagLength = mapWidth * mapWidth + mapHeight * mapHeight;
-//                flipLocation = exploreLocations[4];
-//                if (rc.getLocation().equals(flipLocation)) flipLocation = null;
-//                else {
-//                    while (flipLocation.distanceSquaredTo(exploreLocations[4]) < totalDiagLength/16) {
-//                        Logger.log("flip iteration: " + flipLocation);
-//                        flipLocation = flipLocation.translate(exploreLocations[4].x - rc.getLocation().x, exploreLocations[4].y - rc.getLocation().y);
-//                    }
-//                }
-//            }
-//
-//            if (flipLocation != null) {
-//                if (rc.getLocation().distanceSquaredTo(flipLocation) <= 9) {
-//                    flipLocation = null;
-//                } else {
-//                    Logger.log("flip: " + flipLocation);
-//                    Navigator.moveTo(flipLocation);
-//                }
-//            }
 
             if (rc.isMovementReady()) {
                 Direction bestDir = Movement.wanderDirection();

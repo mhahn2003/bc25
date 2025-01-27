@@ -52,8 +52,8 @@ public class Globals {
 
     static UnitType buildTowerType = null;
     static int noPaintCounter = 0;
-    static int noPaintTowerThreshold = 5;
-    static int noPaintSRPThreshold = 5;
+    static int noPaintTowerThreshold = 3;
+    static int noPaintSRPThreshold = 3;
     static int noMopCounter = 0;
     static int noMopTowerThreshold = 5;
     static int noMopSRPThreshold = 3;

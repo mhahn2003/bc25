@@ -120,16 +120,10 @@ public class Util extends Globals {
     }
 
     public static UnitType newTowerType(MapLocation ruin) {
-        int numTowers = rc.getNumberTowers();
-        if (numTowers < 8) {
-            if (rc.getChips() > 1500 && rc.getRoundNum() > 200) return UnitType.LEVEL_ONE_PAINT_TOWER;
-            else return UnitType.LEVEL_ONE_MONEY_TOWER;
-        } else if (isDefenseTowerLocation(ruin)) {
+        if (isDefenseTowerLocation(ruin)) {
             return UnitType.LEVEL_ONE_DEFENSE_TOWER;
-        } else if (numTowers < 10) {
-            return UnitType.LEVEL_ONE_PAINT_TOWER;
         } else {
-            if (rc.getID() % 3 == 0) return UnitType.LEVEL_ONE_PAINT_TOWER;
+            if (rc.getChips() > 3000) return UnitType.LEVEL_ONE_PAINT_TOWER;
             else return UnitType.LEVEL_ONE_MONEY_TOWER;
         }
     }

@@ -70,7 +70,7 @@ public class Soldier extends Unit {
 
     public void flicker() throws GameActionException {
         if (currentFlickerTowerLocation == null) return;
-        if (rc.getChips() < 2000) {
+        if (rc.getChips() < 1000) {
             currentFlickerTowerLocation = null;
             state = SoldierState.DEFAULT;
             return;
@@ -88,6 +88,11 @@ public class Soldier extends Unit {
         Logger.log("flicker: " + currentFlickerTowerLocation);
         RobotInfo tower = rc.senseRobotAtLocation(currentFlickerTowerLocation);
         if (tower == null) {
+            if (rc.getNumberTowers() == 25) {
+                currentFlickerTowerLocation = null;
+                state = SoldierState.DEFAULT;
+                return;
+            }
             if (rc.getLocation().distanceSquaredTo(currentFlickerTowerLocation) > 2) {
                 for (Direction dir : Globals.adjacentDirections) {
                     MapLocation loc = rc.getLocation().add(dir);
@@ -468,11 +473,17 @@ public class Soldier extends Unit {
             return;
         }
         rotateAroundTower(buildRuinLocation, buildTowerType, true);
-        if (rc.isActionReady() && rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 2 && rc.getChips() < 800) {
+        if (rc.isActionReady() && rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 2) {
             noPaintCounter += 1;
             if (noPaintCounter >= noPaintTowerThreshold) {
-                state = SoldierState.DEFAULT;
-                impossibleRuinLocations.add(buildRuinLocation);
+                nearbyAllies = rc.senseNearbyRobots(buildRuinLocation, 2, myTeam);
+                for (RobotInfo ally : nearbyAllies) {
+                    if (ally.getType() == UnitType.SOLDIER && ally.getID() < rc.getID()) {
+                        state = SoldierState.DEFAULT;
+                        impossibleRuinLocations.add(buildRuinLocation);
+                        return;
+                    }
+                }
             }
         } else {
             noPaintCounter = 0;
@@ -516,35 +527,35 @@ public class Soldier extends Unit {
             MapLocation[] possibleSRPLocations = new MapLocation[8];
 
             MapLocation loc1 = new MapLocation(loc.x - x, loc.y - y);
-            if (rc.canSenseLocation(loc1) && !impossibleSRPLocations.contains(loc1) && !rc.senseMapInfo(loc1).isResourcePatternCenter()) {
+            if (rc.canSenseLocation(loc1) && !impossibleSRPLocations.contains(loc1) && !rc.senseMapInfo(loc1).isResourcePatternCenter() && loc1.x >= 2 && loc1.x < mapWidth - 2 && loc1.y >= 2 && loc1.y < mapHeight - 2) {
                 possibleSRPLocations[0] = loc1;
             }
             MapLocation loc2 = new MapLocation(loc.x - x, loc.y + 4 - y);
-            if (rc.canSenseLocation(loc2) && !impossibleSRPLocations.contains(loc2) && !rc.senseMapInfo(loc2).isResourcePatternCenter()) {
+            if (rc.canSenseLocation(loc2) && !impossibleSRPLocations.contains(loc2) && !rc.senseMapInfo(loc2).isResourcePatternCenter() && loc2.x >= 2 && loc2.x < mapWidth - 2 && loc2.y >= 2 && loc2.y < mapHeight - 2) {
                 possibleSRPLocations[1] = loc2;
             }
             MapLocation loc3 = new MapLocation(loc.x + 4 - x, loc.y - y);
-            if (rc.canSenseLocation(loc3) && !impossibleSRPLocations.contains(loc3) && !rc.senseMapInfo(loc3).isResourcePatternCenter()) {
+            if (rc.canSenseLocation(loc3) && !impossibleSRPLocations.contains(loc3) && !rc.senseMapInfo(loc3).isResourcePatternCenter() && loc3.x >= 2 && loc3.x < mapWidth - 2 && loc3.y >= 2 && loc3.y < mapHeight - 2) {
                 possibleSRPLocations[2] = loc3;
             }
             MapLocation loc4 = new MapLocation(loc.x + 4 - x, loc.y + 4 - y);
-            if (rc.canSenseLocation(loc4) && !impossibleSRPLocations.contains(loc4) && !rc.senseMapInfo(loc4).isResourcePatternCenter()) {
+            if (rc.canSenseLocation(loc4) && !impossibleSRPLocations.contains(loc4) && !rc.senseMapInfo(loc4).isResourcePatternCenter() && loc4.x >= 2 && loc4.x < mapWidth - 2 && loc4.y >= 2 && loc4.y < mapHeight - 2) {
                 possibleSRPLocations[3] = loc4;
             }
             MapLocation loc5 = new MapLocation(loc.x - 4 - x, loc.y - y);
-            if (rc.canSenseLocation(loc5) && !impossibleSRPLocations.contains(loc5) && !rc.senseMapInfo(loc5).isResourcePatternCenter()) {
+            if (rc.canSenseLocation(loc5) && !impossibleSRPLocations.contains(loc5) && !rc.senseMapInfo(loc5).isResourcePatternCenter() && loc5.x >= 2 && loc5.x < mapWidth - 2 && loc5.y >= 2 && loc5.y < mapHeight - 2) {
                 possibleSRPLocations[4] = loc5;
             }
             MapLocation loc6 = new MapLocation(loc.x - x, loc.y - 4 - y);
-            if (rc.canSenseLocation(loc6) && !impossibleSRPLocations.contains(loc6) && !rc.senseMapInfo(loc6).isResourcePatternCenter()) {
+            if (rc.canSenseLocation(loc6) && !impossibleSRPLocations.contains(loc6) && !rc.senseMapInfo(loc6).isResourcePatternCenter() && loc6.x >= 2 && loc6.x < mapWidth - 2 && loc6.y >= 2 && loc6.y < mapHeight - 2) {
                 possibleSRPLocations[5] = loc6;
             }
             MapLocation loc7 = new MapLocation(loc.x + 4 - x, loc.y - 4 - y);
-            if (rc.canSenseLocation(loc7) && !impossibleSRPLocations.contains(loc7) && !rc.senseMapInfo(loc7).isResourcePatternCenter()) {
+            if (rc.canSenseLocation(loc7) && !impossibleSRPLocations.contains(loc7) && !rc.senseMapInfo(loc7).isResourcePatternCenter() && loc7.x >= 2 && loc7.x < mapWidth - 2 && loc7.y >= 2 && loc7.y < mapHeight - 2) {
                 possibleSRPLocations[6] = loc7;
             }
             MapLocation loc8 = new MapLocation(loc.x - 4 - x, loc.y + 4 - y);
-            if (rc.canSenseLocation(loc8) && !impossibleSRPLocations.contains(loc8) && !rc.senseMapInfo(loc8).isResourcePatternCenter()) {
+            if (rc.canSenseLocation(loc8) && !impossibleSRPLocations.contains(loc8) && !rc.senseMapInfo(loc8).isResourcePatternCenter() && loc8.x >= 2 && loc8.x < mapWidth - 2 && loc8.y >= 2 && loc8.y < mapHeight - 2) {
                 possibleSRPLocations[7] = loc8;
             }
 
@@ -652,8 +663,12 @@ public class Soldier extends Unit {
         if (noActionCounter > noActionThreshold && flipLocation == null) {
             int totalDiagLength = mapWidth * mapWidth + mapHeight * mapHeight;
             flipLocation = exploreLocations[4];
-            while (flipLocation.distanceSquaredTo(exploreLocations[4]) < totalDiagLength/16) {
-                flipLocation = flipLocation.translate(exploreLocations[4].x - rc.getLocation().x, exploreLocations[4].y - rc.getLocation().y);
+            if (flipLocation.equals(rc.getLocation())) {
+                flipLocation = null;
+            } else {
+                while (flipLocation.distanceSquaredTo(exploreLocations[4]) < totalDiagLength / 16) {
+                    flipLocation = flipLocation.translate(exploreLocations[4].x - rc.getLocation().x, exploreLocations[4].y - rc.getLocation().y);
+                }
             }
         }
 
@@ -704,7 +719,7 @@ public class Soldier extends Unit {
                 if (info.getPaint() == PaintType.EMPTY) {
                     boolean nearRuin = false;
                     for (MapLocation ruin : nearbyRuins) {
-                        if (info.getMapLocation().distanceSquaredTo(ruin) <= 8 && rc.getNumberTowers() < 25 && (rc.senseRobotAtLocation(ruin) == null || (rc.senseRobotAtLocation(ruin).getType() == UnitType.LEVEL_ONE_MONEY_TOWER))) {
+                        if (info.getMapLocation().distanceSquaredTo(ruin) <= 8 && rc.getNumberTowers() < 25 && (rc.senseRobotAtLocation(ruin) == null || rc.senseRobotAtLocation(ruin).getType() == UnitType.LEVEL_ONE_MONEY_TOWER || rc.senseRobotAtLocation(ruin).getType().getBaseType() == UnitType.LEVEL_ONE_DEFENSE_TOWER)) {
                             nearRuin = true;
                             break;
                         }

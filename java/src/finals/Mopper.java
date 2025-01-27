@@ -23,6 +23,7 @@ public class Mopper extends Unit {
     public void act() throws GameActionException {
         super.act();
 //        System.out.println("init: " + Clock.getBytecodeNum());
+        if (rc.getPaint() == 0) rc.disintegrate();
         upgrade();
 //        System.out.println("upgrade: " + Clock.getBytecodeNum());
         drain();
@@ -82,6 +83,16 @@ public class Mopper extends Unit {
                     if (rc.canTransferPaint(ruin, -transferAmount)) {
                         rc.transferPaint(ruin, -transferAmount);
                     }
+                }
+            }
+        }
+
+        RobotInfo[] nearbyAllies = rc.senseNearbyRobots(2, myTeam);
+        for (RobotInfo ally : nearbyAllies) {
+            if (ally.getType() == UnitType.SPLASHER && ally.getPaintAmount() < 50 && rc.getPaint() <= 90) {
+                int transferAmount = Math.min(ally.getPaintAmount(), UnitType.MOPPER.paintCapacity - rc.getPaint());
+                if (rc.canTransferPaint(ally.getLocation(), -transferAmount)) {
+                    rc.transferPaint(ally.getLocation(), -transferAmount);
                 }
             }
         }
@@ -263,7 +274,7 @@ public class Mopper extends Unit {
         int transferAmount = 0;
         for (RobotInfo robot : friendlyRobots) {
             if (robot.getType().isRobotType()) {
-                if ((robot.getType() != UnitType.MOPPER && robot.getPaintAmount() < robot.getType().paintCapacity * 0.4) && rc.getRoundNum() < 200) {
+                if ((robot.getType() == UnitType.SOLDIER && robot.getPaintAmount() < robot.getType().paintCapacity * 0.4) && rc.getRoundNum() < 200) {
                     int dist = rc.getLocation().distanceSquaredTo(robot.getLocation());
                     if (dist < minDist) {
                         minDist = dist;

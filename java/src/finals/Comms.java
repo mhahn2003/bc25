@@ -228,6 +228,9 @@ public class Comms extends Globals {
                     if (robot.getType() == UnitType.LEVEL_ONE_MONEY_TOWER && robot.getID() % 3 == 0) {
                         flickerTowerLocations.add(loc);
                     }
+                    if (robot.getType().getBaseType() == UnitType.LEVEL_ONE_DEFENSE_TOWER) {
+                        flickerTowerLocations.add(loc);
+                    }
                 }
             } else {
                 if (robot.getType().isTowerType()) {
