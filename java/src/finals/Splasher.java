@@ -363,8 +363,6 @@ public class Splasher extends Unit {
                 rc.move(dir);
             }
         } else {
-            if (state == SplasherState.REFILL) return;
-
             Util.checkSymmetry();
             MapLocation base = Util.getBaseToVisit();
             if (base != null) {

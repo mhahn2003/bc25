@@ -104,7 +104,7 @@ public class Util extends Globals {
             } else {
                 return null;
             }
-        } else if (topPaint != PaintType.EMPTY || bottomPaint != PaintType.EMPTY) {
+        } else if ((topPaint != PaintType.EMPTY || bottomPaint != PaintType.EMPTY) && rc.getNumberTowers() > 4) {
             Logger.log("top bottom nonempty");
             return UnitType.LEVEL_ONE_DEFENSE_TOWER;
         } else {
@@ -120,7 +120,7 @@ public class Util extends Globals {
     }
 
     public static UnitType newTowerType(MapLocation ruin) {
-        if (isDefenseTowerLocation(ruin)) {
+        if (isDefenseTowerLocation(ruin) && rc.getNumberTowers() > 4) {
             return UnitType.LEVEL_ONE_DEFENSE_TOWER;
         } else {
             if (rc.getChips() > 3000) return UnitType.LEVEL_ONE_PAINT_TOWER;

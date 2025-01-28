@@ -86,6 +86,15 @@ public class Soldier extends Unit {
 
         state = SoldierState.FLICKER;
         Logger.log("flicker: " + currentFlickerTowerLocation);
+        MapLocation topMark = currentFlickerTowerLocation.add(Direction.NORTH);
+        MapLocation bottomMark = currentFlickerTowerLocation.add(Direction.SOUTH);
+        if (rc.canRemoveMark(topMark)) {
+            rc.removeMark(topMark);
+        }
+        if (rc.canRemoveMark(bottomMark)) {
+            rc.removeMark(bottomMark);
+        }
+
         RobotInfo tower = rc.senseRobotAtLocation(currentFlickerTowerLocation);
         if (tower == null) {
             if (rc.getNumberTowers() == 25) {
@@ -155,28 +164,65 @@ public class Soldier extends Unit {
             }
         }
 
+        if (closestTower != null && secondClosestTower != null) {
+            RobotInfo tower1 = rc.senseRobotAtLocation(closestTower);
+            RobotInfo tower2 = rc.senseRobotAtLocation(secondClosestTower);
+            if (tower1.getHealth() >= 100 + tower2.getHealth()) {
+                MapLocation temp = closestTower;
+                closestTower = secondClosestTower;
+                secondClosestTower = temp;
+            }
+        }
+
         if (closestTower != null) {
             state = SoldierState.ATTACK;
             if (rc.getLocation().distanceSquaredTo(closestTower) <= 9) {
                 if (rc.canAttack(closestTower)) {
                     rc.attack(closestTower);
                 }
-                Direction dir = rc.getLocation().directionTo(closestTower).opposite();
-                if (rc.canMove(dir)) {
-                    rc.move(dir);
-                }
-                Direction left = dir.rotateLeft();
-                if (rc.canMove(left)) {
-                    rc.move(left);
-                }
-                Direction right = dir.rotateRight();
-                if (rc.canMove(right)) {
-                    rc.move(right);
+                if (secondClosestTower != null) {
+                    for (Direction dir : Globals.adjacentDirections) {
+                        MapLocation loc = rc.getLocation().add(dir);
+                        if (rc.canMove(dir) && loc.distanceSquaredTo(closestTower) > 9 && loc.distanceSquaredTo(secondClosestTower) > 9) {
+                            rc.move(dir);
+                            break;
+                        }
+                    }
+                    if (rc.isMovementReady()) {
+                        Direction bestDir = null;
+                        int maxDist = 0;
+                        for (Direction dir : Globals.adjacentDirections) {
+                            MapLocation loc = rc.getLocation().add(dir);
+                            if (rc.canMove(dir)) {
+                                int dist = loc.distanceSquaredTo(closestTower) + loc.distanceSquaredTo(secondClosestTower);
+                                if (dist > maxDist) {
+                                    maxDist = dist;
+                                    bestDir = dir;
+                                }
+                            }
+                        }
+                        if (bestDir != null) {
+                            rc.move(bestDir);
+                        }
+                    }
+                } else {
+                    Direction dir = rc.getLocation().directionTo(closestTower).opposite();
+                    if (rc.canMove(dir)) {
+                        rc.move(dir);
+                    }
+                    Direction left = dir.rotateLeft();
+                    if (rc.canMove(left)) {
+                        rc.move(left);
+                    }
+                    Direction right = dir.rotateRight();
+                    if (rc.canMove(right)) {
+                        rc.move(right);
+                    }
                 }
             } else {
                 for (Direction dir : Globals.adjacentDirections) {
                     MapLocation loc = rc.getLocation().add(dir);
-                    if (rc.canMove(dir) && loc.distanceSquaredTo(closestTower) <= 9) {
+                    if (rc.canMove(dir) && loc.distanceSquaredTo(closestTower) <= 9 && (secondClosestTower == null || loc.distanceSquaredTo(secondClosestTower) > 9)) {
                         rc.move(dir);
                         break;
                     }
@@ -423,11 +469,7 @@ public class Soldier extends Unit {
         Util.checkSymmetry();
 
         if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 2 && rc.getPaint() < 5) {
-            if (rc.getPaint() == 0) rc.disintegrate();
-            else {
-                state = SoldierState.REFILL;
-                return;
-            }
+            rc.disintegrate();
         }
 
         UnitType towerType = Util.getTowerType(buildRuinLocation);
@@ -448,7 +490,7 @@ public class Soldier extends Unit {
                     rc.removeMark(bottomMark);
                 }
                 buildTowerType = Util.getTowerType(buildRuinLocation);
-                if (buildTowerType == UnitType.LEVEL_ONE_DEFENSE_TOWER) {
+                if (buildTowerType == UnitType.LEVEL_ONE_DEFENSE_TOWER || buildTowerType == null) {
                     Navigator.moveTo(buildRuinLocation);
                     return;
                 }
@@ -667,7 +709,9 @@ public class Soldier extends Unit {
                 flipLocation = null;
             } else {
                 while (flipLocation.distanceSquaredTo(exploreLocations[4]) < totalDiagLength / 16) {
-                    flipLocation = flipLocation.translate(exploreLocations[4].x - rc.getLocation().x, exploreLocations[4].y - rc.getLocation().y);
+                    MapLocation flipped = flipLocation.translate(exploreLocations[4].x - rc.getLocation().x, exploreLocations[4].y - rc.getLocation().y);
+                    if (rc.onTheMap(flipped)) flipLocation = flipped;
+                    else break;
                 }
             }
         }
@@ -681,6 +725,7 @@ public class Soldier extends Unit {
             } else if (flipLocation != null) {
                 if (rc.getLocation().distanceSquaredTo(flipLocation) <= 9) {
                     flipLocation = null;
+                    noActionCounter = 0;
                 } else {
                     Logger.log("flip: " + flipLocation);
                     Navigator.moveTo(flipLocation);

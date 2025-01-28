@@ -370,11 +370,7 @@ public class Soldier extends Unit {
         Util.checkSymmetry();
 
         if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 2 && rc.getPaint() < 5) {
-            if (rc.getPaint() == 0) rc.disintegrate();
-            else {
-                state = SoldierState.REFILL;
-                return;
-            }
+            rc.disintegrate();
         }
 
         UnitType towerType = Util.getTowerType(buildRuinLocation);

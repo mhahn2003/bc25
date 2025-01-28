@@ -618,6 +618,7 @@ public class Mopper extends Unit {
                 } else if (flipLocation != null) {
                     if (rc.getLocation().distanceSquaredTo(flipLocation) <= 9) {
                         flipLocation = null;
+                        noActionCounter = 0;
                     } else {
                         Logger.log("flip: " + flipLocation);
                         Navigator.moveTo(flipLocation);

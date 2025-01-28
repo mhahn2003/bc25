@@ -171,9 +171,7 @@ public class Tower extends Unit {
 
     public void spawn() throws GameActionException {
         if (startingTower && rc.getRoundNum() <= 3) {
-            MapLocation loc = rc.getLocation();
-            Direction dir = loc.directionTo(exploreLocations[4]);
-            if (tryBuildRobot(UnitType.SOLDIER, dir)) {
+            if (tryBuildRobot(UnitType.SOLDIER, exploreLocations[4])) {
                 return;
             }
         } else {
@@ -201,8 +199,7 @@ public class Tower extends Unit {
 
                         if (rc.getChips() >= UnitType.MOPPER.moneyCost && rc.getPaint() >= UnitType.MOPPER.paintCost) {
                             if (mopperCount < 1 && rc.getLocation().distanceSquaredTo(closestEnemyLocation) <= 9 && spawnedDefenseMoppers < 1) {
-                                Direction dir = rc.getLocation().directionTo(closestEnemyLocation);
-                                if (tryBuildRobot(UnitType.MOPPER, dir)) {
+                                if (tryBuildRobot(UnitType.MOPPER, closestEnemyLocation)) {
                                     spawnedDefenseMoppers++;
                                     return;
                                 }
@@ -213,8 +210,7 @@ public class Tower extends Unit {
 
                 UnitType type = getNextToSpawn();
                 if (rc.getChips() >= type.moneyCost + newTowerChipThreshold && rc.getPaint() >= type.paintCost) {
-                    Direction dir = rc.getLocation().directionTo(exploreLocations[4]);
-                    tryBuildRobot(type, dir);
+                    tryBuildRobot(type, exploreLocations[4]);
                 }
             }
         }
@@ -335,18 +331,24 @@ public class Tower extends Unit {
         }
     }
 
-    public boolean tryBuildRobot(UnitType unitType, Direction initialDir) throws GameActionException {
-        Direction dir = initialDir;
-        for (int i = 0; i < 8; i++) {
-            MapLocation newLoc = rc.getLocation().add(dir).add(dir);
-            if (buildRobot(unitType, newLoc)) {
+    public boolean tryBuildRobot(UnitType unitType, MapLocation towards) throws GameActionException {
+        if (rc.isActionReady()) {
+            MapLocation[] spawnLocs = rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), 4);
+            MapLocation bestSpawnLoc = null;
+            int minDist = Integer.MAX_VALUE;
+            for (MapLocation spawnLoc : spawnLocs) {
+                if (rc.canBuildRobot(unitType, spawnLoc)) {
+                    int dist = towards.distanceSquaredTo(spawnLoc);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        bestSpawnLoc = spawnLoc;
+                    }
+                }
+            }
+            if (bestSpawnLoc != null) {
+                buildRobot(unitType, bestSpawnLoc);
                 return true;
             }
-            MapLocation newLoc2 = rc.getLocation().add(dir);
-            if (buildRobot(unitType, newLoc2)) {
-                return true;
-            }
-            dir = dir.rotateRight();
         }
         return false;
     }
