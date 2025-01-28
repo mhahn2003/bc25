@@ -46,7 +46,11 @@ public class Movement extends Globals {
             }
             MapLocation[] wanderLocs = wanderLocations.getLocations();
             if (wanderLocs.length > 0) {
-                wanderLocation = wanderLocs[rc.getID() % wanderLocs.length];
+                if (rc.getRoundNum() < 4 && !exploreLocationsVisited[4]) {
+                    wanderLocation = exploreLocations[4];
+                } else {
+                    wanderLocation = wanderLocs[rc.getID() % wanderLocs.length];
+                }
                 minDistToTarget = rc.getLocation().distanceSquaredTo(wanderLocation);
                 wanderCount = 0;
             } else if (wanderIndex != -1) {

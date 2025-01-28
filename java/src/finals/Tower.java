@@ -84,7 +84,7 @@ public class Tower extends Unit {
                     numIncorrectPaint++;
                 }
             }
-            if (numIncorrectPaint < 3) {
+            if (numIncorrectPaint < 3 || rc.getChips() > 5000) {
                 RobotInfo[] nearbyAllies = rc.senseNearbyRobots(-1, myTeam);
                 int minDist = Integer.MAX_VALUE;
                 Logger.log("need flicker");
@@ -198,7 +198,7 @@ public class Tower extends Unit {
                         }
 
                         if (rc.getChips() >= UnitType.MOPPER.moneyCost && rc.getPaint() >= UnitType.MOPPER.paintCost) {
-                            if (mopperCount < 1 && rc.getLocation().distanceSquaredTo(closestEnemyLocation) <= 9 && spawnedDefenseMoppers < 1) {
+                            if (mopperCount < 2 && rc.getLocation().distanceSquaredTo(closestEnemyLocation) <= 9 && spawnedDefenseMoppers < 1) {
                                 if (tryBuildRobot(UnitType.MOPPER, closestEnemyLocation)) {
                                     spawnedDefenseMoppers++;
                                     return;
@@ -274,7 +274,7 @@ public class Tower extends Unit {
                 if (rc.getPaint() < 200) {
                     return UnitType.MOPPER;
                 } else {
-                    if (rc.getChips() > 1500) {
+                    if (rc.getChips() > 1500 && rc.getPaint() >= 300) {
                         return UnitType.SPLASHER;
                     } else {
                         return UnitType.SOLDIER;

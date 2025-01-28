@@ -212,7 +212,7 @@ public class Comms extends Globals {
             case UPGRADE -> upgradeTowerLocation = loc;
             case FLICKER -> {
                 Logger.log("receive flicker: " + loc);
-                currentFlickerTowerLocation = loc;
+                if (currentFlickerTowerLocation == null) currentFlickerTowerLocation = loc;
                 noFlickerCounter = 0;
             }
         }

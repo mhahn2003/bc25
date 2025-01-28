@@ -69,7 +69,39 @@ public class Soldier extends Unit {
     }
 
     public void flicker() throws GameActionException {
-        if (currentFlickerTowerLocation == null) return;
+        if (currentFlickerTowerLocation == null) {
+            if (rc.getChips() > 5000) {
+                MapLocation closestTower = null;
+                int minDist = 100;
+                MapLocation[] friendlyPaintTowerLocations = Globals.friendlyTowerLocations.getLocations();
+                for (MapLocation loc : friendlyPaintTowerLocations) {
+                    int dist = rc.getLocation().distanceSquaredTo(loc);
+                    if (rc.canSenseLocation(loc)) {
+                        friendlyTowerLocations.remove(loc);
+                        continue;
+                    }
+                    if (dist < minDist) {
+                        minDist = dist;
+                        closestTower = loc;
+                    }
+                }
+                if (closestTower != null) {
+                    Logger.log("ghost flicker: " + closestTower);
+                    Navigator.moveTo(closestTower);
+                    state = SoldierState.FLICKER;
+                } else {
+                    if (state == SoldierState.FLICKER) {
+                        state = SoldierState.DEFAULT;
+                        return;
+                    }
+                }
+            } else {
+                if (state == SoldierState.FLICKER) {
+                    state = SoldierState.DEFAULT;
+                }
+            }
+            return;
+        }
         MapInfo[] nearbyPaint = rc.senseNearbyMapInfos(currentFlickerTowerLocation, 8);
         for (MapInfo info : nearbyPaint) {
             if (info.getPaint().isEnemy()) {
