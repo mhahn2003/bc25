@@ -507,7 +507,10 @@ public class Mopper extends Unit {
             }
         }
 
-        if (closestRobot == null) return;
+        if (closestRobot == null) {
+            state = MopperState.DEFAULT;
+            return;
+        }
         state = MopperState.REFILL_OTHERS;
 
         Logger.log("refillOthers: " + closestRobot + " " + transferAmount);

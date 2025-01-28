@@ -70,8 +70,8 @@ public class Tower extends Unit {
     }
 
     public void flicker() throws GameActionException {
-        if (rc.getChips() < 1000 || rc.getPaint() >= 100) return;
-        if (rc.getType() == UnitType.LEVEL_ONE_MONEY_TOWER && rc.getChips() >= 2000) {
+        if (rc.getChips() < 2000 || rc.getPaint() >= 100) return;
+        if (rc.getType() == UnitType.LEVEL_ONE_MONEY_TOWER && rc.getChips() >= 3000) {
             if (Util.isDefenseTowerLocation(rc.getLocation())) return;
             MapInfo[] paintInfo = rc.senseNearbyMapInfos(8);
             int numIncorrectPaint = 0;
@@ -222,8 +222,6 @@ public class Tower extends Unit {
                 // early game
                 // purely soldier
                 return UnitType.SOLDIER;
-            } else if (rc.getNumberTowers() > 5 && rc.getChips() > 3000) {
-                return UnitType.SPLASHER;
             } else if (rc.getRoundNum() < endGameRoundStart) {
                 // mid game
                 // 3:1:2 ratio of soldiers to splashers to moppers
@@ -272,6 +270,16 @@ public class Tower extends Unit {
         } else {
             if (rc.getRoundNum() < midGameRoundStart) {
                 return UnitType.SOLDIER;
+            } else if (rc.getRoundNum() < endGameRoundStart) {
+                if (rc.getPaint() < 200) {
+                    return UnitType.MOPPER;
+                } else {
+                    if (rc.getChips() > 1500) {
+                        return UnitType.SPLASHER;
+                    } else {
+                        return UnitType.SOLDIER;
+                    }
+                }
             } else if (rc.getPaint() < 200) {
                 return UnitType.MOPPER;
             } else if (rc.getPaint() < 300) {

@@ -123,7 +123,7 @@ public class Util extends Globals {
         if (isDefenseTowerLocation(ruin) && rc.getNumberTowers() > 4) {
             return UnitType.LEVEL_ONE_DEFENSE_TOWER;
         } else {
-            if (rc.getChips() > 3000) return UnitType.LEVEL_ONE_PAINT_TOWER;
+            if (rc.getChips() > 2500) return UnitType.LEVEL_ONE_PAINT_TOWER;
             else return UnitType.LEVEL_ONE_MONEY_TOWER;
         }
     }

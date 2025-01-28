@@ -11,6 +11,7 @@ public class Unit extends Globals {
 //            rc.disintegrate();
 //        }
         flush();
+        calculateTowers();
         Comms.senseInfo();
 //        if (rc.getType().isRobotType()) System.out.println("senseInfo: " + Clock.getBytecodeNum());
         Comms.readMessages();
@@ -35,6 +36,18 @@ public class Unit extends Globals {
             symmetryLocations[0] = new MapLocation(mapWidth - spawnLocation.x - 1, mapHeight - spawnLocation.y - 1);
             symmetryLocations[1] = new MapLocation(mapWidth - spawnLocation.x - 1, spawnLocation.y);
             symmetryLocations[2] = new MapLocation(spawnLocation.x, mapHeight - spawnLocation.y - 1);
+        }
+    }
+
+    public void calculateTowers() throws GameActionException {
+        chips[0] = chips[1];
+        chips[1] = chips[2];
+        chips[2] = chips[3];
+        chips[3] = chips[4];
+        chips[4] = rc.getChips();
+        if (rc.getRoundNum() > 5) {
+            int maxDiff = Math.max(Math.max(Math.max(Math.max(chips[4] - chips[3], chips[3] - chips[2]), chips[2] - chips[1]), chips[1] - chips[0]), 0);
+            numMoneyTowers = maxDiff / 20;
         }
     }
 }

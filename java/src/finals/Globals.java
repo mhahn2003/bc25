@@ -22,6 +22,8 @@ public class Globals {
     static FastSet noRefillTowerLocations;
     static FastSet flickerTowerLocations;
     static FastSet ruinLocations;
+    static int numMoneyTowers = 1;
+    static int[] chips = new int[5];
 
     final static int enemyLocMinDist = 16;
     static MapLocation[] latestEnemyLocations = new MapLocation[25];
@@ -37,6 +39,7 @@ public class Globals {
     static int maxWanderingCounter = 5;
     static int noActionCounter = 0;
     static int noActionThreshold = 10;
+    static int noFlickerCounter = 0;
     static MapLocation flipLocation = null;
 
     static FastSet taintedRuins;

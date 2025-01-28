@@ -149,7 +149,6 @@ public class Comms extends Globals {
         if (messageBytes < 0) {
             messageBytes += 4294967296L;
         }
-        Logger.log("Message: " + messageBytes);
         int message1 = (int) (messageBytes / 65536);
         int message2 = (int) (messageBytes % 65536);
         decipherMessage(message1);
@@ -157,7 +156,11 @@ public class Comms extends Globals {
     }
 
     public static void readMessages() throws GameActionException {
-        Message[] messages = rc.readMessages(rc.getRoundNum());
+        Message[] messages = rc.readMessages(rc.getRoundNum()-1);
+        for (Message m : messages) {
+            splitMessage(m);
+        }
+        messages = rc.readMessages(rc.getRoundNum());
         for (Message m : messages) {
             splitMessage(m);
         }
@@ -207,7 +210,11 @@ public class Comms extends Globals {
                 }
             }
             case UPGRADE -> upgradeTowerLocation = loc;
-            case FLICKER -> currentFlickerTowerLocation = loc;
+            case FLICKER -> {
+                Logger.log("receive flicker: " + loc);
+                currentFlickerTowerLocation = loc;
+                noFlickerCounter = 0;
+            }
         }
     }
 

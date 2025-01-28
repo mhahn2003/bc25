@@ -70,11 +70,6 @@ public class Soldier extends Unit {
 
     public void flicker() throws GameActionException {
         if (currentFlickerTowerLocation == null) return;
-        if (rc.getChips() < 1000) {
-            currentFlickerTowerLocation = null;
-            state = SoldierState.DEFAULT;
-            return;
-        }
         MapInfo[] nearbyPaint = rc.senseNearbyMapInfos(currentFlickerTowerLocation, 8);
         for (MapInfo info : nearbyPaint) {
             if (info.getPaint().isEnemy()) {
@@ -85,6 +80,7 @@ public class Soldier extends Unit {
         }
 
         state = SoldierState.FLICKER;
+        noFlickerCounter++;
         Logger.log("flicker: " + currentFlickerTowerLocation);
         MapLocation topMark = currentFlickerTowerLocation.add(Direction.NORTH);
         MapLocation bottomMark = currentFlickerTowerLocation.add(Direction.SOUTH);
@@ -117,6 +113,11 @@ public class Soldier extends Unit {
                 }
             }
         } else {
+            if (noFlickerCounter > 3) {
+                currentFlickerTowerLocation = null;
+                state = SoldierState.DEFAULT;
+                return;
+            }
             int remainingPaint = Math.min(tower.getPaintAmount() % 100, UnitType.SOLDIER.paintCapacity - rc.getPaint());
             if (remainingPaint >= 10 && rc.getLocation().distanceSquaredTo(currentFlickerTowerLocation) <= 2) {
                 if (rc.canTransferPaint(currentFlickerTowerLocation, -remainingPaint)) {
