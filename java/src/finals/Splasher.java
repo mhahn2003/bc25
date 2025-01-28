@@ -254,6 +254,10 @@ public class Splasher extends Unit {
             }
         }
         if (state == SplasherState.REFILL) {
+            if (rc.getPaint() > 100) {
+                state = SplasherState.DEFAULT;
+                return;
+            }
             RobotInfo tower = null;
             if (refillPaintTowerLocation != null) {
                 if (rc.canSenseRobotAtLocation(refillPaintTowerLocation)) {
