@@ -260,9 +260,20 @@ public class Soldier extends Unit {
                         break;
                     }
                 }
+                Direction dir = rc.getLocation().directionTo(closestTower);
+                if (rc.canMove(dir)) {
+                    rc.move(dir);
+                }
+                if (rc.canMove(dir.rotateLeft())) {
+                    rc.move(dir.rotateLeft());
+                }
+                if (rc.canMove(dir.rotateRight())) {
+                    rc.move(dir.rotateRight());
+                }
                 if (rc.isMovementReady()) {
                     Navigator.moveTo(closestTower);
                 }
+
                 if (rc.canAttack(closestTower)) {
                     rc.attack(closestTower);
                 }

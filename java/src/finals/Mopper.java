@@ -13,7 +13,6 @@ public class Mopper extends Unit {
         EVADE,
         REFILL,
         ATTACK,
-        REFILL_OTHERS,
         BUILD_TOWER,
         BUILD_SRP,
         DEFEND,
@@ -39,8 +38,6 @@ public class Mopper extends Unit {
 //        System.out.println("buildTower: " + Clock.getBytecodeNum());
         attack();
 //        System.out.println("attack: " + Clock.getBytecodeNum());
-        refillOthers();
-//        System.out.println("refillOthers: " + Clock.getBytecodeNum());
         buildSRP();
 //        System.out.println("buildSRP: " + Clock.getBytecodeNum());
         move();
@@ -486,55 +483,6 @@ public class Mopper extends Unit {
 
         final MapLocation finalClosestEnemy = closestEnemy.getLocation();
         computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(finalClosestEnemy));
-    }
-
-    public void refillOthers() throws GameActionException {
-        if (rc.getPaint() <= 50 || state == MopperState.REFILL || state == MopperState.ATTACK || state == MopperState.BUILD_TOWER) return;
-        RobotInfo[] friendlyRobots = rc.senseNearbyRobots(-1, myTeam);
-        RobotInfo closestRobot = null;
-        int minDist = Integer.MAX_VALUE;
-        int transferAmount = 0;
-        for (RobotInfo robot : friendlyRobots) {
-            if (robot.getType().isRobotType()) {
-                if ((robot.getType() == UnitType.SOLDIER && robot.getPaintAmount() < robot.getType().paintCapacity * 0.4) && rc.getRoundNum() < 200) {
-                    int dist = rc.getLocation().distanceSquaredTo(robot.getLocation());
-                    if (dist < minDist) {
-                        minDist = dist;
-                        closestRobot = robot;
-                        transferAmount = Math.min(rc.getPaint() - 40, robot.getType().paintCapacity - robot.getPaintAmount());
-                    }
-                }
-            }
-        }
-
-        if (closestRobot == null) {
-            state = MopperState.DEFAULT;
-            return;
-        }
-        state = MopperState.REFILL_OTHERS;
-
-        Logger.log("refillOthers: " + closestRobot + " " + transferAmount);
-
-        if (rc.getLocation().distanceSquaredTo(closestRobot.getLocation()) <= 2) {
-            if (rc.canTransferPaint(closestRobot.getLocation(), transferAmount)) {
-                rc.transferPaint(closestRobot.getLocation(), transferAmount);
-            }
-        } else {
-            if (rc.isMovementReady()) {
-                for (Direction dir : Globals.adjacentDirections) {
-                    MapLocation newLoc = rc.getLocation().add(dir);
-                    if (rc.canMove(dir) && newLoc.distanceSquaredTo(closestRobot.getLocation()) <= 2) {
-                        rc.move(dir);
-                        if (rc.canTransferPaint(closestRobot.getLocation(), transferAmount)) {
-                            rc.transferPaint(closestRobot.getLocation(), transferAmount);
-                        }
-                        return;
-                    }
-                }
-                final MapLocation finalClosestRobot = closestRobot.getLocation();
-                computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(finalClosestRobot)/3);
-            }
-        }
     }
 
     public void buildSRP() throws GameActionException {
