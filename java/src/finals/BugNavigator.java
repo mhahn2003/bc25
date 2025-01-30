@@ -155,6 +155,12 @@ public class BugNavigator extends Globals {
                 return false;
             }
         }
+        if (closestEnemyTower != null) {
+            MapLocation location = rc.adjacentLocation(direction);
+            if (location.distanceSquaredTo(closestEnemyTower) <= 9) {
+                return false;
+            }
+        }
         return rc.canMove(direction);
     }
 

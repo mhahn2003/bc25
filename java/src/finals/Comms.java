@@ -317,6 +317,15 @@ public class Comms extends Globals {
                 }
             }
         }
+
+        if (closestEnemyTower != null) {
+            if (rc.canSenseLocation(closestEnemyTower)) {
+                RobotInfo robot = rc.senseRobotAtLocation(closestEnemyTower);
+                if (robot == null || robot.getTeam() != myTeam) {
+                    closestEnemyTower = null;
+                }
+            }
+        }
     }
 
     public static void sendMessagesToTower() throws GameActionException {

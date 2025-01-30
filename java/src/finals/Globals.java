@@ -12,6 +12,11 @@ public class Globals {
     public static int mapWidth;
     public static int mapHeight;
 
+    public static int midX1;
+    public static int midX2;
+    public static int midY1;
+    public static int midY2;
+
     public static int myId;
     public static Team myTeam;
     public static Team opponentTeam;
@@ -74,6 +79,7 @@ public class Globals {
 
     static boolean[][] nearbyAllies = new boolean[3][3];
     static MapLocation closestDefenseTower = null;
+    static MapLocation closestEnemyTower = null;
 
     public static Direction[] adjacentDirections = {
             Direction.NORTH,
@@ -99,6 +105,20 @@ public class Globals {
 
         mapWidth = rc.getMapWidth();
         mapHeight = rc.getMapHeight();
+        if (mapWidth % 2 == 1) {
+            midX1 = mapWidth / 2;
+            midX2 = mapWidth / 2;
+        } else {
+            midX1 = mapWidth / 2 - 1;
+            midX2 = mapWidth / 2;
+        }
+        if (mapHeight % 2 == 1) {
+            midY1 = mapHeight / 2;
+            midY2 = mapHeight / 2;
+        } else {
+            midY1 = mapHeight / 2 - 1;
+            midY2 = mapHeight / 2;
+        }
 
         myId = rc.getID();
         myTeam = rc.getTeam();

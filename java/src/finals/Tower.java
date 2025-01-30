@@ -221,7 +221,8 @@ public class Tower extends Unit {
             if (rc.getRoundNum() < midGameRoundStart) {
                 // early game
                 // purely soldier
-                return UnitType.SOLDIER;
+                if (Math.min(mapHeight, mapWidth) <= 30 && spawnedSplashers == 0) return UnitType.SPLASHER;
+                else return UnitType.SOLDIER;
             } else if (rc.getRoundNum() < endGameRoundStart) {
                 // mid game
                 // 3:1:2 ratio of soldiers to splashers to moppers
@@ -269,6 +270,7 @@ public class Tower extends Unit {
             }
         } else {
             if (rc.getRoundNum() < midGameRoundStart) {
+                if (Math.min(mapHeight, mapWidth) <= 30 && spawnedSplashers == 0 && rc.getPaint() >= 300) return UnitType.SPLASHER;
                 return UnitType.SOLDIER;
             } else if (rc.getRoundNum() < endGameRoundStart) {
                 if (rc.getPaint() < 200) {

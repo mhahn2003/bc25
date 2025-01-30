@@ -302,6 +302,12 @@ public class BellmanFordNavigator extends Globals {
                 return false;
             }
         }
+        if (closestEnemyTower != null) {
+            MapLocation location = rc.adjacentLocation(direction);
+            if (location.distanceSquaredTo(closestEnemyTower) <= 9) {
+                return false;
+            }
+        }
         return rc.canMove(direction);
     }
 
@@ -399,361 +405,361 @@ public class BellmanFordNavigator extends Globals {
         int weight8 = canVisit8 ? paintHeuristic(location8) : 1_000_000;
 
         location9 = location1.add(Direction.WEST);
-        boolean canVisit9 = rc.canSenseLocation(location9) && rc.sensePassability(location9) && (closestDefenseTower == null || location9.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit9 = rc.canSenseLocation(location9) && rc.sensePassability(location9) && (closestDefenseTower == null || location9.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location9.distanceSquaredTo(closestEnemyTower) > 9);
         distance9 = 1_000_000;
         direction9 = null;
         int weight9 = canVisit9 ? paintHeuristic(location9): 1_000_000;
 
         location12 = location2.add(Direction.EAST);
-        boolean canVisit12 = rc.canSenseLocation(location12) && rc.sensePassability(location12) && (closestDefenseTower == null || location12.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit12 = rc.canSenseLocation(location12) && rc.sensePassability(location12) && (closestDefenseTower == null || location12.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location12.distanceSquaredTo(closestEnemyTower) > 9);
         distance12 = 1_000_000;
         direction12 = null;
         int weight12 = canVisit12 ? paintHeuristic(location12) : 1_000_000;
 
         location15 = location3.add(Direction.SOUTH);
-        boolean canVisit15 = rc.canSenseLocation(location15) && rc.sensePassability(location15) && (closestDefenseTower == null || location15.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit15 = rc.canSenseLocation(location15) && rc.sensePassability(location15) && (closestDefenseTower == null || location15.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location15.distanceSquaredTo(closestEnemyTower) > 9);
         distance15 = 1_000_000;
         direction15 = null;
         int weight15 = canVisit15 ? paintHeuristic(location15) : 1_000_000;
 
         location18 = location4.add(Direction.NORTH);
-        boolean canVisit18 = rc.canSenseLocation(location18) && rc.sensePassability(location18) && (closestDefenseTower == null || location18.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit18 = rc.canSenseLocation(location18) && rc.sensePassability(location18) && (closestDefenseTower == null || location18.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location18.distanceSquaredTo(closestEnemyTower) > 9);
         distance18 = 1_000_000;
         direction18 = null;
         int weight18 = canVisit18 ? paintHeuristic(location18) : 1_000_000;
 
         location10 = location1.add(Direction.SOUTHWEST);
-        boolean canVisit10 = rc.canSenseLocation(location10) && rc.sensePassability(location10) && (closestDefenseTower == null || location10.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit10 = rc.canSenseLocation(location10) && rc.sensePassability(location10) && (closestDefenseTower == null || location10.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location10.distanceSquaredTo(closestEnemyTower) > 9);
         distance10 = 1_000_000;
         direction10 = null;
         int weight10 = canVisit10 ? paintHeuristic(location10) : 1_000_000;
 
         location11 = location1.add(Direction.NORTHWEST);
-        boolean canVisit11 = rc.canSenseLocation(location11) && rc.sensePassability(location11) && (closestDefenseTower == null || location11.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit11 = rc.canSenseLocation(location11) && rc.sensePassability(location11) && (closestDefenseTower == null || location11.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location11.distanceSquaredTo(closestEnemyTower) > 9);
         distance11 = 1_000_000;
         direction11 = null;
         int weight11 = canVisit11 ? paintHeuristic(location11) : 1_000_000;
 
         location13 = location2.add(Direction.SOUTHEAST);
-        boolean canVisit13 = rc.canSenseLocation(location13) && rc.sensePassability(location13) && (closestDefenseTower == null || location13.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit13 = rc.canSenseLocation(location13) && rc.sensePassability(location13) && (closestDefenseTower == null || location13.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location13.distanceSquaredTo(closestEnemyTower) > 9);
         distance13 = 1_000_000;
         direction13 = null;
         int weight13 = canVisit13 ? paintHeuristic(location13) : 1_000_000;
 
         location14 = location2.add(Direction.NORTHEAST);
-        boolean canVisit14 = rc.canSenseLocation(location14) && rc.sensePassability(location14) && (closestDefenseTower == null || location14.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit14 = rc.canSenseLocation(location14) && rc.sensePassability(location14) && (closestDefenseTower == null || location14.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location14.distanceSquaredTo(closestEnemyTower) > 9);
         distance14 = 1_000_000;
         direction14 = null;
         int weight14 = canVisit14 ? paintHeuristic(location14) : 1_000_000;
 
         location16 = location3.add(Direction.SOUTHWEST);
-        boolean canVisit16 = rc.canSenseLocation(location16) && rc.sensePassability(location16) && (closestDefenseTower == null || location16.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit16 = rc.canSenseLocation(location16) && rc.sensePassability(location16) && (closestDefenseTower == null || location16.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location16.distanceSquaredTo(closestEnemyTower) > 9);
         distance16 = 1_000_000;
         direction16 = null;
         int weight16 = canVisit16 ? paintHeuristic(location16) : 1_000_000;
 
         location17 = location3.add(Direction.SOUTHEAST);
-        boolean canVisit17 = rc.canSenseLocation(location17) && rc.sensePassability(location17) && (closestDefenseTower == null || location17.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit17 = rc.canSenseLocation(location17) && rc.sensePassability(location17) && (closestDefenseTower == null || location17.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location17.distanceSquaredTo(closestEnemyTower) > 9);
         distance17 = 1_000_000;
         direction17 = null;
         int weight17 = canVisit17 ? paintHeuristic(location17) : 1_000_000;
 
         location19 = location4.add(Direction.NORTHWEST);
-        boolean canVisit19 = rc.canSenseLocation(location19) && rc.sensePassability(location19) && (closestDefenseTower == null || location19.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit19 = rc.canSenseLocation(location19) && rc.sensePassability(location19) && (closestDefenseTower == null || location19.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location19.distanceSquaredTo(closestEnemyTower) > 9);
         distance19 = 1_000_000;
         direction19 = null;
         int weight19 = canVisit19 ? paintHeuristic(location19) : 1_000_000;
 
         location20 = location4.add(Direction.NORTHEAST);
-        boolean canVisit20 = rc.canSenseLocation(location20) && rc.sensePassability(location20) && (closestDefenseTower == null || location20.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit20 = rc.canSenseLocation(location20) && rc.sensePassability(location20) && (closestDefenseTower == null || location20.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location20.distanceSquaredTo(closestEnemyTower) > 9);
         distance20 = 1_000_000;
         direction20 = null;
         int weight20 = canVisit20 ? paintHeuristic(location20) : 1_000_000;
 
         location21 = location5.add(Direction.SOUTHWEST);
-        boolean canVisit21 = rc.canSenseLocation(location21) && rc.sensePassability(location21) && (closestDefenseTower == null || location21.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit21 = rc.canSenseLocation(location21) && rc.sensePassability(location21) && (closestDefenseTower == null || location21.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location21.distanceSquaredTo(closestEnemyTower) > 9);
         distance21 = 1_000_000;
         direction21 = null;
         int weight21 = canVisit21 ? paintHeuristic(location21) : 1_000_000;
 
         location22 = location6.add(Direction.NORTHWEST);
-        boolean canVisit22 = rc.canSenseLocation(location22) && rc.sensePassability(location22) && (closestDefenseTower == null || location22.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit22 = rc.canSenseLocation(location22) && rc.sensePassability(location22) && (closestDefenseTower == null || location22.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location22.distanceSquaredTo(closestEnemyTower) > 9);
         distance22 = 1_000_000;
         direction22 = null;
         int weight22 = canVisit22 ? paintHeuristic(location22) : 1_000_000;
 
         location23 = location7.add(Direction.SOUTHEAST);
-        boolean canVisit23 = rc.canSenseLocation(location23) && rc.sensePassability(location23) && (closestDefenseTower == null || location23.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit23 = rc.canSenseLocation(location23) && rc.sensePassability(location23) && (closestDefenseTower == null || location23.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location23.distanceSquaredTo(closestEnemyTower) > 9);
         distance23 = 1_000_000;
         direction23 = null;
         int weight23 = canVisit23 ? paintHeuristic(location23) : 1_000_000;
 
         location24 = location8.add(Direction.NORTHEAST);
-        boolean canVisit24 = rc.canSenseLocation(location24) && rc.sensePassability(location24) && (closestDefenseTower == null || location24.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit24 = rc.canSenseLocation(location24) && rc.sensePassability(location24) && (closestDefenseTower == null || location24.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location24.distanceSquaredTo(closestEnemyTower) > 9);
         distance24 = 1_000_000;
         direction24 = null;
         int weight24 = canVisit24 ? paintHeuristic(location24) : 1_000_000;
 
         location25 = location9.add(Direction.WEST);
-        boolean canVisit25 = rc.canSenseLocation(location25) && rc.sensePassability(location25) && (closestDefenseTower == null || location25.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit25 = rc.canSenseLocation(location25) && rc.sensePassability(location25) && (closestDefenseTower == null || location25.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location25.distanceSquaredTo(closestEnemyTower) > 9);
         distance25 = 1_000_000;
         direction25 = null;
         int weight25 = canVisit25 ? paintHeuristic(location25) : 1_000_000;
 
         location30 = location12.add(Direction.EAST);
-        boolean canVisit30 = rc.canSenseLocation(location30) && rc.sensePassability(location30) && (closestDefenseTower == null || location30.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit30 = rc.canSenseLocation(location30) && rc.sensePassability(location30) && (closestDefenseTower == null || location30.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location30.distanceSquaredTo(closestEnemyTower) > 9);
         distance30 = 1_000_000;
         direction30 = null;
         int weight30 = canVisit30 ? paintHeuristic(location30) : 1_000_000;
 
         location35 = location15.add(Direction.SOUTH);
-        boolean canVisit35 = rc.canSenseLocation(location35) && rc.sensePassability(location35) && (closestDefenseTower == null || location35.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit35 = rc.canSenseLocation(location35) && rc.sensePassability(location35) && (closestDefenseTower == null || location35.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location35.distanceSquaredTo(closestEnemyTower) > 9);
         distance35 = 1_000_000;
         direction35 = null;
         int weight35 = canVisit35 ? paintHeuristic(location35) : 1_000_000;
 
         location40 = location18.add(Direction.NORTH);
-        boolean canVisit40 = rc.canSenseLocation(location40) && rc.sensePassability(location40) && (closestDefenseTower == null || location40.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit40 = rc.canSenseLocation(location40) && rc.sensePassability(location40) && (closestDefenseTower == null || location40.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location40.distanceSquaredTo(closestEnemyTower) > 9);
         distance40 = 1_000_000;
         direction40 = null;
         int weight40 = canVisit40 ? paintHeuristic(location40) : 1_000_000;
 
         location26 = location9.add(Direction.SOUTHWEST);
-        boolean canVisit26 = rc.canSenseLocation(location26) && rc.sensePassability(location26) && (closestDefenseTower == null || location26.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit26 = rc.canSenseLocation(location26) && rc.sensePassability(location26) && (closestDefenseTower == null || location26.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location26.distanceSquaredTo(closestEnemyTower) > 9);
         distance26 = 1_000_000;
         direction26 = null;
         int weight26 = canVisit26 ? paintHeuristic(location26) : 1_000_000;
 
         location27 = location9.add(Direction.NORTHWEST);
-        boolean canVisit27 = rc.canSenseLocation(location27) && rc.sensePassability(location27) && (closestDefenseTower == null || location27.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit27 = rc.canSenseLocation(location27) && rc.sensePassability(location27) && (closestDefenseTower == null || location27.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location27.distanceSquaredTo(closestEnemyTower) > 9);
         distance27 = 1_000_000;
         direction27 = null;
         int weight27 = canVisit27 ? paintHeuristic(location27) : 1_000_000;
 
         location31 = location12.add(Direction.SOUTHEAST);
-        boolean canVisit31 = rc.canSenseLocation(location31) && rc.sensePassability(location31) && (closestDefenseTower == null || location31.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit31 = rc.canSenseLocation(location31) && rc.sensePassability(location31) && (closestDefenseTower == null || location31.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location31.distanceSquaredTo(closestEnemyTower) > 9);
         distance31 = 1_000_000;
         direction31 = null;
         int weight31 = canVisit31 ? paintHeuristic(location31) : 1_000_000;
 
         location32 = location12.add(Direction.NORTHEAST);
-        boolean canVisit32 = rc.canSenseLocation(location32) && rc.sensePassability(location32) && (closestDefenseTower == null || location32.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit32 = rc.canSenseLocation(location32) && rc.sensePassability(location32) && (closestDefenseTower == null || location32.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location32.distanceSquaredTo(closestEnemyTower) > 9);
         distance32 = 1_000_000;
         direction32 = null;
         int weight32 = canVisit32 ? paintHeuristic(location32) : 1_000_000;
 
         location36 = location15.add(Direction.SOUTHWEST);
-        boolean canVisit36 = rc.canSenseLocation(location36) && rc.sensePassability(location36) && (closestDefenseTower == null || location36.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit36 = rc.canSenseLocation(location36) && rc.sensePassability(location36) && (closestDefenseTower == null || location36.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location36.distanceSquaredTo(closestEnemyTower) > 9);
         distance36 = 1_000_000;
         direction36 = null;
         int weight36 = canVisit36 ? paintHeuristic(location36) : 1_000_000;
 
         location37 = location15.add(Direction.SOUTHEAST);
-        boolean canVisit37 = rc.canSenseLocation(location37) && rc.sensePassability(location37) && (closestDefenseTower == null || location37.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit37 = rc.canSenseLocation(location37) && rc.sensePassability(location37) && (closestDefenseTower == null || location37.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location37.distanceSquaredTo(closestEnemyTower) > 9);
         distance37 = 1_000_000;
         direction37 = null;
         int weight37 = canVisit37 ? paintHeuristic(location37) : 1_000_000;
 
         location41 = location18.add(Direction.NORTHWEST);
-        boolean canVisit41 = rc.canSenseLocation(location41) && rc.sensePassability(location41) && (closestDefenseTower == null || location41.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit41 = rc.canSenseLocation(location41) && rc.sensePassability(location41) && (closestDefenseTower == null || location41.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location41.distanceSquaredTo(closestEnemyTower) > 9);
         distance41 = 1_000_000;
         direction41 = null;
         int weight41 = canVisit41 ? paintHeuristic(location41) : 1_000_000;
 
         location42 = location18.add(Direction.NORTHEAST);
-        boolean canVisit42 = rc.canSenseLocation(location42) && rc.sensePassability(location42) && (closestDefenseTower == null || location42.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit42 = rc.canSenseLocation(location42) && rc.sensePassability(location42) && (closestDefenseTower == null || location42.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location42.distanceSquaredTo(closestEnemyTower) > 9);
         distance42 = 1_000_000;
         direction42 = null;
         int weight42 = canVisit42 ? paintHeuristic(location42) : 1_000_000;
 
         location28 = location10.add(Direction.SOUTHWEST);
-        boolean canVisit28 = rc.canSenseLocation(location28) && rc.sensePassability(location28) && (closestDefenseTower == null || location28.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit28 = rc.canSenseLocation(location28) && rc.sensePassability(location28) && (closestDefenseTower == null || location28.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location28.distanceSquaredTo(closestEnemyTower) > 9);
         distance28 = 1_000_000;
         direction28 = null;
         int weight28 = canVisit28 ? paintHeuristic(location28) : 1_000_000;
 
         location29 = location11.add(Direction.NORTHWEST);
-        boolean canVisit29 = rc.canSenseLocation(location29) && rc.sensePassability(location29) && (closestDefenseTower == null || location29.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit29 = rc.canSenseLocation(location29) && rc.sensePassability(location29) && (closestDefenseTower == null || location29.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location29.distanceSquaredTo(closestEnemyTower) > 9);
         distance29 = 1_000_000;
         direction29 = null;
         int weight29 = canVisit29 ? paintHeuristic(location29) : 1_000_000;
 
         location33 = location13.add(Direction.SOUTHEAST);
-        boolean canVisit33 = rc.canSenseLocation(location33) && rc.sensePassability(location33) && (closestDefenseTower == null || location33.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit33 = rc.canSenseLocation(location33) && rc.sensePassability(location33) && (closestDefenseTower == null || location33.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location33.distanceSquaredTo(closestEnemyTower) > 9);
         distance33 = 1_000_000;
         direction33 = null;
         int weight33 = canVisit33 ? paintHeuristic(location33) : 1_000_000;
 
         location34 = location14.add(Direction.NORTHEAST);
-        boolean canVisit34 = rc.canSenseLocation(location34) && rc.sensePassability(location34) && (closestDefenseTower == null || location34.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit34 = rc.canSenseLocation(location34) && rc.sensePassability(location34) && (closestDefenseTower == null || location34.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location34.distanceSquaredTo(closestEnemyTower) > 9);
         distance34 = 1_000_000;
         direction34 = null;
         int weight34 = canVisit34 ? paintHeuristic(location34) : 1_000_000;
 
         location38 = location16.add(Direction.SOUTHWEST);
-        boolean canVisit38 = rc.canSenseLocation(location38) && rc.sensePassability(location38) && (closestDefenseTower == null || location38.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit38 = rc.canSenseLocation(location38) && rc.sensePassability(location38) && (closestDefenseTower == null || location38.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location38.distanceSquaredTo(closestEnemyTower) > 9);
         distance38 = 1_000_000;
         direction38 = null;
         int weight38 = canVisit38 ? paintHeuristic(location38) : 1_000_000;
 
         location39 = location17.add(Direction.SOUTHEAST);
-        boolean canVisit39 = rc.canSenseLocation(location39) && rc.sensePassability(location39) && (closestDefenseTower == null || location39.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit39 = rc.canSenseLocation(location39) && rc.sensePassability(location39) && (closestDefenseTower == null || location39.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location39.distanceSquaredTo(closestEnemyTower) > 9);
         distance39 = 1_000_000;
         direction39 = null;
         int weight39 = canVisit39 ? paintHeuristic(location39) : 1_000_000;
 
         location43 = location19.add(Direction.NORTHWEST);
-        boolean canVisit43 = rc.canSenseLocation(location43) && rc.sensePassability(location43) && (closestDefenseTower == null || location43.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit43 = rc.canSenseLocation(location43) && rc.sensePassability(location43) && (closestDefenseTower == null || location43.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location43.distanceSquaredTo(closestEnemyTower) > 9);
         distance43 = 1_000_000;
         direction43 = null;
         int weight43 = canVisit43 ? paintHeuristic(location43) : 1_000_000;
 
         location44 = location20.add(Direction.NORTHEAST);
-        boolean canVisit44 = rc.canSenseLocation(location44) && rc.sensePassability(location44) && (closestDefenseTower == null || location44.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit44 = rc.canSenseLocation(location44) && rc.sensePassability(location44) && (closestDefenseTower == null || location44.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location44.distanceSquaredTo(closestEnemyTower) > 9);
         distance44 = 1_000_000;
         direction44 = null;
         int weight44 = canVisit44 ? paintHeuristic(location44) : 1_000_000;
 
         location49 = location25.add(Direction.WEST);
-        boolean canVisit49 = rc.canSenseLocation(location49) && rc.sensePassability(location49) && (closestDefenseTower == null || location49.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit49 = rc.canSenseLocation(location49) && rc.sensePassability(location49) && (closestDefenseTower == null || location49.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location49.distanceSquaredTo(closestEnemyTower) > 9);
         distance49 = 1_000_000;
         direction49 = null;
         int weight49 = canVisit49 ? paintHeuristic(location49) : 1_000_000;
 
         location54 = location30.add(Direction.EAST);
-        boolean canVisit54 = rc.canSenseLocation(location54) && rc.sensePassability(location54) && (closestDefenseTower == null || location54.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit54 = rc.canSenseLocation(location54) && rc.sensePassability(location54) && (closestDefenseTower == null || location54.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location54.distanceSquaredTo(closestEnemyTower) > 9);
         distance54 = 1_000_000;
         direction54 = null;
         int weight54 = canVisit54 ? paintHeuristic(location54) : 1_000_000;
 
         location59 = location35.add(Direction.SOUTH);
-        boolean canVisit59 = rc.canSenseLocation(location59) && rc.sensePassability(location59) && (closestDefenseTower == null || location59.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit59 = rc.canSenseLocation(location59) && rc.sensePassability(location59) && (closestDefenseTower == null || location59.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location59.distanceSquaredTo(closestEnemyTower) > 9);
         distance59 = 1_000_000;
         direction59 = null;
         int weight59 = canVisit59 ? paintHeuristic(location59) : 1_000_000;
 
         location64 = location40.add(Direction.NORTH);
-        boolean canVisit64 = rc.canSenseLocation(location64) && rc.sensePassability(location64) && (closestDefenseTower == null || location64.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit64 = rc.canSenseLocation(location64) && rc.sensePassability(location64) && (closestDefenseTower == null || location64.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location64.distanceSquaredTo(closestEnemyTower) > 9);
         distance64 = 1_000_000;
         direction64 = null;
         int weight64 = canVisit64 ? paintHeuristic(location64) : 1_000_000;
 
         location50 = location25.add(Direction.SOUTHWEST);
-        boolean canVisit50 = rc.canSenseLocation(location50) && rc.sensePassability(location50) && (closestDefenseTower == null || location50.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit50 = rc.canSenseLocation(location50) && rc.sensePassability(location50) && (closestDefenseTower == null || location50.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location50.distanceSquaredTo(closestEnemyTower) > 9);
         distance50 = 1_000_000;
         direction50 = null;
         int weight50 = canVisit50 ? paintHeuristic(location50) : 1_000_000;
 
         location51 = location25.add(Direction.NORTHWEST);
-        boolean canVisit51 = rc.canSenseLocation(location51) && rc.sensePassability(location51) && (closestDefenseTower == null || location51.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit51 = rc.canSenseLocation(location51) && rc.sensePassability(location51) && (closestDefenseTower == null || location51.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location51.distanceSquaredTo(closestEnemyTower) > 9);
         distance51 = 1_000_000;
         direction51 = null;
         int weight51 = canVisit51 ? paintHeuristic(location51) : 1_000_000;
 
         location55 = location30.add(Direction.SOUTHEAST);
-        boolean canVisit55 = rc.canSenseLocation(location55) && rc.sensePassability(location55) && (closestDefenseTower == null || location55.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit55 = rc.canSenseLocation(location55) && rc.sensePassability(location55) && (closestDefenseTower == null || location55.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location55.distanceSquaredTo(closestEnemyTower) > 9);
         distance55 = 1_000_000;
         direction55 = null;
         int weight55 = canVisit55 ? paintHeuristic(location55) : 1_000_000;
 
         location56 = location30.add(Direction.NORTHEAST);
-        boolean canVisit56 = rc.canSenseLocation(location56) && rc.sensePassability(location56) && (closestDefenseTower == null || location56.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit56 = rc.canSenseLocation(location56) && rc.sensePassability(location56) && (closestDefenseTower == null || location56.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location56.distanceSquaredTo(closestEnemyTower) > 9);
         distance56 = 1_000_000;
         direction56 = null;
         int weight56 = canVisit56 ? paintHeuristic(location56) : 1_000_000;
 
         location60 = location35.add(Direction.SOUTHWEST);
-        boolean canVisit60 = rc.canSenseLocation(location60) && rc.sensePassability(location60) && (closestDefenseTower == null || location60.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit60 = rc.canSenseLocation(location60) && rc.sensePassability(location60) && (closestDefenseTower == null || location60.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location60.distanceSquaredTo(closestEnemyTower) > 9);
         distance60 = 1_000_000;
         direction60 = null;
         int weight60 = canVisit60 ? paintHeuristic(location60) : 1_000_000;
 
         location61 = location35.add(Direction.SOUTHEAST);
-        boolean canVisit61 = rc.canSenseLocation(location61) && rc.sensePassability(location61) && (closestDefenseTower == null || location61.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit61 = rc.canSenseLocation(location61) && rc.sensePassability(location61) && (closestDefenseTower == null || location61.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location61.distanceSquaredTo(closestEnemyTower) > 9);
         distance61 = 1_000_000;
         direction61 = null;
         int weight61 = canVisit61 ? paintHeuristic(location61) : 1_000_000;
 
         location65 = location40.add(Direction.NORTHWEST);
-        boolean canVisit65 = rc.canSenseLocation(location65) && rc.sensePassability(location65) && (closestDefenseTower == null || location65.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit65 = rc.canSenseLocation(location65) && rc.sensePassability(location65) && (closestDefenseTower == null || location65.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location65.distanceSquaredTo(closestEnemyTower) > 9);
         distance65 = 1_000_000;
         direction65 = null;
         int weight65 = canVisit65 ? paintHeuristic(location65) : 1_000_000;
 
         location66 = location40.add(Direction.NORTHEAST);
-        boolean canVisit66 = rc.canSenseLocation(location66) && rc.sensePassability(location66) && (closestDefenseTower == null || location66.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit66 = rc.canSenseLocation(location66) && rc.sensePassability(location66) && (closestDefenseTower == null || location66.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location66.distanceSquaredTo(closestEnemyTower) > 9);
         distance66 = 1_000_000;
         direction66 = null;
         int weight66 = canVisit66 ? paintHeuristic(location66) : 1_000_000;
 
         location45 = location21.add(Direction.SOUTHWEST);
-        boolean canVisit45 = rc.canSenseLocation(location45) && rc.sensePassability(location45) && (closestDefenseTower == null || location45.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit45 = rc.canSenseLocation(location45) && rc.sensePassability(location45) && (closestDefenseTower == null || location45.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location45.distanceSquaredTo(closestEnemyTower) > 9);
         distance45 = 1_000_000;
         direction45 = null;
         int weight45 = canVisit45 ? paintHeuristic(location45) : 1_000_000;
 
         location46 = location22.add(Direction.NORTHWEST);
-        boolean canVisit46 = rc.canSenseLocation(location46) && rc.sensePassability(location46) && (closestDefenseTower == null || location46.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit46 = rc.canSenseLocation(location46) && rc.sensePassability(location46) && (closestDefenseTower == null || location46.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location46.distanceSquaredTo(closestEnemyTower) > 9);
         distance46 = 1_000_000;
         direction46 = null;
         int weight46 = canVisit46 ? paintHeuristic(location46) : 1_000_000;
 
         location47 = location23.add(Direction.SOUTHEAST);
-        boolean canVisit47 = rc.canSenseLocation(location47) && rc.sensePassability(location47) && (closestDefenseTower == null || location47.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit47 = rc.canSenseLocation(location47) && rc.sensePassability(location47) && (closestDefenseTower == null || location47.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location47.distanceSquaredTo(closestEnemyTower) > 9);
         distance47 = 1_000_000;
         direction47 = null;
         int weight47 = canVisit47 ? paintHeuristic(location47) : 1_000_000;
 
         location48 = location24.add(Direction.NORTHEAST);
-        boolean canVisit48 = rc.canSenseLocation(location48) && rc.sensePassability(location48) && (closestDefenseTower == null || location48.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit48 = rc.canSenseLocation(location48) && rc.sensePassability(location48) && (closestDefenseTower == null || location48.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location48.distanceSquaredTo(closestEnemyTower) > 9);
         distance48 = 1_000_000;
         direction48 = null;
         int weight48 = canVisit48 ? paintHeuristic(location48) : 1_000_000;
 
         location52 = location26.add(Direction.SOUTHWEST);
-        boolean canVisit52 = rc.canSenseLocation(location52) && rc.sensePassability(location52) && (closestDefenseTower == null || location52.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit52 = rc.canSenseLocation(location52) && rc.sensePassability(location52) && (closestDefenseTower == null || location52.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location52.distanceSquaredTo(closestEnemyTower) > 9);
         distance52 = 1_000_000;
         direction52 = null;
         int weight52 = canVisit52 ? paintHeuristic(location52) : 1_000_000;
 
         location53 = location27.add(Direction.NORTHWEST);
-        boolean canVisit53 = rc.canSenseLocation(location53) && rc.sensePassability(location53) && (closestDefenseTower == null || location53.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit53 = rc.canSenseLocation(location53) && rc.sensePassability(location53) && (closestDefenseTower == null || location53.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location53.distanceSquaredTo(closestEnemyTower) > 9);
         distance53 = 1_000_000;
         direction53 = null;
         int weight53 = canVisit53 ? paintHeuristic(location53) : 1_000_000;
 
         location57 = location31.add(Direction.SOUTHEAST);
-        boolean canVisit57 = rc.canSenseLocation(location57) && rc.sensePassability(location57) && (closestDefenseTower == null || location57.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit57 = rc.canSenseLocation(location57) && rc.sensePassability(location57) && (closestDefenseTower == null || location57.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location57.distanceSquaredTo(closestEnemyTower) > 9);
         distance57 = 1_000_000;
         direction57 = null;
         int weight57 = canVisit57 ? paintHeuristic(location57) : 1_000_000;
 
         location58 = location32.add(Direction.NORTHEAST);
-        boolean canVisit58 = rc.canSenseLocation(location58) && rc.sensePassability(location58) && (closestDefenseTower == null || location58.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit58 = rc.canSenseLocation(location58) && rc.sensePassability(location58) && (closestDefenseTower == null || location58.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location58.distanceSquaredTo(closestEnemyTower) > 9);
         distance58 = 1_000_000;
         direction58 = null;
         int weight58 = canVisit58 ? paintHeuristic(location58) : 1_000_000;
 
         location62 = location36.add(Direction.SOUTHWEST);
-        boolean canVisit62 = rc.canSenseLocation(location62) && rc.sensePassability(location62) && (closestDefenseTower == null || location62.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit62 = rc.canSenseLocation(location62) && rc.sensePassability(location62) && (closestDefenseTower == null || location62.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location62.distanceSquaredTo(closestEnemyTower) > 9);
         distance62 = 1_000_000;
         direction62 = null;
         int weight62 = canVisit62 ? paintHeuristic(location62) : 1_000_000;
 
         location63 = location37.add(Direction.SOUTHEAST);
-        boolean canVisit63 = rc.canSenseLocation(location63) && rc.sensePassability(location63) && (closestDefenseTower == null || location63.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit63 = rc.canSenseLocation(location63) && rc.sensePassability(location63) && (closestDefenseTower == null || location63.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location63.distanceSquaredTo(closestEnemyTower) > 9);
         distance63 = 1_000_000;
         direction63 = null;
         int weight63 = canVisit63 ? paintHeuristic(location63) : 1_000_000;
 
         location67 = location41.add(Direction.NORTHWEST);
-        boolean canVisit67 = rc.canSenseLocation(location67) && rc.sensePassability(location67) && (closestDefenseTower == null || location67.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit67 = rc.canSenseLocation(location67) && rc.sensePassability(location67) && (closestDefenseTower == null || location67.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location67.distanceSquaredTo(closestEnemyTower) > 9);
         distance67 = 1_000_000;
         direction67 = null;
         int weight67 = canVisit67 ? paintHeuristic(location67) : 1_000_000;
 
         location68 = location42.add(Direction.NORTHEAST);
-        boolean canVisit68 = rc.canSenseLocation(location68) && rc.sensePassability(location68) && (closestDefenseTower == null || location68.distanceSquaredTo(closestDefenseTower) > 16);
+        boolean canVisit68 = rc.canSenseLocation(location68) && rc.sensePassability(location68) && (closestDefenseTower == null || location68.distanceSquaredTo(closestDefenseTower) > 16) && (closestEnemyTower == null || location68.distanceSquaredTo(closestEnemyTower) > 9);
         distance68 = 1_000_000;
         direction68 = null;
         int weight68 = canVisit68 ? paintHeuristic(location68) : 1_000_000;
