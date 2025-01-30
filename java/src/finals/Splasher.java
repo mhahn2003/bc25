@@ -47,8 +47,8 @@ public class Splasher extends Unit {
             if (x < 0 || x >= 7 || y < 0 || y >= 7) continue;
             PaintType p = mapInfo.getPaint();
             if (p.isAlly() || mapInfo.isWall()) computeSplashHeuristic[x][y] = -2;
-            else if (p == PaintType.EMPTY) computeSplashHeuristic[x][y] = 2;
-            else computeSplashHeuristic[x][y] = 12;
+            else if (p == PaintType.EMPTY) computeSplashHeuristic[x][y] = 1;
+            else computeSplashHeuristic[x][y] = 10;
         }
 
         MapLocation[] nearbyRuins = rc.senseNearbyRuins(-1);
