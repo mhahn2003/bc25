@@ -462,7 +462,7 @@ public class Mopper extends Unit {
 
     public void attack() throws GameActionException {
         if (state == MopperState.REFILL || state == MopperState.EVADE || state == MopperState.BUILD_TOWER) return;
-        RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, opponentTeam);
+        RobotInfo[] enemyRobots = rc.senseNearbyRobots(13, opponentTeam);
         RobotInfo closestEnemy = null;
         int minDist = Integer.MAX_VALUE;
         for (RobotInfo enemy : enemyRobots) {
@@ -793,7 +793,7 @@ public class Mopper extends Unit {
         if (!rc.isActionReady()) {
             if (rc.isMovementReady()) {
                 for (Direction dir : Globals.adjacentDirections) {
-                    if (rc.canMove(dir)) {
+                    if (Util.canMove(dir)) {
                         MapLocation newLoc = loc.add(dir);
                         int penalty = penaltyFunc.apply(newLoc) + Util.paintPenalty(newLoc, rc.senseMapInfo(newLoc).getPaint());
                         int heuristic = -penalty;
@@ -810,7 +810,7 @@ public class Mopper extends Unit {
                 // move then succ
                 for (Direction dir : Globals.adjacentDirections) {
                     if (Clock.getBytecodesLeft() < 2000) break;
-                    if (rc.canMove(dir)) {
+                    if (Util.canMove(dir)) {
                         MapLocation newLoc = loc.add(dir);
                         LocationHeuristic heuristicPair = succHeuristic(newLoc);
                         int penalty = penaltyFunc.apply(newLoc) + Util.paintPenalty(newLoc, rc.senseMapInfo(newLoc).getPaint());
@@ -847,7 +847,7 @@ public class Mopper extends Unit {
             if (Clock.getBytecodesLeft() >= 3000 && rc.isMovementReady()) {
                 for (Direction dir : adjacentDirections) {
                     if (Clock.getBytecodesLeft() < 3000) break;
-                    if (rc.canMove(dir)) {
+                    if (Util.canMove(dir)) {
                         for (Direction sweepDir : Globals.cardinalDirections) {
                             heuristic = sweepHeuristic(loc.add(dir), sweepDir) - penalty;
                             if (heuristic > bestHeuristic) {

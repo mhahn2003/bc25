@@ -1,8 +1,6 @@
 package finals;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
+import battlecode.common.*;
 
 public class BugNavigator extends Globals {
     private static MapLocation currentTarget;
@@ -19,7 +17,7 @@ public class BugNavigator extends Globals {
 
         boolean hasOptions = false;
         for (int i = adjacentDirections.length; --i >= 0; ) {
-            if (canMove(adjacentDirections[i])) {
+            if (Util.canMove(adjacentDirections[i])) {
                 hasOptions = true;
                 break;
             }
@@ -49,7 +47,7 @@ public class BugNavigator extends Globals {
 
         if (currentObstacle == null) {
             Direction forward = myLocation.directionTo(target);
-            if (canMove(forward)) {
+            if (Util.canMove(forward)) {
                 move(forward);
                 return;
             }
@@ -118,7 +116,7 @@ public class BugNavigator extends Globals {
 
         for (int i = 8; --i >= 0; ) {
             direction = obstacleOnRight ? direction.rotateLeft() : direction.rotateRight();
-            if (canMove(direction)) {
+            if (Util.canMove(direction)) {
                 move(direction);
                 return;
             }
@@ -146,22 +144,6 @@ public class BugNavigator extends Globals {
 
     private static int distance1d(MapLocation a, MapLocation b) {
         return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
-    }
-
-    private static boolean canMove(Direction direction) {
-        if (closestDefenseTower != null) {
-            MapLocation location = rc.adjacentLocation(direction);
-            if (location.distanceSquaredTo(closestDefenseTower) <= 16) {
-                return false;
-            }
-        }
-        if (closestEnemyTower != null) {
-            MapLocation location = rc.adjacentLocation(direction);
-            if (location.distanceSquaredTo(closestEnemyTower) <= 9) {
-                return false;
-            }
-        }
-        return rc.canMove(direction);
     }
 
     private static void move(Direction direction) throws GameActionException {

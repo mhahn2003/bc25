@@ -326,6 +326,17 @@ public class Comms extends Globals {
                 }
             }
         }
+
+        if (rc.getType() == UnitType.MOPPER) {
+            noNearbyAllyPaint = true;
+            for (Direction dir : Direction.allDirections()) {
+                MapLocation loc = rc.getLocation().add(dir);
+                if (rc.canSenseLocation(loc) && rc.senseMapInfo(loc).getPaint().isAlly()) {
+                    noNearbyAllyPaint = false;
+                    break;
+                }
+            }
+        }
     }
 
     public static void sendMessagesToTower() throws GameActionException {

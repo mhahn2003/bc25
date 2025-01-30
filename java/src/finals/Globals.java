@@ -81,6 +81,8 @@ public class Globals {
     static MapLocation closestDefenseTower = null;
     static MapLocation closestEnemyTower = null;
 
+    static boolean noNearbyAllyPaint = false;
+
     public static Direction[] adjacentDirections = {
             Direction.NORTH,
             Direction.EAST,

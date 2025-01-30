@@ -295,46 +295,30 @@ public class BellmanFordNavigator extends Globals {
         return 0;
     }
 
-    private static boolean canMove(Direction direction) {
-        if (closestDefenseTower != null) {
-            MapLocation location = rc.adjacentLocation(direction);
-            if (location.distanceSquaredTo(closestDefenseTower) <= 16) {
-                return false;
-            }
-        }
-        if (closestEnemyTower != null) {
-            MapLocation location = rc.adjacentLocation(direction);
-            if (location.distanceSquaredTo(closestEnemyTower) <= 9) {
-                return false;
-            }
-        }
-        return rc.canMove(direction);
-    }
-
     public static Direction getBestDirection(MapLocation target) throws GameActionException {
         location1 = rc.adjacentLocation(Direction.WEST);
-        boolean canVisit1 = canMove(Direction.WEST);
+        boolean canVisit1 = Util.canMove(Direction.WEST);
 
         location2 = rc.adjacentLocation(Direction.EAST);
-        boolean canVisit2 = canMove(Direction.EAST);
+        boolean canVisit2 = Util.canMove(Direction.EAST);
 
         location3 = rc.adjacentLocation(Direction.SOUTH);
-        boolean canVisit3 = canMove(Direction.SOUTH);
+        boolean canVisit3 = Util.canMove(Direction.SOUTH);
 
         location4 = rc.adjacentLocation(Direction.NORTH);
-        boolean canVisit4 = canMove(Direction.NORTH);
+        boolean canVisit4 = Util.canMove(Direction.NORTH);
 
         location5 = rc.adjacentLocation(Direction.SOUTHWEST);
-        boolean canVisit5 = canMove(Direction.SOUTHWEST);
+        boolean canVisit5 = Util.canMove(Direction.SOUTHWEST);
 
         location6 = rc.adjacentLocation(Direction.NORTHWEST);
-        boolean canVisit6 = canMove(Direction.NORTHWEST);
+        boolean canVisit6 = Util.canMove(Direction.NORTHWEST);
 
         location7 = rc.adjacentLocation(Direction.SOUTHEAST);
-        boolean canVisit7 = canMove(Direction.SOUTHEAST);
+        boolean canVisit7 = Util.canMove(Direction.SOUTHEAST);
 
         location8 = rc.adjacentLocation(Direction.NORTHEAST);
-        boolean canVisit8 = canMove(Direction.NORTHEAST);
+        boolean canVisit8 = Util.canMove(Direction.NORTHEAST);
 
         if (canVisit1 && !canVisit2 && !canVisit3 && !canVisit4 && !canVisit5 && !canVisit6 && !canVisit7 && !canVisit8) {
             return Direction.WEST;

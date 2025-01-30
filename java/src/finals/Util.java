@@ -38,6 +38,33 @@ public class Util extends Globals {
         }
     }
 
+    public static boolean canMove(Direction direction) throws GameActionException {
+        if (closestDefenseTower != null) {
+            MapLocation location = rc.adjacentLocation(direction);
+            if (location.distanceSquaredTo(closestDefenseTower) <= 16) {
+                return false;
+            }
+        }
+        if (closestEnemyTower != null) {
+            MapLocation location = rc.adjacentLocation(direction);
+            if (location.distanceSquaredTo(closestEnemyTower) <= 9) {
+                return false;
+            }
+        }
+        if (rc.getType() == UnitType.MOPPER) {
+            MapLocation location = rc.adjacentLocation(direction);
+            if (rc.canSenseLocation(location)) {
+                PaintType paint = rc.senseMapInfo(location).getPaint();
+                if (rc.getPaint() < 20 && !noNearbyAllyPaint) {
+                    if (!paint.isAlly()) return false;
+                } else {
+                    if (paint.isEnemy()) return false;
+                }
+            }
+        }
+        return rc.canMove(direction);
+    }
+
     public static int getUpgradeCost(UnitType type) {
         return switch (type) {
             case LEVEL_ONE_PAINT_TOWER -> 3500;
