@@ -1,4 +1,4 @@
-package finals;
+package dumbsrp;
 
 import battlecode.common.*;
 
@@ -13,7 +13,6 @@ public class Mopper extends Unit {
         EVADE,
         REFILL,
         ATTACK,
-        REFILL_OTHERS,
         BUILD_TOWER,
         BUILD_SRP,
         DEFEND,
@@ -39,8 +38,6 @@ public class Mopper extends Unit {
 //        System.out.println("buildTower: " + Clock.getBytecodeNum());
         attack();
 //        System.out.println("attack: " + Clock.getBytecodeNum());
-        refillOthers();
-//        System.out.println("refillOthers: " + Clock.getBytecodeNum());
         buildSRP();
 //        System.out.println("buildSRP: " + Clock.getBytecodeNum());
         move();
@@ -488,55 +485,6 @@ public class Mopper extends Unit {
         computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(finalClosestEnemy));
     }
 
-    public void refillOthers() throws GameActionException {
-        if (rc.getPaint() <= 50 || state == MopperState.REFILL || state == MopperState.ATTACK || state == MopperState.BUILD_TOWER) return;
-        RobotInfo[] friendlyRobots = rc.senseNearbyRobots(-1, myTeam);
-        RobotInfo closestRobot = null;
-        int minDist = Integer.MAX_VALUE;
-        int transferAmount = 0;
-        for (RobotInfo robot : friendlyRobots) {
-            if (robot.getType().isRobotType()) {
-                if ((robot.getType() == UnitType.SOLDIER && robot.getPaintAmount() < robot.getType().paintCapacity * 0.4) && rc.getRoundNum() < 200) {
-                    int dist = rc.getLocation().distanceSquaredTo(robot.getLocation());
-                    if (dist < minDist) {
-                        minDist = dist;
-                        closestRobot = robot;
-                        transferAmount = Math.min(rc.getPaint() - 40, robot.getType().paintCapacity - robot.getPaintAmount());
-                    }
-                }
-            }
-        }
-
-        if (closestRobot == null) {
-            state = MopperState.DEFAULT;
-            return;
-        }
-        state = MopperState.REFILL_OTHERS;
-
-        Logger.log("refillOthers: " + closestRobot + " " + transferAmount);
-
-        if (rc.getLocation().distanceSquaredTo(closestRobot.getLocation()) <= 2) {
-            if (rc.canTransferPaint(closestRobot.getLocation(), transferAmount)) {
-                rc.transferPaint(closestRobot.getLocation(), transferAmount);
-            }
-        } else {
-            if (rc.isMovementReady()) {
-                for (Direction dir : Globals.adjacentDirections) {
-                    MapLocation newLoc = rc.getLocation().add(dir);
-                    if (rc.canMove(dir) && newLoc.distanceSquaredTo(closestRobot.getLocation()) <= 2) {
-                        rc.move(dir);
-                        if (rc.canTransferPaint(closestRobot.getLocation(), transferAmount)) {
-                            rc.transferPaint(closestRobot.getLocation(), transferAmount);
-                        }
-                        return;
-                    }
-                }
-                final MapLocation finalClosestRobot = closestRobot.getLocation();
-                computeBestAction(rc.getLocation(), newLoc -> newLoc.distanceSquaredTo(finalClosestRobot)/3);
-            }
-        }
-    }
-
     public void buildSRP() throws GameActionException {
         if ((state != MopperState.BUILD_SRP && state != MopperState.DEFAULT) || rc.getRoundNum() < 100 || rc.getNumberTowers() < 6) return;
 
@@ -561,66 +509,7 @@ public class Mopper extends Unit {
         }
 
         if (state == MopperState.DEFAULT) {
-            MapLocation loc = rc.getLocation();
-            int x = (loc.x + 2) % 4;
-            int y = (loc.y + 2) % 4;
-            MapLocation[] possibleSRPLocations = new MapLocation[8];
-
-            MapLocation loc1 = new MapLocation(loc.x - x, loc.y - y);
-            if (rc.canSenseLocation(loc1) && !impossibleSRPLocations.contains(loc1) && !rc.senseMapInfo(loc1).isResourcePatternCenter()) {
-                possibleSRPLocations[0] = loc1;
-            }
-            MapLocation loc2 = new MapLocation(loc.x - x, loc.y + 4 - y);
-            if (rc.canSenseLocation(loc2) && !impossibleSRPLocations.contains(loc2) && !rc.senseMapInfo(loc2).isResourcePatternCenter()) {
-                possibleSRPLocations[1] = loc2;
-            }
-            MapLocation loc3 = new MapLocation(loc.x + 4 - x, loc.y - y);
-            if (rc.canSenseLocation(loc3) && !impossibleSRPLocations.contains(loc3) && !rc.senseMapInfo(loc3).isResourcePatternCenter()) {
-                possibleSRPLocations[2] = loc3;
-            }
-            MapLocation loc4 = new MapLocation(loc.x + 4 - x, loc.y + 4 - y);
-            if (rc.canSenseLocation(loc4) && !impossibleSRPLocations.contains(loc4) && !rc.senseMapInfo(loc4).isResourcePatternCenter()) {
-                possibleSRPLocations[3] = loc4;
-            }
-            MapLocation loc5 = new MapLocation(loc.x - 4 - x, loc.y - y);
-            if (rc.canSenseLocation(loc5) && !impossibleSRPLocations.contains(loc5) && !rc.senseMapInfo(loc5).isResourcePatternCenter()) {
-                possibleSRPLocations[4] = loc5;
-            }
-            MapLocation loc6 = new MapLocation(loc.x - x, loc.y - 4 - y);
-            if (rc.canSenseLocation(loc6) && !impossibleSRPLocations.contains(loc6) && !rc.senseMapInfo(loc6).isResourcePatternCenter()) {
-                possibleSRPLocations[5] = loc6;
-            }
-            MapLocation loc7 = new MapLocation(loc.x + 4 - x, loc.y - 4 - y);
-            if (rc.canSenseLocation(loc7) && !impossibleSRPLocations.contains(loc7) && !rc.senseMapInfo(loc7).isResourcePatternCenter()) {
-                possibleSRPLocations[6] = loc7;
-            }
-            MapLocation loc8 = new MapLocation(loc.x - 4 - x, loc.y + 4 - y);
-            if (rc.canSenseLocation(loc8) && !impossibleSRPLocations.contains(loc8) && !rc.senseMapInfo(loc8).isResourcePatternCenter()) {
-                possibleSRPLocations[7] = loc8;
-            }
-
-            for (MapLocation ruin : rawRuinLocs) {
-                for (int i = 0; i < possibleSRPLocations.length; i++) {
-                    if (possibleSRPLocations[i] != null && Math.abs(ruin.x - possibleSRPLocations[i].x) <= 5 && Math.abs(ruin.y - possibleSRPLocations[i].y) <= 5) {
-                        impossibleSRPLocations.add(possibleSRPLocations[i]);
-                        possibleSRPLocations[i] = null;
-                        break;
-                    }
-                }
-            }
-
-            MapLocation closestSRPLocation = null;
-            int minDist = Integer.MAX_VALUE;
-            for (MapLocation possibleSRPLocation : possibleSRPLocations) {
-                if (possibleSRPLocation != null) {
-                    int dist = loc.distanceSquaredTo(possibleSRPLocation);
-                    if (dist < minDist) {
-                        minDist = dist;
-                        closestSRPLocation = possibleSRPLocation;
-                    }
-                }
-            }
-
+            MapLocation closestSRPLocation = Util.getClosestSRPLocation(rawRuinLocs);
             if (closestSRPLocation != null) {
                 state = MopperState.BUILD_SRP;
                 buildSRPLocation = closestSRPLocation;
