@@ -430,15 +430,16 @@ public class Mopper extends Unit {
                     }
                 }
             } else {
-                if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 2 && rc.isActionReady()) {
-                    UnitType towerType = Util.getTowerType(buildRuinLocation);
-                    if (towerType != null && rc.canCompleteTowerPattern(towerType, buildRuinLocation)) {
+                UnitType towerType = Util.getTowerType(buildRuinLocation);
+                if (towerType != null && rc.canCompleteTowerPattern(towerType, buildRuinLocation)) {
+                    if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 2 && rc.isActionReady()) {
                         rc.completeTowerPattern(towerType, buildRuinLocation);
                         state = MopperState.DEFAULT;
                         return;
+                    } else if (rc.getLocation().distanceSquaredTo(buildRuinLocation) > 2) {
+                        Navigator.moveTo(buildRuinLocation);
                     }
-                }
-                if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 4) {
+                } else if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 4) {
                     impossibleRuinLocations.add(buildRuinLocation);
                     state = MopperState.DEFAULT;
                     return;
@@ -843,9 +844,9 @@ public class Mopper extends Unit {
             }
             Logger.log("no movement succ & sweep: " + (Clock.getBytecodeNum() - startBytecodes));
 
-            if (Clock.getBytecodesLeft() >= 2000 && rc.isMovementReady()) {
+            if (Clock.getBytecodesLeft() >= 3000 && rc.isMovementReady()) {
                 for (Direction dir : adjacentDirections) {
-                    if (Clock.getBytecodesLeft() < 2000) break;
+                    if (Clock.getBytecodesLeft() < 3000) break;
                     if (rc.canMove(dir)) {
                         for (Direction sweepDir : Globals.cardinalDirections) {
                             heuristic = sweepHeuristic(loc.add(dir), sweepDir) - penalty;

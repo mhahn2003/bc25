@@ -200,7 +200,7 @@ public class Soldier extends Unit {
         if (closestTower != null && secondClosestTower != null) {
             RobotInfo tower1 = rc.senseRobotAtLocation(closestTower);
             RobotInfo tower2 = rc.senseRobotAtLocation(secondClosestTower);
-            if (tower1.getHealth() >= 100 + tower2.getHealth()) {
+            if (tower1.getHealth() >= 400 + tower2.getHealth()) {
                 MapLocation temp = closestTower;
                 closestTower = secondClosestTower;
                 secondClosestTower = temp;
@@ -463,6 +463,8 @@ public class Soldier extends Unit {
 
             if (closestRuin == null) return;
 
+            Logger.log("assigned to build tower state");
+
             state = SoldierState.BUILD_TOWER;
             buildTowerType = null;
             buildRuinLocation = closestRuin;
@@ -477,6 +479,7 @@ public class Soldier extends Unit {
         if (rc.canSenseRobotAtLocation(buildRuinLocation)) {
             RobotInfo robot = rc.senseRobotAtLocation(buildRuinLocation);
             if (robot != null) {
+                Logger.log("hi1");
                 state = SoldierState.DEFAULT;
                 impossibleRuinLocations.add(buildRuinLocation);
                 return;
@@ -503,6 +506,7 @@ public class Soldier extends Unit {
         }
 
         if (numEnemyPaint > 0 || (numSoldiersBuilding >= 2 && rc.getLocation().distanceSquaredTo(buildRuinLocation) > 1)) {
+            Logger.log("hi2");
             state = SoldierState.DEFAULT;
             impossibleRuinLocations.add(buildRuinLocation);
             return;
@@ -522,24 +526,24 @@ public class Soldier extends Unit {
             return;
         }
         buildTowerType = towerType;
-        if (buildTowerType == UnitType.LEVEL_ONE_DEFENSE_TOWER) {
-            RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(buildRuinLocation, -1, opponentTeam);
-            if (nearbyEnemies.length == 0 && Util.newTowerType(buildRuinLocation) != UnitType.LEVEL_ONE_DEFENSE_TOWER) {
-                MapLocation topMark = buildRuinLocation.add(Direction.NORTH);
-                MapLocation bottomMark = buildRuinLocation.add(Direction.SOUTH);
-                if (rc.getLocation().distanceSquaredTo(topMark) <= 2 && rc.canRemoveMark(topMark)) {
-                    rc.removeMark(topMark);
-                }
-                if (rc.getLocation().distanceSquaredTo(bottomMark) <= 2 && rc.canRemoveMark(bottomMark)) {
-                    rc.removeMark(bottomMark);
-                }
-                buildTowerType = Util.getTowerType(buildRuinLocation);
-                if (buildTowerType == UnitType.LEVEL_ONE_DEFENSE_TOWER || buildTowerType == null) {
-                    Navigator.moveTo(buildRuinLocation);
-                    return;
-                }
-            }
-        }
+//        if (buildTowerType == UnitType.LEVEL_ONE_DEFENSE_TOWER) {
+//            RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(buildRuinLocation, -1, opponentTeam);
+//            if (nearbyEnemies.length == 0 && Util.newTowerType(buildRuinLocation) != UnitType.LEVEL_ONE_DEFENSE_TOWER) {
+//                MapLocation topMark = buildRuinLocation.add(Direction.NORTH);
+//                MapLocation bottomMark = buildRuinLocation.add(Direction.SOUTH);
+//                if (rc.getLocation().distanceSquaredTo(topMark) <= 2 && rc.canRemoveMark(topMark)) {
+//                    rc.removeMark(topMark);
+//                }
+//                if (rc.getLocation().distanceSquaredTo(bottomMark) <= 2 && rc.canRemoveMark(bottomMark)) {
+//                    rc.removeMark(bottomMark);
+//                }
+//                buildTowerType = Util.getTowerType(buildRuinLocation);
+//                if (buildTowerType == UnitType.LEVEL_ONE_DEFENSE_TOWER || buildTowerType == null) {
+//                    Navigator.moveTo(buildRuinLocation);
+//                    return;
+//                }
+//            }
+//        }
         if (rc.getLocation().distanceSquaredTo(buildRuinLocation) <= 2 && rc.isActionReady() && rc.canCompleteTowerPattern(buildTowerType, buildRuinLocation)) {
             rc.completeTowerPattern(buildTowerType, buildRuinLocation);
             MapLocation[] impossibleSRPLocs = impossibleSRPLocations.getLocations();
@@ -548,13 +552,7 @@ public class Soldier extends Unit {
                     impossibleSRPLocations.remove(loc);
                 }
             }
-            MapLocation topMark = buildRuinLocation.add(Direction.NORTH);
-            MapLocation bottomMark = buildRuinLocation.add(Direction.SOUTH);
-            if (rc.getLocation().distanceSquaredTo(topMark) <= 2 && rc.canMark(topMark)) {
-                rc.mark(topMark, true);
-            } else if (rc.getLocation().distanceSquaredTo(bottomMark) <= 2 && rc.canMark(bottomMark)) {
-                rc.mark(bottomMark, true);
-            }
+            Logger.log("hi3");
             state = SoldierState.DEFAULT;
             return;
         }
@@ -565,6 +563,7 @@ public class Soldier extends Unit {
                 nearbyAllies = rc.senseNearbyRobots(buildRuinLocation, 2, myTeam);
                 for (RobotInfo ally : nearbyAllies) {
                     if (ally.getType() == UnitType.SOLDIER && ally.getID() < rc.getID()) {
+                        Logger.log("hi4");
                         state = SoldierState.DEFAULT;
                         impossibleRuinLocations.add(buildRuinLocation);
                         return;
@@ -574,12 +573,13 @@ public class Soldier extends Unit {
         } else {
             noPaintCounter = 0;
         }
+        Logger.log("state rn:" + state);
     }
 
     public void buildSRP() throws GameActionException {
         if (state != SoldierState.BUILD_SRP && state != SoldierState.DEFAULT && rc.getID() % 2 == 0) return;
         if (rc.getNumberTowers() < 6 || rc.getRoundNum() < 100) {
-            state = SoldierState.DEFAULT;
+            if (state == SoldierState.BUILD_SRP) state = SoldierState.DEFAULT;
             return;
         }
 

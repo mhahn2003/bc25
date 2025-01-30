@@ -205,6 +205,20 @@ public class Tower extends Unit {
                                 }
                             }
                         }
+
+                        if (rc.getHealth() <= 100) {
+                            if (rc.getPaint() >= 300 && rc.getChips() >= 400) {
+                                if (tryBuildRobot(UnitType.SPLASHER, closestEnemyLocation)) {
+                                    spawnedSplashers++;
+                                    return;
+                                }
+                            } else if (rc.getPaint() >= 200 & rc.getChips() >= 250) {
+                                if (tryBuildRobot(UnitType.SOLDIER, closestEnemyLocation)) {
+                                    spawnedSoldiers++;
+                                    return;
+                                }
+                            }
+                        }
                     }
                 }
 
