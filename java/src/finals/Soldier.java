@@ -598,6 +598,7 @@ public class Soldier extends Unit {
             if (state == SoldierState.BUILD_SRP) {
                 for (MapLocation rawRuin : rawRuinLocs) {
                     if (Math.abs(rawRuin.x - buildSRPLocation.x) <= 5 && Math.abs(rawRuin.y - buildSRPLocation.y) <= 5) {
+                        Logger.log("change mind");
                         impossibleSRPLocations.add(buildSRPLocation);
                         state = SoldierState.DEFAULT;
                         return;
@@ -607,66 +608,7 @@ public class Soldier extends Unit {
         }
 
         if (state == SoldierState.DEFAULT) {
-            MapLocation loc = rc.getLocation();
-            int x = (loc.x + 2) % 4;
-            int y = (loc.y + 2) % 4;
-            MapLocation[] possibleSRPLocations = new MapLocation[8];
-
-            MapLocation loc1 = new MapLocation(loc.x - x, loc.y - y);
-            if (rc.canSenseLocation(loc1) && !impossibleSRPLocations.contains(loc1) && !rc.senseMapInfo(loc1).isResourcePatternCenter() && loc1.x >= 2 && loc1.x < mapWidth - 2 && loc1.y >= 2 && loc1.y < mapHeight - 2) {
-                possibleSRPLocations[0] = loc1;
-            }
-            MapLocation loc2 = new MapLocation(loc.x - x, loc.y + 4 - y);
-            if (rc.canSenseLocation(loc2) && !impossibleSRPLocations.contains(loc2) && !rc.senseMapInfo(loc2).isResourcePatternCenter() && loc2.x >= 2 && loc2.x < mapWidth - 2 && loc2.y >= 2 && loc2.y < mapHeight - 2) {
-                possibleSRPLocations[1] = loc2;
-            }
-            MapLocation loc3 = new MapLocation(loc.x + 4 - x, loc.y - y);
-            if (rc.canSenseLocation(loc3) && !impossibleSRPLocations.contains(loc3) && !rc.senseMapInfo(loc3).isResourcePatternCenter() && loc3.x >= 2 && loc3.x < mapWidth - 2 && loc3.y >= 2 && loc3.y < mapHeight - 2) {
-                possibleSRPLocations[2] = loc3;
-            }
-            MapLocation loc4 = new MapLocation(loc.x + 4 - x, loc.y + 4 - y);
-            if (rc.canSenseLocation(loc4) && !impossibleSRPLocations.contains(loc4) && !rc.senseMapInfo(loc4).isResourcePatternCenter() && loc4.x >= 2 && loc4.x < mapWidth - 2 && loc4.y >= 2 && loc4.y < mapHeight - 2) {
-                possibleSRPLocations[3] = loc4;
-            }
-            MapLocation loc5 = new MapLocation(loc.x - 4 - x, loc.y - y);
-            if (rc.canSenseLocation(loc5) && !impossibleSRPLocations.contains(loc5) && !rc.senseMapInfo(loc5).isResourcePatternCenter() && loc5.x >= 2 && loc5.x < mapWidth - 2 && loc5.y >= 2 && loc5.y < mapHeight - 2) {
-                possibleSRPLocations[4] = loc5;
-            }
-            MapLocation loc6 = new MapLocation(loc.x - x, loc.y - 4 - y);
-            if (rc.canSenseLocation(loc6) && !impossibleSRPLocations.contains(loc6) && !rc.senseMapInfo(loc6).isResourcePatternCenter() && loc6.x >= 2 && loc6.x < mapWidth - 2 && loc6.y >= 2 && loc6.y < mapHeight - 2) {
-                possibleSRPLocations[5] = loc6;
-            }
-            MapLocation loc7 = new MapLocation(loc.x + 4 - x, loc.y - 4 - y);
-            if (rc.canSenseLocation(loc7) && !impossibleSRPLocations.contains(loc7) && !rc.senseMapInfo(loc7).isResourcePatternCenter() && loc7.x >= 2 && loc7.x < mapWidth - 2 && loc7.y >= 2 && loc7.y < mapHeight - 2) {
-                possibleSRPLocations[6] = loc7;
-            }
-            MapLocation loc8 = new MapLocation(loc.x - 4 - x, loc.y + 4 - y);
-            if (rc.canSenseLocation(loc8) && !impossibleSRPLocations.contains(loc8) && !rc.senseMapInfo(loc8).isResourcePatternCenter() && loc8.x >= 2 && loc8.x < mapWidth - 2 && loc8.y >= 2 && loc8.y < mapHeight - 2) {
-                possibleSRPLocations[7] = loc8;
-            }
-
-            for (MapLocation ruin : rawRuinLocs) {
-                for (int i = 0; i < possibleSRPLocations.length; i++) {
-                    if (possibleSRPLocations[i] != null && Math.abs(ruin.x - possibleSRPLocations[i].x) <= 5 && Math.abs(ruin.y - possibleSRPLocations[i].y) <= 5) {
-                        impossibleSRPLocations.add(possibleSRPLocations[i]);
-                        possibleSRPLocations[i] = null;
-                        break;
-                    }
-                }
-            }
-
-            MapLocation closestSRPLocation = null;
-            int minDist = Integer.MAX_VALUE;
-            for (MapLocation possibleSRPLocation : possibleSRPLocations) {
-                if (possibleSRPLocation != null) {
-                    int dist = loc.distanceSquaredTo(possibleSRPLocation);
-                    if (dist < minDist) {
-                        minDist = dist;
-                        closestSRPLocation = possibleSRPLocation;
-                    }
-                }
-            }
-
+            MapLocation closestSRPLocation = Util.getClosestSRPLocation(rawRuinLocs);
             if (closestSRPLocation != null) {
                 state = SoldierState.BUILD_SRP;
                 buildSRPLocation = closestSRPLocation;
@@ -730,7 +672,7 @@ public class Soldier extends Unit {
             impossibleSRPLocations.add(buildSRPLocation);
             state = SoldierState.DEFAULT;
         } else {
-            rotateAroundTower(buildSRPLocation, UnitType.LEVEL_ONE_MONEY_TOWER, false);
+            rotateAroundTower(buildSRPLocation, null, false);
             if (rc.isActionReady() && rc.getLocation().distanceSquaredTo(buildSRPLocation) <= 2) {
                 noPaintCounter += 1;
                 if (noPaintCounter >= noPaintSRPThreshold) {

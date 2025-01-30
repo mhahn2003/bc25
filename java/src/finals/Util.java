@@ -6,10 +6,15 @@ public class Util extends Globals {
 
     private static int symmetryCheckBytecodeThreshold = 2500;
 
-    public static boolean useSecondary(MapLocation location) {
-        int x = (location.x % 4) - 2;
-        int y = (location.y % 4) - 2;
-        int absSum = Math.abs(x) + Math.abs(y);
+    public static boolean useSecondary(MapLocation loc) {
+        int x, y;
+        if (loc.x <= midX1) x = loc.x % 4;
+        else x = (loc.x - mapWidth + 1) % 4;
+        if (loc.y <= midY1) y = loc.y % 4;
+        else y = (loc.y - mapHeight + 1) % 4;
+        if (x < 0) x += 4;
+        if (y < 0) y += 4;
+        int absSum = Math.abs(x-2) + Math.abs(y-2);
         return absSum == 0 || absSum >= 3;
     }
 
@@ -162,23 +167,66 @@ public class Util extends Globals {
         }
     }
 
+    public static MapLocation getClosestSRPLocation(MapLocation[] rawRuinLocs) throws GameActionException {
+        MapLocation loc = rc.getLocation();
+        int x, y;
+        if (loc.x <= midX1) x = (loc.x + 2) % 4;
+        else x = (loc.x - mapWidth - 1) % 4;
+        if (loc.y <= midY1) y = (loc.y + 2) % 4;
+        else y = (loc.y - mapHeight - 1) % 4;
+        if (x < 0) x += 4;
+        if (y < 0) y += 4;
+        MapLocation[] possibleSRPLocations = new MapLocation[8];
+
+        MapLocation loc1 = new MapLocation(loc.x - x, loc.y - y);
+        if (isValidSRPLocation(loc1)) possibleSRPLocations[0] = loc1;
+        MapLocation loc2 = new MapLocation(loc.x - x, loc.y + 4 - y);
+        if (isValidSRPLocation(loc2)) possibleSRPLocations[1] = loc2;
+        MapLocation loc3 = new MapLocation(loc.x + 4 - x, loc.y - y);
+        if (isValidSRPLocation(loc3)) possibleSRPLocations[2] = loc3;
+        MapLocation loc4 = new MapLocation(loc.x + 4 - x, loc.y + 4 - y);
+        if (isValidSRPLocation(loc4)) possibleSRPLocations[3] = loc4;
+        MapLocation loc5 = new MapLocation(loc.x - 4 - x, loc.y - y);
+        if (isValidSRPLocation(loc5)) possibleSRPLocations[4] = loc5;
+        MapLocation loc6 = new MapLocation(loc.x - x, loc.y - 4 - y);
+        if (isValidSRPLocation(loc6)) possibleSRPLocations[5] = loc6;
+        MapLocation loc7 = new MapLocation(loc.x + 4 - x, loc.y - 4 - y);
+        if (isValidSRPLocation(loc7)) possibleSRPLocations[6] = loc7;
+        MapLocation loc8 = new MapLocation(loc.x - 4 - x, loc.y + 4 - y);
+        if (isValidSRPLocation(loc8)) possibleSRPLocations[7] = loc8;
+
+        for (MapLocation ruin : rawRuinLocs) {
+            for (int i = 0; i < possibleSRPLocations.length; i++) {
+                if (possibleSRPLocations[i] != null && Math.abs(ruin.x - possibleSRPLocations[i].x) <= 5 && Math.abs(ruin.y - possibleSRPLocations[i].y) <= 5) {
+                    impossibleSRPLocations.add(possibleSRPLocations[i]);
+                    possibleSRPLocations[i] = null;
+                    break;
+                }
+            }
+        }
+
+        MapLocation closestSRPLocation = null;
+        int minDist = Integer.MAX_VALUE;
+        for (MapLocation possibleSRPLocation : possibleSRPLocations) {
+            if (possibleSRPLocation != null) {
+                int dist = loc.distanceSquaredTo(possibleSRPLocation);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closestSRPLocation = possibleSRPLocation;
+                }
+            }
+        }
+
+        return closestSRPLocation;
+    }
+
+    public static boolean isValidSRPLocation(MapLocation loc) throws GameActionException {
+        if ((loc.x <= midX1 != rc.getLocation().x <= midX1) || (loc.y <= midY1 != rc.getLocation().y <= midY1)) return false;
+        if (Math.abs(loc.x - midX1) < 2 || Math.abs(loc.y - midY1) < 2) return false;
+        return rc.canSenseLocation(loc) && !impossibleSRPLocations.contains(loc) && !rc.senseMapInfo(loc).isResourcePatternCenter();
+    }
+
     public static void checkSymmetry() throws GameActionException {
-        int midX1, midX2;
-        if (mapWidth % 2 == 1) {
-            midX1 = mapWidth / 2;
-            midX2 = mapWidth / 2;
-        } else {
-            midX1 = mapWidth / 2 - 1;
-            midX2 = mapWidth / 2;
-        }
-        int midY1, midY2;
-        if (mapHeight % 2 == 1) {
-            midY1 = mapHeight / 2;
-            midY2 = mapHeight / 2;
-        } else {
-            midY1 = mapHeight / 2 - 1;
-            midY2 = mapHeight / 2;
-        }
         int x = rc.getLocation().x;
         int y = rc.getLocation().y;
 
